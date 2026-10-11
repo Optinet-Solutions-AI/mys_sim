@@ -9,6 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@iconify-json/fluent-emoji-flat": "^1.2.6",
+    "@iconify-json/ph": "^1.2.2",
+    "@noble/hashes": "^2.4.0",
+    "idb-keyval": "^6.3.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"

@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens. Light theme only in phase 1; keep it calm so the data is the colour. */
+@theme {
+  --color-paper: #f6f7f5;
+  --color-surface: #ffffff;
+  --color-ink: #16191d;
+  --color-ink-2: #4a5560;
+  --color-ink-3: #78838c;
+  --color-line: #dfe4df;
+  --color-accent: #0f6b6b;
+  --color-accent-ink: #0a5252;
+  --color-accent-soft: #dbecea;
+  --color-good: #1e7a3c;
+  --color-good-soft: #dcefe1;
+  --color-warn: #8f5a00;
+  --color-warn-soft: #f7ebcf;
+  --color-bad: #b0281f;
+  --color-bad-soft: #f8dedb;
+  --color-tier-grail: #1f2a44;
+  --color-tier-legendary: #5b2a86;
+  --color-tier-epic: #0f6b6b;
+  --color-tier-rare: #1e5aa8;
+  --color-tier-common: #6b7280;
+  --color-tier-filler: #9aa3ad;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+input[type="number"],
+input[type="text"],
+select,
+textarea {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font: inherit;
+  color: var(--color-ink);
+  width: 100%;
+}
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-accent);
+}
+input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mystery Box Simulator
 
-## Getting Started
+A research sandbox that reproduces how mystery-box platforms work, so any algorithm and any setting can be
+tested, the documented manipulations can be switched on, and an honest verifier plus the statistics show what
+would be caught. No real money, no registration; every player is a simulated agent. Phase 1 runs entirely in the
+browser. Phase 2 adds Supabase (shared history and logs) and Vercel hosting.
 
-First, run the development server:
+The plan, the hub roadmap and the scorecard are in the research folder of the parent workspace
+(`research/05-simulator-plan.md`; the research documents are not part of this repository). The odds engine
+follows `research/04-backend-blueprint.md` §2 there.
+
+## Run it
 
 ```bash
+npm install
+npm run build      # production build (Next.js 16, Turbopack)
+npm start          # serves on http://localhost:3000
+# or, while developing:
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Other scripts:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx -y tsx scripts/smoke.ts      # runs the engine headless: every scheme, every rig, every lab, with timings
+node scripts/extract-icons.mjs   # regenerates src/lib/icons.generated.ts from the Iconify JSON packages
+npx tsc --noEmit                 # type check
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## What is in it (phase 1, wave 1: the vendor's features)
 
-## Learn More
+| Route | What it does |
+|---|---|
+| `/` | Hub: the four labs, how to use them, the wave roadmap |
+| `/labs/mystery-box` | One box opened N times. Box builder with the RTP solver or manual percentages, algorithm panel, rig toolkit, account mix. Results: realized RTP with standard error at three price layers, chi-square against stated odds, proof verification, detector, bias map, payout histogram, per-item table, sample of opens with proof fields |
+| `/labs/sellback` | Agents deposit, open, sell back or ship, re-bet. Vendor economy (credit at displayed value, withdraw only through items) or cash economy. Results: hold, GGR, sell-back and ship rates, ruin, bankroll percentiles |
+| `/labs/battles` | Multi-box battles with bots filling seats. Five modes (normal, crazy, group, terminal, jackpot), each testable alone. Results: wager multiplier, realized edge, human win rate against the equal-odds expectation, pot distribution |
+| `/labs/retention` | Daily boxes with expiry, wager races, affiliate bonuses, against a control run on the same seed. Results: retention curves, bonus cost, incremental wager per bonus dollar, LTV, hold after bonuses |
+| `/catalog` | 48 fictional luxury items with retail, asking and realized prices and placeholder icon tiles |
+| `/runs`, `/runs/[id]` | Saved runs (IndexedDB), compare two runs of the same lab, export JSON or a Markdown report |
+| `/verify` | The engine's verifier as a tool: recompute commitment, digest and ticket from seeds; verify a pasted record |
+| `/docs` | Generated from the registry: schemes, mappings, randomness sources, odds models, agent policies, battle modes, rigs, principles |
 
-To learn more about Next.js, take a look at the following resources:
+## Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/engine/          pure TypeScript, no React, no browser APIs
+  types.ts           every config and result type
+  hash.ts            sha256/sha512/hmac (noble), canonical JSON, Merkle root
+  rng.ts             seeded generators (sfc32, lcg, Math.random, CSPRNG) for the simulator itself
+  mapping.ts         digest -> ticket (float-cumulative, int32 mod/floor, int52, int256 mod/floor, rejection)
+  table.ts           integer-ticket tables, RTP solver (weights ~ value^-beta), lookups
+  schemes.ts         commitment schemes: none, server-hash, hmac-sha256, Jemlit, Packs, Misty, Razed, Glass Box
+  opener.ts          the Opener: draws with any scheme/mapping/rotation and any active rig; verifyRecord()
+  rigs.ts            the white-hat rigging toolkit, documented
+  metrics.ts         chi-square (regularised gamma), histograms, Welford, detectable sample size
+  catalog.ts         the item catalogue
+  labs/              runMysteryBox, runSellback, runBattles, runRetention; registry (docs for everything)
+  index.ts           runLab(request, onProgress)
+src/workers/         Web Worker that runs runLab off the main thread
+src/lib/             store (IndexedDB), presets, detector, report (Markdown), useRun hook, formatting
+src/components/      UI: config panels, run controls, results, lab shells, verifier, run history
+src/app/             routes
+scripts/             smoke test, icon extraction
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Rules the code keeps
 
-## Deploy on Vercel
+- **Isolation.** Each lab has its own configuration type, its own presets and its own runs. The only shared
+  resource is the read-only catalogue. Nothing a lab does changes another lab.
+- **Immutability.** A run snapshots the box, the algorithm, the rigs, the sizes, the seed and the catalogue items
+  it used. Editing a configuration afterwards never changes an earlier run.
+- **Reproducibility.** Same snapshot and same seed give identical results. All randomness inside a run comes from
+  one seeded generator.
+- **Honesty is a setting.** Provably fair can be on, off, bypassed or rigged. Honest, vendor-style and cheating
+  versions of the same box are compared on the same metrics.
+- **Everything documented.** A scheme, mapping, rig, agent policy or battle mode is not selectable until it has a
+  registry entry; the Docs page is generated from the registry.
+- **Ethics.** Rigs run only against this engine. Nothing connects to a live operator.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Adding things
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **A scheme:** add it to `SCHEMES` in `src/engine/schemes.ts` (commit, newServerSeed, digest, messageLayout,
+  nativeMapping) and a `SCHEME_DOCS` entry in `src/engine/labs/registry.ts`. The verifier and the algorithm
+  panel pick it up.
+- **A mapping:** add a case to `mapTicket` in `src/engine/mapping.ts` and a `MAPPING_DOCS` entry.
+- **A rig:** add its key to `RigConfig` in `types.ts`, implement it in `opener.ts` (or a lab runner), and add a
+  `RigDoc` in `rigs.ts` with params, labs and detection notes. The rig panel renders it.
+- **A lab:** add config and result types, a runner under `src/engine/labs/`, a case in `runLab`, an entry in
+  `LAB_DOCS`, a page under `src/app/labs/`, and a nav item.
+
+Every addition also gets a row in the research tracker (`research/00-tracker.md` in the parent workspace).
+
+## Deployment
+
+- **Vercel.** Import the repository; the framework preset is Next.js and the defaults work (`npm run build`,
+  Node 20 or later). Phase 1 needs no environment variables: everything runs in the browser.
+- **Phase 2 (Supabase).** `.env.example` lists the variables the app will read once shared history and logs
+  are wired in. `.env*` files are ignored by git, so set them in the Vercel project settings, not in the
+  repository. Only variables prefixed `NEXT_PUBLIC_` reach the browser; the anon key is designed to be public and
+  is protected by row-level security on the database side.
+
+## Known limits of phase 1
+
+- Runs are in the browser: a few million opens take a minute or more. Server runs for large N arrive in phase 2.
+- History is per browser (IndexedDB). Clearing site data clears it. Export runs you want to keep.
+- Agent behaviour in the Sell-back and Retention labs is an explicit assumption, labelled in the UI; none of it
+  comes from data yet.
+- The catalogue is a file. Editing items and item versioning arrive with Supabase.
