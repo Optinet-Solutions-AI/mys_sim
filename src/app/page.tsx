@@ -28,9 +28,7 @@ export default function Home() {
           <Badge>phase 1 · browser only</Badge>
         </div>
         <h1 className="text-3xl font-semibold">Mystery Box Simulator</h1>
-        <p className="mt-2 text-ink-2">
-          Reproduce how mystery-box platforms work, test any algorithm and any setting, switch the documented cheats on and see what an honest verifier and the statistics would catch. No real money, no registration; every player is a simulated agent. Each lab is isolated and every run is reproducible from its seed.
-        </p>
+        <p className="mt-2 text-ink-2">Open packs, run battles, and test any algorithm or rig on simulated players. No real money; every run is reproducible.</p>
       </header>
 
       <section>
@@ -44,7 +42,7 @@ export default function Home() {
                   <Icon name={l.icon} size={36} />
                   <div>
                     <div className="font-semibold text-ink group-hover:text-accent-ink">{d.title}</div>
-                    <div className="mt-1 text-sm text-ink-2">{d.what}</div>
+                    <div className="mt-1 text-sm text-ink-2">{d.short}</div>
                   </div>
                 </div>
               </Link>
@@ -55,10 +53,12 @@ export default function Home() {
 
       <Card title="How to use it">
         <ol className="list-decimal space-y-1 pl-5 text-sm">
-          <li>Open a lab: you land on the test page. Press Open to open a pack with the reveal, or Start battle to play one battle round by round.</li>
-          <li>Press the cog (Settings) to change anything: items and odds, the RTP knob, the algorithm, the rigs, the number of bots, and how many opens or battles to simulate. The summary chips under the title open the right section.</li>
-          <li>Press Run simulation for the statistics: stated versus observed odds, realized return with its error bar, proof verification and the detector. Results appear below the test page.</li>
-          <li>Save the run to history to compare later, or download the Markdown report for the research documents.</li>
+          <li>Open a lab and play: Open a pack, or Start battle.</li>
+          <li>
+            Press the cog <Icon name="ph:gear-six" size={14} className="inline text-accent-ink" /> to change items, odds, algorithm, rigs, bots and run sizes.
+          </li>
+          <li>Press Run simulation for the statistics; results appear below.</li>
+          <li>Save or export the run.</li>
         </ol>
       </Card>
 

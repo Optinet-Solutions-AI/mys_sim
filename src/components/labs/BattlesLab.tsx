@@ -73,6 +73,7 @@ export function BattlesLab() {
         lab="battles"
         rigCount={rigs.length}
         onSettings={openSettings}
+        settingsOpen={settings.open}
         chips={[
           { label: `${mode.name} · ${cfg.players} players · ${bots} bot${bots === 1 ? "" : "s"}`, section: "battle" },
           { label: `${cfg.boxes.length} round${cfg.boxes.length === 1 ? "" : "s"} · entry ${money(cfg.boxes.reduce((a, b) => a + b.price, 0))}`, section: "boxes" },

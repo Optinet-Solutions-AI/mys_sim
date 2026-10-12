@@ -1,16 +1,29 @@
 import type { ReactNode } from "react";
+import { Icon } from "./Icon";
 
 export function Card({ title, children, className = "", actions }: { title?: ReactNode; children: ReactNode; className?: string; actions?: ReactNode }) {
   return (
     <section className={`rounded-xl border border-line bg-surface p-4 ${className}`}>
       {(title || actions) && (
         <header className="mb-3 flex items-center justify-between gap-3">
-          {title && <h2 className="text-base font-semibold">{title}</h2>}
+          {title && <h2 className="flex items-center gap-1.5 text-base font-semibold">{title}</h2>}
           {actions}
         </header>
       )}
       {children}
     </section>
+  );
+}
+
+/** An info icon whose explanation appears on hover or focus. Pages stay minimal; the words are one hover away. */
+export function Info({ children, align = "left", size = 14, className = "" }: { children: ReactNode; align?: "left" | "right" | "center"; size?: number; className?: string }) {
+  return (
+    <span className={`info ${className}`} tabIndex={0} aria-label="More information">
+      <Icon name="ph:info" size={size} className="text-ink-3" />
+      <span className={`info-pop ${align === "right" ? "info-pop-right" : align === "center" ? "info-pop-center" : ""}`} role="tooltip">
+        {children}
+      </span>
+    </span>
   );
 }
 
@@ -48,9 +61,11 @@ export function Button({
 export function Field({ label, hint, children, inline = false }: { label: ReactNode; hint?: ReactNode; children: ReactNode; inline?: boolean }) {
   return (
     <label className={`block ${inline ? "flex items-center justify-between gap-3" : ""}`}>
-      <span className="mb-1 block text-xs font-medium text-ink-2">{label}</span>
+      <span className="mb-1 flex items-center gap-1 text-xs font-medium text-ink-2">
+        {label}
+        {hint && <Info>{hint}</Info>}
+      </span>
       {children}
-      {hint && <span className="mt-1 block text-[11px] text-ink-3">{hint}</span>}
     </label>
   );
 }
@@ -107,11 +122,11 @@ export function Select<T extends string>({
 
 export function Toggle({ checked, onChange, label, hint }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; hint?: ReactNode }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5" />
-      <span>
-        <span className="block text-sm">{label}</span>
-        {hint && <span className="block text-[11px] text-ink-3">{hint}</span>}
+    <label className="flex cursor-pointer items-center gap-2">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <span className="flex items-center gap-1 text-sm">
+        {label}
+        {hint && <Info>{hint}</Info>}
       </span>
     </label>
   );
@@ -150,8 +165,13 @@ export function Progress({ value }: { value: number }) {
   );
 }
 
+/** Explanation on demand: a lone info icon that opens a popover. */
 export function Help({ children }: { children: ReactNode }) {
-  return <p className="text-xs leading-relaxed text-ink-2">{children}</p>;
+  return (
+    <div className="mt-2 flex">
+      <Info>{children}</Info>
+    </div>
+  );
 }
 
 export function Th({ children, right }: { children: ReactNode; right?: boolean }) {

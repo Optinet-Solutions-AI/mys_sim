@@ -76,6 +76,7 @@ export function MysteryBoxLab() {
         lab="mystery-box"
         rigCount={rigs.length}
         onSettings={openSettings}
+        settingsOpen={settings.open}
         chips={[
           { label: `${money(cfg.box.price)} box · ${cfg.box.items.length} items · RTP on ${cfg.box.valueLayer}`, section: "box" },
           { label: algoLabel(cfg.algo), section: "algo" },
@@ -113,7 +114,6 @@ export function MysteryBoxLab() {
             <Button kind="ghost" onClick={() => applyPreset(preset)}>
               <Icon name="ph:arrow-counter-clockwise" size={14} /> Reset to preset
             </Button>
-            <span className="text-xs text-ink-3">Live opens restart with a fresh session when settings change.</span>
             <span className="ml-auto" />
             <Button onClick={closeSettings}>Done</Button>
           </>

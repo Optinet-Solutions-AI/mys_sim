@@ -8,7 +8,7 @@ import { seatName } from "@/lib/live";
 import { money, num, pct } from "@/lib/format";
 import { Icon } from "../Icon";
 import { ItemTile } from "../ItemTile";
-import { Badge, Card } from "../ui";
+import { Badge, Card, Info } from "../ui";
 import { MiniReel } from "../lab/MiniReel";
 import { CountUp } from "../lab/CountUp";
 
@@ -185,6 +185,7 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-lg font-semibold">{mode.name} battle</span>
+              <Info>{mode.rule}</Info>
               <Badge tone="accent">
                 {players} players · {humans} human{humans > 1 ? "s" : ""} vs {players - humans} bot{players - humans === 1 ? "" : "s"}
               </Badge>
@@ -192,9 +193,8 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
                 entry {money(entry)} per player · pot of entries {money(entry * players)}
               </Badge>
             </div>
-            <div className="text-xs text-ink-2">{mode.rule}</div>
           </div>
-          <label className="flex items-center gap-1 text-xs text-ink-2" title="Off: every seat spins a reel round by round. On: show the result at once.">
+          <label className="flex items-center gap-1 text-xs text-ink-2" data-tip="Off: every seat spins a reel round by round. On: show the result at once." data-tip-end="">
             <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} disabled={busy} /> fast reveal
           </label>
         </div>

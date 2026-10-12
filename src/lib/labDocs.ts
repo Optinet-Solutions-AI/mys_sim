@@ -1,9 +1,10 @@
 import type { LabId } from "@/engine/types";
 
-export const LAB_DOCS: Record<LabId, { title: string; wave: string; what: string; configure: string[]; read: string[]; source: string }> = {
+export const LAB_DOCS: Record<LabId, { title: string; wave: string; short: string; what: string; configure: string[]; read: string[]; source: string }> = {
   "mystery-box": {
     title: "Mystery Boxes",
     wave: "Wave 1 · vendor feature",
+    short: "Open packs; test odds, return and proofs under any algorithm or rig.",
     what: "One box opened N times. The core experiment: do the stated odds hold, what does the box really return at each price layer, and does the proof reproduce the item.",
     configure: [
       "Items and odds: pick catalogue items; set the RTP knob (the vendor's default is 90% on listed value) or enter percentages by hand.",
@@ -23,6 +24,7 @@ export const LAB_DOCS: Record<LabId, { title: string; wave: string; what: string
   sellback: {
     title: "Sell-back / Cart",
     wave: "Wave 1 · vendor feature",
+    short: "Deposit, open, sell back or ship; measure hold, ruin and what ever leaves.",
     what: "Agents deposit, open, and either ship an item or sell it back into their balance and bet again. Measures what the vendor called 'the economy': hold, sell-back rate, how many items ever ship, and how fast agents go bust.",
     configure: [
       "Sell-back rule: the vendor's (credited at displayed value, stays as balance) or cash at a chosen price layer with a haircut.",
@@ -39,6 +41,7 @@ export const LAB_DOCS: Record<LabId, { title: string; wave: string; what: string
   battles: {
     title: "Battles",
     wave: "Wave 1 · vendor feature",
+    short: "Play battles against bots in five modes; measure edge and win rates.",
     what: "Several players open the same boxes; a mode decides who takes the pot. Bots fill empty seats and can be given better odds. The vendor says battles are 90% of all wagering because the bet is the sum of all boxes.",
     configure: [
       "Boxes in the battle (each configured like a Mystery Box), number of players, humans per battle, bots on or off.",
@@ -51,6 +54,7 @@ export const LAB_DOCS: Record<LabId, { title: string; wave: string; what: string
   retention: {
     title: "Retention",
     wave: "Wave 1 · vendor feature",
+    short: "Daily boxes, races and affiliates against a control run; what they buy and cost.",
     what: "Visitor agents decide each day whether to come back. Daily free boxes that expire, wager races with prizes, and affiliate bonuses lift the visit probability. A control run with incentives off, on the same seed, measures the uplift and what it costs.",
     configure: [
       "Daily box tiers and the expiry rule (24-hour no-stacking, as the vendor built it, or stacking).",

@@ -4,51 +4,57 @@ import Link from "next/link";
 import type { LabId } from "@/engine/types";
 import { LAB_DOCS } from "@/lib/labDocs";
 import { Icon } from "../Icon";
-import { Badge, Card } from "../ui";
+import { Badge, Card, Info } from "../ui";
 
 export interface Chip {
   label: ReactNode;
   section?: string;
   tone?: "neutral" | "bad" | "accent";
+  tip?: string;
 }
 
-/** Page frame for a lab: title, the cog, summary chips, an optional help panel, then the stage. */
-export function LabFrame({ lab, chips, onSettings, rigCount, children }: { lab: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; children: ReactNode }) {
+/** Page frame for a lab: title, the cog (header and floating), summary chips, help on demand, then the stage. */
+export function LabFrame({ lab, chips, onSettings, rigCount, settingsOpen, children }: { lab: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
   const doc = LAB_DOCS[lab];
   const [help, setHelp] = useState(false);
+  const badge = rigCount > 0 ? <span className="cog-badge">{rigCount}</span> : null;
   return (
-    <div className="space-y-4">
-      <header className="flex flex-wrap items-start gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold">{doc.title}</h1>
-            <Badge tone="accent">{doc.wave}</Badge>
-          </div>
-          <p className="mt-1 max-w-3xl text-sm text-ink-2">{doc.what}</p>
+    <div className="space-y-4 pb-20">
+      <header className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-semibold">{doc.title}</h1>
+          <Badge tone="accent">{doc.wave}</Badge>
+          <Info size={16}>{doc.what}</Info>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" className={`btn ${help ? "border-accent text-accent-ink" : ""}`} onClick={() => setHelp((h) => !h)} title="How this lab works">
-            <Icon name="ph:question" size={18} /> How it works
-          </button>
-          <button type="button" className="btn btn-primary relative" onClick={() => onSettings()} title="Settings: items, algorithm, rigs, run size">
-            <Icon name="ph:gear-six" size={18} className="text-white" /> Settings
-            {rigCount > 0 && <span className="absolute -right-1.5 -top-1.5 rounded-full bg-bad px-1.5 text-[10px] font-semibold text-white" title={`${rigCount} rig(s) active`}>{rigCount}</span>}
-          </button>
-        </div>
+        <button type="button" className={`btn btn-icon rounded-full ${help ? "border-accent text-accent-ink" : ""}`} data-tip="How this lab works" data-tip-end="" onClick={() => setHelp((h) => !h)} aria-label="How this lab works">
+          <Icon name="ph:question" size={20} />
+        </button>
+        <button type="button" className="btn-cog" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
+          <Icon name="ph:gear-six" size={26} className="text-white" />
+          {badge}
+        </button>
       </header>
       <div className="flex flex-wrap gap-1.5">
         {chips.map((c, i) => (
-          <button key={i} type="button" className={`chip ${c.tone === "bad" ? "chip-bad" : c.tone === "accent" ? "chip-accent" : ""}`} onClick={() => onSettings(c.section)} title="Open in settings">
+          <button key={i} type="button" className={`chip ${c.tone === "bad" ? "chip-bad" : c.tone === "accent" ? "chip-accent" : ""}`} data-tip={c.tip ?? "Open in settings"} data-tip-below="" onClick={() => onSettings(c.section)}>
             {c.label}
             <Icon name="ph:caret-right" size={11} />
           </button>
         ))}
       </div>
       {help && (
-        <Card title={`How ${doc.title} works`} actions={<Link href="/docs" className="text-xs">Full docs</Link>}>
+        <Card
+          title={`How ${doc.title} works`}
+          actions={
+            <Link href="/docs" className="text-xs">
+              Full docs
+            </Link>
+          }
+        >
+          <p className="mb-3 text-sm text-ink-2">{doc.what}</p>
           <div className="grid gap-4 text-sm md:grid-cols-2">
             <div>
-              <h3 className="mb-1 font-semibold">What you configure (cog)</h3>
+              <h3 className="mb-1 font-semibold">Settings (cog)</h3>
               <ul className="list-disc space-y-1 pl-5">
                 {doc.configure.map((c) => (
                   <li key={c}>{c}</li>
@@ -56,7 +62,7 @@ export function LabFrame({ lab, chips, onSettings, rigCount, children }: { lab: 
               </ul>
             </div>
             <div>
-              <h3 className="mb-1 font-semibold">What you read (results)</h3>
+              <h3 className="mb-1 font-semibold">Results</h3>
               <ul className="list-disc space-y-1 pl-5">
                 {doc.read.map((c) => (
                   <li key={c}>{c}</li>
@@ -65,11 +71,17 @@ export function LabFrame({ lab, chips, onSettings, rigCount, children }: { lab: 
             </div>
           </div>
           <p className="mt-3 text-xs text-ink-3">
-            <b>Source:</b> {doc.source} · Live opens on this page use the same engine, rigs and verifier as the simulation; only the pace differs.
+            <b>Source:</b> {doc.source}
           </p>
         </Card>
       )}
       {children}
+      {!settingsOpen && (
+        <button type="button" className="fab" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
+          <Icon name="ph:gear-six" size={30} className="text-white" />
+          {badge}
+        </button>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, type ReactNode } from "react";
 import { Icon } from "../Icon";
+import { Info } from "../ui";
 
 export interface SettingsSection {
   id: string;
@@ -54,7 +55,7 @@ export function SettingsDialog({
         <header className="flex items-center gap-3 border-b border-line px-4 py-3">
           <Icon name="ph:gear-six" size={20} className="text-accent-ink" />
           <h2 className="text-base font-semibold">{title}</h2>
-          <span className="hidden text-xs text-ink-3 md:inline">Changes apply immediately and affect only this lab.</span>
+          <Info>Changes apply immediately and affect only this lab. Live opens restart with a fresh session when settings change.</Info>
           <button type="button" className="btn btn-icon ml-auto" onClick={onClose} aria-label="Close settings">
             <Icon name="ph:x" size={18} />
           </button>

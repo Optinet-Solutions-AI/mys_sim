@@ -1,7 +1,7 @@
 "use client";
 import type { LabId, RigConfig } from "@/engine/types";
 import { RIGS, type RigDoc } from "@/engine/rigs";
-import { Card, Help, Toggle } from "../ui";
+import { Card, Info, Toggle } from "../ui";
 
 type RigValue = Record<string, number | string> | boolean;
 
@@ -16,16 +16,14 @@ export function RigPanel({ rigs, onChange, lab }: { rigs: RigConfig; onChange: (
   return (
     <Card
       title={
-        <span className="flex items-center gap-2">
+        <>
           White-hat rigging toolkit
           {active.length > 0 && <span className="rounded-full bg-bad-soft px-2 py-0.5 text-[11px] text-bad">{active.length} active</span>}
-        </span>
+          <Info>Each switch reproduces a manipulation documented in the research, inside the simulator only. Turn one on, run, then read the detector to see what an honest verifier and the statistics would catch.</Info>
+        </>
       }
     >
-      <Help>
-        Each switch reproduces a manipulation documented in the research, inside the simulator only. Turn one on, run, then read the detector to see what an honest verifier and the statistics would catch.
-      </Help>
-      <div className="mt-3 grid gap-2 md:grid-cols-2">
+      <div className="grid gap-2 md:grid-cols-2">
         {list.map((r) => {
           const val = (rigs as Record<string, RigValue | undefined>)[r.id];
           const on = !!val;
@@ -35,7 +33,17 @@ export function RigPanel({ rigs, onChange, lab }: { rigs: RigConfig; onChange: (
                 checked={on}
                 onChange={(c) => onChange({ ...rigs, [r.id]: c ? defaultValue(r) : undefined } as RigConfig)}
                 label={<span className="font-medium">{r.name}</span>}
-                hint={r.summary}
+                hint={
+                  <>
+                    {r.summary}
+                    <div className="mt-1 opacity-80">
+                      <b>Seen at:</b> {r.source}
+                    </div>
+                    <div className="opacity-80">
+                      <b>Detection:</b> {r.detection}
+                    </div>
+                  </>
+                }
               />
               {on && r.params.length > 0 && typeof val === "object" && (
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -58,9 +66,6 @@ export function RigPanel({ rigs, onChange, lab }: { rigs: RigConfig; onChange: (
                   ))}
                 </div>
               )}
-              <div className="mt-2 text-[11px] text-ink-3">
-                <b>Source:</b> {r.source}
-              </div>
             </div>
           );
         })}

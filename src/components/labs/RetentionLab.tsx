@@ -69,6 +69,7 @@ export function RetentionLab() {
         lab="retention"
         rigCount={rigs.length}
         onSettings={openSettings}
+        settingsOpen={settings.open}
         chips={[
           { label: on.length ? `Incentives: ${on.join(", ")}` : "Incentives: none", section: "incentives" },
           { label: `Visitor model: ${Math.round(V.baseVisit * 100)}% base visit · ${Math.round(V.churnHazard * 100)}% churn after a loss`, section: "visitor" },

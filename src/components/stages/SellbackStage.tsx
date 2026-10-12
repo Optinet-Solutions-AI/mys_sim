@@ -6,7 +6,7 @@ import { LiveOpener, type LiveOpen } from "@/lib/live";
 import { money, num, pct } from "@/lib/format";
 import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
-import { Badge, Card, Stat } from "../ui";
+import { Badge, Card, Info, Stat } from "../ui";
 
 interface Wallet {
   balance: number;
@@ -156,9 +156,16 @@ export function SellbackStage({ cfg, seed, onSettings }: { cfg: SellbackConfig; 
           <button type="button" className="btn mt-2 w-full" onClick={doWithdraw} disabled={w.balance <= 0 || w.withdrawMode} title={cfg.withdrawal.mode === "cash" ? "Move the balance to cash" : "This operator pays out only through items"}>
             <Icon name="ph:hand-coins" size={16} /> {cfg.withdrawal.mode === "cash" ? "Withdraw balance as cash" : w.withdrawMode ? "Withdrawal pending (needs an item)" : "Withdraw balance"}
           </button>
-          <div className="mt-3 rounded-lg bg-paper p-2 text-[11px] text-ink-2">
-            <b>Rules here:</b> sell-back {cfg.sellback.mode === "vendor" ? `credits ${pct(1 - cfg.sellback.haircut, 0)} of the displayed value to your balance` : `pays ${pct(1 - cfg.sellback.haircut, 0)} of ${cfg.sellback.layer} value in cash`}; withdrawal {cfg.withdrawal.mode === "cash" ? "in cash at any time" : `only through items worth at least ${money(cfg.withdrawal.minWithdraw)}`}.{" "}
-            <button type="button" className="underline" onClick={() => onSettings("economy")}>
+          <div className="mt-3 flex items-center gap-2 text-[11px] text-ink-2">
+            <span className="flex items-center gap-1">
+              Rules
+              <Info>
+                <b>Sell-back:</b> {cfg.sellback.mode === "vendor" ? `credits ${pct(1 - cfg.sellback.haircut, 0)} of the displayed value to your balance` : `pays ${pct(1 - cfg.sellback.haircut, 0)} of ${cfg.sellback.layer} value in cash`}.
+                <br />
+                <b>Withdrawal:</b> {cfg.withdrawal.mode === "cash" ? "in cash at any time" : `only through items worth at least ${money(cfg.withdrawal.minWithdraw)}`}.
+              </Info>
+            </span>
+            <button type="button" className="chip" onClick={() => onSettings("economy")}>
               change
             </button>
           </div>
@@ -185,7 +192,11 @@ export function SellbackStage({ cfg, seed, onSettings }: { cfg: SellbackConfig; 
               <button type="button" className="btn" onClick={reset}>
                 <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset
               </button>
-              {w.balance < price && <span className="text-xs text-warn">Balance below the box price. Deposit to continue (the moment the economy relies on).</span>}
+              {w.balance < price && (
+                <span className="flex items-center gap-1 text-xs text-warn">
+                  Deposit to continue <Info>Balance is below the box price. This is the moment the economy relies on: credits are re-bet until they run out, then a new deposit is needed.</Info>
+                </span>
+              )}
             </div>
           ) : (
             <div className="mt-3 rounded-xl border border-accent bg-accent-soft p-3 animate-rise">
@@ -203,11 +214,11 @@ export function SellbackStage({ cfg, seed, onSettings }: { cfg: SellbackConfig; 
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" className="btn btn-primary" onClick={doSell}>
+                <button type="button" className="btn btn-primary" onClick={doSell} data-tip={vendor ? "Turns the item into site balance at its displayed value. Nothing leaves the system until an item ships." : "Paid out at the chosen price layer; the money leaves the system."}>
                   <Icon name="ph:arrows-clockwise" size={16} className="text-white" /> {vendor ? `Sell back for ${money(sellValue(pending))} credit` : `Sell for ${money(sellValue(pending))} cash`}
                 </button>
-                <button type="button" className="btn" onClick={doShip}>
-                  <Icon name="ph:truck" size={16} /> Ship it (operator cost {money(pending.item.realized)})
+                <button type="button" className="btn" onClick={doShip} data-tip={`The item leaves the system. It costs the operator ${money(pending.item.realized)} at realized value.`}>
+                  <Icon name="ph:truck" size={16} /> Ship it
                 </button>
                 {w.withdrawMode && cfg.withdrawal.mode === "through-items" && pending.display >= cfg.withdrawal.minWithdraw && (
                   <button type="button" className="btn" onClick={doWithdrawItem}>
@@ -215,21 +226,28 @@ export function SellbackStage({ cfg, seed, onSettings }: { cfg: SellbackConfig; 
                   </button>
                 )}
               </div>
-              {vendor && <p className="mt-2 text-[11px] text-ink-2">Selling back turns the item into site balance at its displayed value. Nothing leaves the system until an item ships.</p>}
             </div>
           )}
         </Card>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Card title="The economy so far (operator view)">
+        <Card
+          title={
+            <>
+              Operator view
+              <Info>
+                The same money seen from the operator&apos;s side. <b>Hold</b> is deposits minus what left the system (cash and shipped goods). <b>GGR</b> is wagered minus credits minus shipped cost. The vendor claims 99.9% of items are sold back and a hold of 15 to 30% of deposits; the simulation below tests that with {num(P.agents)} agents.
+              </Info>
+            </>
+          }
+        >
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
             <Stat label="Deposited" value={money(w.deposited)} />
             <Stat label="Wagered" value={money(w.wagered)} sub={`${num(w.opens)} opens · ${num(w.sold)} sold back · ${num(w.shippedCount)} shipped`} />
             <Stat label="Left the system" value={money(left)} sub={`cash ${money(w.cashOut)} · goods ${money(w.shippedValue)}`} />
             <Stat label="Operator hold" value={w.deposited ? pct(hold) : "—"} sub={`GGR ${money(ggr)}`} tone={w.deposited && hold > 0.5 ? "warn" : undefined} />
           </div>
-          <p className="mt-2 text-xs text-ink-3">The vendor says 99.9% of items are sold back and hold runs at 15 to 30% of deposits. Press Run below to test that with {num(P.agents)} agents.</p>
         </Card>
         <Card title="Ledger">
           {w.log.length === 0 ? (

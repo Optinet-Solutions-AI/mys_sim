@@ -7,7 +7,7 @@ import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { copyText } from "@/lib/download";
 import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
-import { Badge, Card, Stat } from "../ui";
+import { Badge, Card, Info, Stat } from "../ui";
 import { Reel } from "../lab/Reel";
 
 interface Tally {
@@ -124,8 +124,11 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           <Icon name="fluent:package" size={40} />
           <div className="min-w-0 flex-1">
             <div className="truncate text-lg font-semibold">{cfg.box.name}</div>
-            <div className="text-xs text-ink-2">
-              {money(price)} per open · {table.items.length} items · stated return {pct(statedRtp)} on {layer} value · values shown at {cfg.box.displayLayer}
+            <div className="flex items-center gap-1 text-xs text-ink-2">
+              {money(price)} · {table.items.length} items · stated return {pct(statedRtp)}
+              <Info>
+                Stated return is the expected value of one open divided by the price, computed on <b>{layer}</b> prices. Players are shown values at <b>{cfg.box.displayLayer}</b> prices.
+              </Info>
             </div>
           </div>
           {tags.length > 1 && (
@@ -207,9 +210,10 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           </Card>
           <Card
             title={
-              <span className="flex items-center gap-2">
-                Proof for this open {proofBadge(last)}
-              </span>
+              <>
+                Proof {proofBadge(last)}
+                <Info>The verifier recomputes the digest from the revealed seeds and looks the ticket up in the displayed table. It proves the dice, not the table, the values or how the seeds were chosen.</Info>
+              </>
             }
             actions={
               <button
@@ -225,7 +229,9 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
             }
           >
             {cfg.algo.scheme === "none" ? (
-              <p className="text-sm text-ink-2">This algorithm publishes no commitment. The player gets a result and nothing to check it against, which is how the vendor platform works by default.</p>
+              <p className="flex items-center gap-1 text-sm text-ink-2">
+                No commitment published. <Info>The player gets a result and nothing to check it against. This is how the vendor platform works by default.</Info>
+              </p>
             ) : (
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[11px]">
                 <dt className="text-ink-3">server hash</dt>
@@ -252,7 +258,6 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
                 <dd className={last.verified ? "text-good" : "text-bad"}>{last.reason}</dd>
               </dl>
             )}
-            <p className="mt-2 text-[11px] text-ink-3">The verifier recomputes the digest from the revealed seeds and looks the ticket up in the displayed table. It proves the dice, not the table, the values or the seed selection.</p>
           </Card>
         </div>
       )}

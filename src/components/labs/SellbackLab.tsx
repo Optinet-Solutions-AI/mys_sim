@@ -70,6 +70,7 @@ export function SellbackLab() {
         lab="sellback"
         rigCount={rigs.length}
         onSettings={openSettings}
+        settingsOpen={settings.open}
         chips={[
           { label: cfg.sellback.mode === "vendor" ? `Sell-back: credit at displayed value${cfg.sellback.haircut ? ` minus ${pct(cfg.sellback.haircut, 0)}` : ""}` : `Sell-back: cash at ${cfg.sellback.layer}${cfg.sellback.haircut ? ` minus ${pct(cfg.sellback.haircut, 0)}` : ""}`, section: "economy" },
           { label: cfg.withdrawal.mode === "cash" ? "Withdraw: cash" : `Withdraw: only through items ≥ ${money(cfg.withdrawal.minWithdraw)}`, section: "economy" },
