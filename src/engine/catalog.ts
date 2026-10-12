@@ -2,6 +2,7 @@
 // Brands are invented. Prices are illustrative and shaped like the research: realized < asking < retail for most,
 // with a few rationed bags where realized exceeds retail.
 import type { CatalogItem } from "./types";
+import { CAPTURED_ITEMS } from "./captured";
 
 const C = {
   grail: "#1f2a44",
@@ -27,7 +28,7 @@ function it(
   return { id, name, brand, category, tier, retail, asking, realized, confidence, icon, color: C[tier] };
 }
 
-export const CATALOG: CatalogItem[] = [
+const FICTIONAL: CatalogItem[] = [
   // ---- grails (watches and rationed bags) ----
   it("w-montvale-sovereign-40", "Sovereign 40 Steel, black dial", "Montvale", "watch", "grail", 16400, 19950, 16480, "fluent:watch", "high"),
   it("w-montvale-voyager-gmt", "Voyager GMT, two-tone bezel", "Montvale", "watch", "grail", 11200, 24500, 18900, "fluent:watch", "high"),
@@ -82,7 +83,11 @@ export const CATALOG: CatalogItem[] = [
   it("f-credit-3", "Site credit $3", "Site", "credit", "filler", 3, 3, 1, "fluent:coin", "high"),
   it("f-credit-5", "Site credit $5", "Site", "credit", "filler", 5, 5, 1.6, "fluent:dollar-banknote", "high"),
   it("f-penny", "One cent voucher", "Site", "credit", "filler", 0.01, 0.01, 0.01, "fluent:coin", "high"),
+  it("f-nothing", "Nothing", "—", "nothing", "filler", 0, 0, 0, "fluent:cross-mark", "high"),
 ];
+
+/** Fictional items first, then the items of the reconstructed operator tables. */
+export const CATALOG: CatalogItem[] = [...FICTIONAL.map((c) => ({ ...c, source: "fictional" as const })), ...CAPTURED_ITEMS];
 
 export const CATALOG_BY_ID = new Map(CATALOG.map((c) => [c.id, c]));
 

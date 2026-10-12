@@ -1,6 +1,6 @@
 // Rigging toolkit metadata. The behaviour lives in the lab engines; this file documents each rig for the docs pages
 // and the detector, and provides the plain list used by the UI.
-import type { RigConfig } from "./types";
+import type { LabId, RigConfig } from "./types";
 
 export interface RigDoc {
   id: keyof RigConfig;
@@ -11,7 +11,7 @@ export interface RigDoc {
   verificationShows: string;
   detection: string;
   params: { key: string; label: string; min?: number; max?: number; step?: number; defaultValue: number | string }[];
-  labs: ("mystery-box" | "sellback" | "battles" | "retention")[];
+  labs: LabId[];
 }
 
 export const RIGS: RigDoc[] = [
@@ -25,7 +25,7 @@ export const RIGS: RigDoc[] = [
     verificationShows: "Fails for every open that is actually checked. Passes for everyone who never checks.",
     detection: "Verify a sample of opens. One failure is proof.",
     params: [{ key: "hiddenRtp", label: "Hidden RTP", min: 0.1, max: 1.2, step: 0.01, defaultValue: 0.6 }],
-    labs: ["mystery-box", "sellback", "battles"],
+    labs: ["mystery-box", "sellback", "battles", "credits", "upgrader"],
   },
   {
     id: "tableSwap",
@@ -37,7 +37,7 @@ export const RIGS: RigDoc[] = [
     verificationShows: "Passes if the operator's own tool uses the hidden table. An independent verifier that uses the displayed odds fails on the fraction of tickets where the two tables disagree, which is itself a detection.",
     detection: "Independent verification against the displayed table; chi-square of observed versus stated odds; realized RTP below stated.",
     params: [{ key: "hiddenRtp", label: "Hidden RTP", min: 0.1, max: 1.2, step: 0.01, defaultValue: 0.75 }],
-    labs: ["mystery-box", "sellback", "battles"],
+    labs: ["mystery-box", "sellback", "battles", "credits", "upgrader"],
   },
   {
     id: "perAccount",
@@ -108,7 +108,7 @@ export const RIGS: RigDoc[] = [
       { key: "thresholdMultiple", label: "Reroll if payout ≥ price ×", min: 1, max: 100, step: 0.5, defaultValue: 5 },
       { key: "maxRerolls", label: "Max rerolls", min: 1, max: 10, step: 1, defaultValue: 3 },
     ],
-    labs: ["mystery-box", "sellback", "battles"],
+    labs: ["mystery-box", "sellback", "battles", "credits", "upgrader"],
   },
   {
     id: "valuationInflation",
@@ -185,6 +185,94 @@ export const RIGS: RigDoc[] = [
       { key: "showcase", label: "Showcase: 0 = strip matches real odds, 0.9 = grails everywhere", min: 0, max: 0.9, step: 0.05, defaultValue: 0.6 },
     ],
     labs: ["mystery-box", "battles"],
+  },
+  {
+    id: "earlyRetire",
+    name: "Retire the drop early (IcyBox)",
+    summary: "A finite drop is ended once enough of it has sold while its top items are still inside, and a fresh drop starts. Buyers paid for odds that included a grail nobody could ever win.",
+    mechanism:
+      "On a pool box, when the sold fraction reaches atFraction and any copy worth at least grailMultiple times the price remains, the pool is reset. With the pool rule 'operator may retire' those copies vanish; with 'must distribute' they are awarded to past buyers at retirement, which is the Glass Box rule.",
+    source: "IcyBox terms: a box may be 'terminated or removed at any time even before all Assets included in the Icebox are distributed (including any grail)' (dossier 1 §2.4).",
+    verificationShows: "Passes: every draw was honest against the pool as it stood.",
+    detection: "Realized return below the stated return of the drop; count of drops retired against drops completed; no grail in the public pull history.",
+    params: [
+      { key: "atFraction", label: "Retire once this fraction is sold", min: 0.1, max: 0.99, step: 0.01, defaultValue: 0.7 },
+      { key: "grailMultiple", label: "...if an item worth at least this × price remains", min: 1, max: 1000, step: 1, defaultValue: 20 },
+    ],
+    labs: ["mystery-box", "sellback"],
+  },
+  {
+    id: "secretItem",
+    name: "Secret item (Pop Mart)",
+    summary: "An item that is not on the displayed table takes a slice of the most common item's tickets. Players chase it; proofs fail on exactly those draws.",
+    mechanism: "The draw table is the displayed table with the secret inserted right after the most common item, so no other range moves. The displayed table does not list it. An honest verifier that uses the displayed table reports an item mismatch whenever the secret drops.",
+    source: "Pop Mart blind boxes: a 'secret' edition at 1 in 144 whose identity is not disclosed (dossier 2 §3.2).",
+    verificationShows: "Fails on secret draws only; passes on everything else.",
+    detection: "Observed items not on the stated table; proof failures clustered on one item.",
+    params: [
+      { key: "itemId", label: "Secret item id", defaultValue: "a-hermine-scarf" },
+      { key: "percent", label: "Share of opens (percent)", min: 0.01, max: 10, step: 0.01, defaultValue: 0.69 },
+    ],
+    labs: ["mystery-box"],
+  },
+  {
+    id: "ldwCelebration",
+    name: "Losses disguised as wins (presentation)",
+    summary: "Every drop below the price gets the full win celebration. The player sees a win while losing money.",
+    mechanism: "Presentation only: the result card celebrates any drop, not just drops worth at least the price. Odds, payouts and proofs do not change.",
+    source: "Slot machine research on losses disguised as wins (Dixon et al. 2010); credit and filler items celebrated on case sites and in the vendor demo.",
+    verificationShows: "Passes.",
+    detection: "Invisible in outcome data; a presentation audit comparing celebrations with payouts against the price.",
+    params: [],
+    labs: ["mystery-box"],
+  },
+  {
+    id: "fakeLiveFeed",
+    name: "Fabricated live-drops feed (presentation)",
+    summary: "A ticker of other players winning top items, generated by the site rather than by real opens.",
+    mechanism: "Presentation only: the stage shows a feed of bot wins at the configured rate, drawn from the box's most valuable items regardless of their odds.",
+    source: "Standard on case and pack sites; Jemlit's own feed in the captured HTML was dominated by credits worth $0.02 to $0.35 (dossier 1 §2.2).",
+    verificationShows: "Passes.",
+    detection: "Compare the feed's win rate for top items with their stated odds times a plausible open rate.",
+    params: [{ key: "grailsPerMinute", label: "Top-item wins shown per minute", min: 0.1, max: 60, step: 0.1, defaultValue: 6 }],
+    labs: ["mystery-box"],
+  },
+  {
+    id: "ticketsAwayMessage",
+    name: "'You were N tickets away' (presentation)",
+    summary: "After a loss, the player is told how close the ticket was to a big item. True, and misleading: every ticket is equally likely.",
+    mechanism: "Presentation only: the result card shows the distance from the drawn ticket to the nearest range of an item worth at least ten times the price.",
+    source: "Near-miss framing in slot and lottery presentation; 'so close' messages on case sites.",
+    verificationShows: "Passes.",
+    detection: "Presentation audit.",
+    params: [],
+    labs: ["mystery-box"],
+  },
+  {
+    id: "demoOdds",
+    name: "Demo spins at different odds (presentation)",
+    summary: "Free demo opens draw from a table at a higher return than the paid game.",
+    mechanism: "The stage offers a Demo switch. In demo mode opens are drawn from a table re-solved at demoRtp and cost nothing; the paid table is unchanged.",
+    source: "Cases.gg demo spins; a long-standing concern in social casino and slot demo modes.",
+    verificationShows: "Not applicable to demo spins; paid spins pass.",
+    detection: "Compare demo and paid return over many opens.",
+    params: [{ key: "demoRtp", label: "Demo RTP", min: 0.5, max: 3, step: 0.05, defaultValue: 1.6 }],
+    labs: ["mystery-box"],
+  },
+  {
+    id: "urgency",
+    name: "Urgency cues (presentation)",
+    summary: "Countdown, 'only N left' and 'N people viewing' around the open button.",
+    mechanism: "Presentation only: the stage shows the cues with the configured numbers. They are not tied to anything real.",
+    source: "IcyBox drops ('once they're gone, they're gone'), limited-time boxes on case sites, StockX's five-minute decision timer.",
+    verificationShows: "Passes.",
+    detection: "Presentation audit: check the counters against real inventory and traffic.",
+    params: [
+      { key: "stockLeft", label: "Stock left shown", min: 1, max: 999, step: 1, defaultValue: 12 },
+      { key: "viewers", label: "Viewers shown", min: 1, max: 9999, step: 1, defaultValue: 38 },
+      { key: "countdownMinutes", label: "Countdown (minutes)", min: 1, max: 1440, step: 1, defaultValue: 14 },
+    ],
+    labs: ["mystery-box"],
   },
 ];
 

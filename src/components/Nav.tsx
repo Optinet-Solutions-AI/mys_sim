@@ -22,6 +22,13 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
     ],
   },
   {
+    label: "Labs · wave 3 (Misty, Jemlit, Cases.gg)",
+    items: [
+      { href: "/labs/credits", label: "Credits & draws", icon: "ph:ticket" },
+      { href: "/labs/upgrader", label: "Upgrader & Deals", icon: "ph:arrow-up-right" },
+    ],
+  },
+  {
     label: "Tools",
     items: [
       { href: "/verify", label: "Verifier", icon: "ph:seal-check" },

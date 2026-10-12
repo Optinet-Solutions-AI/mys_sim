@@ -10,6 +10,8 @@ export const BATTLE_MODES: { id: BattlesConfig["mode"]; name: string; rule: stri
   { id: "group", name: "Group", rule: "No winner: the pot is split equally among all players." },
   { id: "terminal", name: "Terminal", rule: "Only the last round counts; its highest pull takes every item." },
   { id: "jackpot", name: "Jackpot", rule: "A winner is drawn with probability proportional to each player's total." },
+  { id: "coinflip", name: "Coinflip (Cases.gg)", rule: "Two seats at equal odds; the house takes its edge from the pot before the winner is paid. No boxes are opened." },
+  { id: "break", name: "Break / group open", rule: "Everyone keeps what they pull. No pot and no winner: a sealed break or a Glass Box group open." },
 ];
 
 /** Everything a battle needs that stays fixed across battles: openers, bot tables, seat counts, entry. */
@@ -33,13 +35,13 @@ export interface BattleOutcome {
   totals: number[];
   lastRound: number[];
   pot: number;
-  winner: number; // -1 for group mode
+  winner: number; // -1 for group and break modes
   tied: boolean;
   share: number[]; // what each seat takes home
 }
 
 export function prepareBattle(cfg: BattlesConfig, catalog: Map<string, CatalogItem>, rng: Rng): BattleTable {
-  const players = Math.max(2, Math.floor(cfg.players));
+  const players = cfg.mode === "coinflip" ? 2 : Math.max(2, Math.floor(cfg.players));
   const humans = cfg.bots.enabled ? Math.min(players, Math.max(1, Math.floor(cfg.humansPerBattle))) : players;
   const openers = cfg.boxes.map((b, i) => new Opener(b, cfg.algo, cfg.rigs, catalog, rng, "box" + i));
   const botTables = cfg.rigs.favouredBots
@@ -51,10 +53,19 @@ export function prepareBattle(cfg: BattlesConfig, catalog: Map<string, CatalogIt
 
 /** Plays one battle. The same function serves the live arena and the statistics run. */
 export function playBattle(t: BattleTable, cfg: BattlesConfig, rng: Rng, counter: { idx: number }, progress: number): BattleOutcome {
-  const { players, humans } = t;
+  const { players, humans, entry } = t;
   const totals = new Array<number>(players).fill(0);
   const lastRound = new Array<number>(players).fill(0);
   const pulls: BattlePull[] = [];
+  const share = new Array<number>(players).fill(0);
+  if (cfg.mode === "coinflip") {
+    // no boxes: the pot is the entries less the house edge, and a fair coin picks the seat
+    const edge = Math.min(0.95, Math.max(0, cfg.coinflipEdge ?? 0));
+    const pot = entry * players * (1 - edge);
+    const winner = rng.int(players);
+    share[winner] = pot;
+    return { pulls, totals, lastRound, pot, winner, tied: false, share };
+  }
   let pot = 0;
   for (let r = 0; r < cfg.boxes.length; r++) {
     for (let p = 0; p < players; p++) {
@@ -66,12 +77,13 @@ export function playBattle(t: BattleTable, cfg: BattlesConfig, rng: Rng, counter
       pulls.push({ round: r, player: p, isBot, rec });
     }
   }
-  const share = new Array<number>(players).fill(0);
   let winner = -1;
   let tied = false;
   const score = cfg.mode === "terminal" ? lastRound : totals;
   if (cfg.mode === "group") {
     share.fill(pot / players);
+  } else if (cfg.mode === "break") {
+    for (let p = 0; p < players; p++) share[p] = totals[p];
   } else if (cfg.mode === "jackpot") {
     const sum = score.reduce((a, x) => a + x, 0);
     let u = rng.next() * (sum || 1);
@@ -114,6 +126,12 @@ export function runBattles(cfg: BattlesConfig, battles: number, seed: number, ca
     if (cfg.mode === "group") {
       humanWins += humans / players;
       botWins += (players - humans) / players;
+    } else if (cfg.mode === "break") {
+      // a "win" in a break is taking home at least the entry
+      let h = 0, bt = 0;
+      for (let p = 0; p < players; p++) if (o.share[p] >= entry) (p < humans ? h++ : bt++);
+      humanWins += h / humans;
+      botWins += players > humans ? bt / (players - humans) : 0;
     } else {
       if (o.tied) ties++;
       if (o.winner < humans) humanWins++;
@@ -136,7 +154,7 @@ export function runBattles(cfg: BattlesConfig, battles: number, seed: number, ca
     humanWins,
     botWins,
     humanWinRate: N ? humanWins / N : 0,
-    expectedHumanWinRate: humans / players,
+    expectedHumanWinRate: cfg.mode === "break" ? 0 : humans / players,
     ties,
     payoutMultipleHistogram: linearHistogram(multiples, "pot ÷ total entry", 20, 0, 3),
     topPotMultiple: topPot,

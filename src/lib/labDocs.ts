@@ -64,4 +64,26 @@ export const LAB_DOCS: Record<LabId, { title: string; wave: string; short: strin
     read: ["Retention curves against control; bonus cost; incremental wager per bonus dollar; LTV; hold after bonuses; wager concentration in races."],
     source: "Vendor demo (dossier 2 §3.5): daily boxes with 24-hour expiry, leaderboards, affiliate codes, bonus cost equals the drop value.",
   },
+  credits: {
+    title: "Credits & draws",
+    wave: "Wave 3 · Misty",
+    short: "Box pays credits, credits are draw tickets; measure the nominal and the real return.",
+    what: "Misty's two-stage economy. The box pays mostly credits; each credit is a ticket in a draw with a fixed pool for one prize. The box page values credits at face, so the nominal return looks generous; the real value of a ticket is the prize divided by the pool and depends on sell-through. The lab runs both stages on the same agents and reports both returns.",
+    configure: [
+      "The box (the reconstructed Misty Timepiece Suite by default) and its algorithm and rigs.",
+      "The draw: ticket pool, credit face value, prize item, draw rule (when sold out, or on schedule regardless of sell-through), free-entry share, Omaze-style spend cap, disclosed expected value.",
+      "Agents and opens per agent.",
+    ],
+    read: ["Nominal return with credits at face against the end-to-end return; the real value of one credit; prizes that went to free entrants; operator hold across both stages; unsold share at each draw."],
+    source: "Dossier 1 §2.1 (Misty): credits as entries, 100,000-ticket pools, free postal entry with equal odds, drawn on the date regardless of sell-through.",
+  },
+  upgrader: {
+    title: "Upgrader & Deals",
+    wave: "Wave 3 · Jemlit, Cases.gg, vendor",
+    short: "Stake money for a chance at a better item; measure the edge and how fast the ladder ruins.",
+    what: "The Upgrader (Jemlit, Cases.gg) and the vendor's Deals are the same mechanic seen from two sides: stake an amount for a chance at an item at proportional odds minus the edge, or pick the chance and pay the price it implies. Built as a two-outcome box, so every scheme, rig and the verifier apply. Agents follow a ladder policy and the lab measures the realized edge against the stated one and the ruin rate.",
+    configure: ["Mode (Upgrader or Deals), stated edge, the chance cap (the vendor caps Deals at 80%), the target item and value layer, the stake or the chosen chance, the algorithm and rigs (a table swap here is a hidden edge).", "Agents, bankroll, attempts, policy (single attempt or ladder until won or bust)."],
+    read: ["Win rate against the stated chance; realized edge against the stated edge; ruin fraction and median attempts to ruin; how many agents reached the target; proof verification."],
+    source: "Dossier 1 §2.2 and §2.3 (Jemlit and Cases.gg Upgrader at a 10% edge); vendor demo (Deals: pick an item, choose a chance up to 80%, price scales).",
+  },
 };

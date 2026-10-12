@@ -13,6 +13,10 @@ export function headlineFor(result: AnyResult): string {
       return `${result.battles.toLocaleString()} battles · ${result.mode} · edge ${pct(result.realizedEdge)} · human win ${pct(result.humanWinRate)} (exp ${pct(result.expectedHumanWinRate)})`;
     case "retention":
       return `${result.agents.toLocaleString()} agents × ${result.days} days · D7 ${pct(result.retention.d7, 0)} · D30 ${pct(result.retention.d30, 0)} · bonus ${money(result.bonusCost)}`;
+    case "credits":
+      return `${result.opens.toLocaleString()} opens · nominal RTP ${pct(result.nominalRtp)} · end-to-end ${pct(result.endToEndRtp)} · ${result.raffles} draws · hold ${pct(result.hold)}`;
+    case "upgrader":
+      return `${result.attempts.toLocaleString()} ${result.mode} attempts · win ${pct(result.winRate, 2)} (stated ${pct(result.statedChance, 2)}) · edge ${pct(result.realizedEdge)} (stated ${pct(result.statedEdge)}) · ruin ${pct(result.ruinFraction)}`;
   }
 }
 
@@ -68,6 +72,15 @@ export function reportMarkdown(run: RunRecord): string {
     lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
     lines.push(`| Battles | ${r.battles.toLocaleString()} |`, `| Mode | ${r.mode} |`, `| Entry per player | ${money(r.entryPerPlayer)} |`, `| Wager multiplier vs single open | ${r.wagerMultiplier.toFixed(1)}× |`);
     lines.push(`| Total wagered / paid | ${money(r.totalWagered)} / ${money(r.totalPaid)} |`, `| Realized edge | ${pct(r.realizedEdge)} |`, `| Human win rate | ${pct(r.humanWinRate)} (expected ${pct(r.expectedHumanWinRate)}) |`, `| Ties | ${r.ties} |`, `| Largest pot | ${r.topPotMultiple.toFixed(1)}× entry |`);
+  } else if (r.kind === "credits") {
+    lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
+    lines.push(`| Agents · opens | ${r.agents.toLocaleString()} · ${r.opens.toLocaleString()} |`, `| Spent | ${money(r.spent)} |`, `| Physical paid (display / realized) | ${money(r.physicalPaidDisplay)} / ${money(r.physicalPaidRealized)} |`);
+    lines.push(`| Credits issued (face ${money(r.creditFaceValue)}) | ${r.creditsIssued.toLocaleString()} |`, `| Tickets paid / free | ${r.ticketsPaid.toLocaleString()} / ${r.ticketsFree.toLocaleString()} |`, `| Draws · prizes paid | ${r.raffles} · ${money(r.prizesPaidTotal)} (to paid ${money(r.prizesToPaid)}, to free ${money(r.prizesToFree)}) |`);
+    lines.push(`| Real value of one ticket | ${money(r.prizePerTicket)} |`, `| Nominal RTP (credits at face) | ${pct(r.nominalRtp)} |`, `| End-to-end RTP (prizes to paid players) | ${pct(r.endToEndRtp)} |`, `| Operator hold | ${pct(r.hold)} |`, `| Unsold share at draw | ${pct(r.unsoldShareAtDraw)} |`, `| Proofs verified | ${r.verifier.passed}/${r.verifier.sampled} |`);
+  } else if (r.kind === "upgrader") {
+    lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
+    lines.push(`| Mode | ${r.mode} |`, `| Attempts · wins | ${r.attempts.toLocaleString()} · ${r.wins.toLocaleString()} |`, `| Win rate (stated chance) | ${pct(r.winRate, 2)} (${pct(r.statedChance, 2)}) |`, `| Price per attempt · target value | ${money(r.pricePerAttempt)} · ${money(r.targetValue)} |`);
+    lines.push(`| Wagered · paid | ${money(r.wagered)} · ${money(r.paid)} |`, `| Realized edge (stated) | ${pct(r.realizedEdge)} (${pct(r.statedEdge)}) |`, `| Agents ruined | ${r.ruined.toLocaleString()} of ${r.agents.toLocaleString()} (${pct(r.ruinFraction)}) |`, `| Reached the target | ${r.reachedTarget.toLocaleString()} |`, `| Proofs verified | ${r.verifier.passed}/${r.verifier.sampled} |`);
   } else if (r.kind === "retention") {
     lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
     lines.push(`| Agents × days | ${r.agents.toLocaleString()} × ${r.days} |`, `| Retention D1 / D7 / D30 | ${pct(r.retention.d1, 0)} / ${pct(r.retention.d7, 0)} / ${pct(r.retention.d30, 0)} |`, `| Control (no incentives) D1 / D7 / D30 | ${pct(r.controlRetention.d1, 0)} / ${pct(r.controlRetention.d7, 0)} / ${pct(r.controlRetention.d30, 0)} |`);

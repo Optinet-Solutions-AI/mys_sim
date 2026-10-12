@@ -8,15 +8,17 @@ const labs = [
   { href: "/labs/sellback", id: "sellback", icon: "fluent:money-bag" },
   { href: "/labs/battles", id: "battles", icon: "fluent:trophy" },
   { href: "/labs/retention", id: "retention", icon: "fluent:wrapped-gift" },
+  { href: "/labs/credits", id: "credits", icon: "fluent:ticket" },
+  { href: "/labs/upgrader", id: "upgrader", icon: "fluent:chart-increasing" },
 ] as const;
 
 const waves = [
-  { wave: "1 · now", source: "Vendor platform", status: "building", items: "Mystery boxes with the 90% RTP knob, sell-back and cart, battles with bots, retention (daily boxes, races, affiliates)" },
-  { wave: "1b", source: "Vendor platform", status: "next", items: "Deals mode; withdraw-only-through-items as a Sell-back option" },
-  { wave: "2", source: "IcyBox · StockX · Courtyard", status: "planned", items: "Finite drops and early retirement; tier-first draw and value floors; EV pricing, public pull log, FMV buyback with a 7-day window" },
-  { wave: "3", source: "Jemlit · Cases.gg · Misty", status: "planned", items: "Haircut and tier floors; rotation every 1,000; Upgrader; free-entry parity; the credits-to-raffle economy" },
-  { wave: "4", source: "Glass Box (ours)", status: "partly in", items: "Manifest commitment, beacon and per-open rotation are already selectable; comparison layer and pools to come" },
-  { wave: "5", source: "Adjacent models", status: "planned", items: "Kuji Last One, Pop Mart secrets, lucky bags, breaks, Omaze-style draws, gacha pity" },
+  { wave: "1", source: "Vendor platform", status: "in", items: "Mystery boxes with the 90% RTP knob, sell-back and cart, battles with bots, retention (daily boxes, races, affiliates)" },
+  { wave: "1b", source: "Vendor platform", status: "in", items: "Deals (in the Upgrader & Deals lab); withdraw only through items (Sell-back option)" },
+  { wave: "2", source: "IcyBox · StockX · Courtyard", status: "in", items: "Finite drops with early retirement; tier-first draw, value floor and finite inventory; EV pricing and public pull log; buyback windows, keep fees, undisclosed estimates, credit expiry, guarantee floors (Sell-back options)" },
+  { wave: "3", source: "Jemlit · Cases.gg · Misty", status: "in", items: "Reconstructed real drop tables as presets; guaranteed-tier mix; rotation every 1,000; Upgrader; coinflip; vault; missions; free-entry parity; the Credits & draws lab" },
+  { wave: "4", source: "Glass Box (ours)", status: "in", items: "Manifest commitment, beacon, per-open rotation, public ledger root, pools that must distribute, pity ceiling, spend caps, lucky bag, break mode, pooled draw with disclosed EV" },
+  { wave: "5", source: "Adjacent models", status: "in", items: "Kuji Last One, Pop Mart secret item, fukubukuro lucky bag, breaks, Omaze-style draws with a free route and a cap, gacha pity" },
 ];
 
 export default function Home() {
@@ -32,7 +34,7 @@ export default function Home() {
       </header>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold">Labs (wave 1: the vendor&apos;s features)</h2>
+        <h2 className="mb-2 text-lg font-semibold">Labs</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {labs.map((l) => {
             const d = LAB_DOCS[l.id];
@@ -81,7 +83,7 @@ export default function Home() {
                   <td className="px-3 py-2">{w.source}</td>
                   <td className="px-3 py-2 text-ink-2">{w.items}</td>
                   <td className="px-3 py-2">
-                    <Badge tone={w.status === "building" ? "accent" : w.status === "partly in" ? "good" : "neutral"}>{w.status}</Badge>
+                    <Badge tone={w.status === "in" ? "good" : w.status === "building" ? "accent" : "neutral"}>{w.status}</Badge>
                   </td>
                 </tr>
               ))}

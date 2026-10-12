@@ -126,8 +126,13 @@ export function BattlesLab() {
                 <Card title="Battle">
                   <div className="grid gap-3 md:grid-cols-2">
                     <Field label="Mode" hint={mode.rule}>
-                      <Select<BattleMode> value={cfg.mode} onChange={(m) => setCfg({ ...cfg, mode: m })} options={BATTLE_MODES.map((m) => ({ value: m.id, label: m.name }))} />
+                      <Select<BattleMode> value={cfg.mode} onChange={(m) => setCfg(m === "coinflip" ? { ...cfg, mode: m, players: 2, humansPerBattle: 1 } : { ...cfg, mode: m })} options={BATTLE_MODES.map((m) => ({ value: m.id, label: m.name }))} />
                     </Field>
+                    {cfg.mode === "coinflip" && (
+                      <Field label="House edge on the coinflip pot" hint="Cases.gg discloses 0 to 10%.">
+                        <NumberInput value={cfg.coinflipEdge ?? 0.05} min={0} max={0.5} step={0.01} onChange={(v) => setCfg({ ...cfg, coinflipEdge: v })} />
+                      </Field>
+                    )}
                     <Field label="Players per battle (2 to 8)">
                       <NumberInput value={cfg.players} min={2} max={8} step={1} onChange={(v) => setCfg({ ...cfg, players: v, humansPerBattle: Math.min(v, cfg.humansPerBattle) })} />
                     </Field>

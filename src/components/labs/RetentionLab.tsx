@@ -186,6 +186,40 @@ export function RetentionLab() {
               </Card>
             ),
           },
+          {
+            id: "more",
+            label: "Missions, free route, cap",
+            icon: "ph:sliders-horizontal",
+            content: (
+              <div className="space-y-4">
+                <Card title="Missions (Cases.gg)">
+                  <Toggle checked={!!cfg.missions?.enabled} onChange={(v) => setCfg({ ...cfg, missions: { enabled: v, wagerTarget: cfg.missions?.wagerTarget ?? 100, reward: cfg.missions?.reward ?? 5 } })} label="Daily wager target with a reward" hint="Missions pay a bonus for reaching a wager target in a day, which pays for volume like a race does." />
+                  {cfg.missions?.enabled && (
+                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                      <Field label="Daily wager target ($)"><NumberInput value={cfg.missions.wagerTarget} min={1} step={10} onChange={(v) => setCfg({ ...cfg, missions: { ...cfg.missions!, wagerTarget: v } })} /></Field>
+                      <Field label="Reward ($)"><NumberInput value={cfg.missions.reward} min={0} step={1} onChange={(v) => setCfg({ ...cfg, missions: { ...cfg.missions!, reward: v } })} /></Field>
+                    </div>
+                  )}
+                </Card>
+                <Card title="Free entry route (sweepstakes parity)">
+                  <Toggle checked={!!cfg.freeEntry?.enabled} onChange={(v) => setCfg({ ...cfg, freeEntry: { enabled: v, share: cfg.freeEntry?.share ?? 0.1 } })} label="A share of visitors never deposit and get one free open per visit at equal odds" hint="Cases.gg's 'no purchase necessary' route and Misty's postal entries. The cost is the value of what free entrants win." />
+                  {cfg.freeEntry?.enabled && (
+                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                      <Field label="Share of visitors on the free route"><NumberInput value={cfg.freeEntry.share} min={0} max={1} step={0.01} onChange={(v) => setCfg({ ...cfg, freeEntry: { enabled: true, share: v } })} /></Field>
+                    </div>
+                  )}
+                </Card>
+                <Card title="Spend cap (Glass Box)">
+                  <Toggle checked={!!cfg.spendCap?.enabled} onChange={(v) => setCfg({ ...cfg, spendCap: { enabled: v, perDay: cfg.spendCap?.perDay ?? 50 } })} label="Daily deposit cap per visitor" hint="A harm-reduction rule: deposits above the cap are refused. The lab reports what it costs the operator." />
+                  {cfg.spendCap?.enabled && (
+                    <div className="mt-3 grid gap-3 md:grid-cols-3">
+                      <Field label="Cap per day ($)"><NumberInput value={cfg.spendCap.perDay} min={1} step={5} onChange={(v) => setCfg({ ...cfg, spendCap: { enabled: true, perDay: v } })} /></Field>
+                    </div>
+                  )}
+                </Card>
+              </div>
+            ),
+          },
           { id: "box", label: "Box & items", icon: "ph:package", content: <BoxBuilder box={cfg.box} onChange={(box) => setCfg({ ...cfg, box })} /> },
           { id: "algo", label: "Algorithm", icon: "ph:shield-check", content: <AlgoPanel algo={cfg.algo} onChange={(algo) => setCfg({ ...cfg, algo })} /> },
           {

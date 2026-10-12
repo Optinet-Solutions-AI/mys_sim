@@ -7,6 +7,7 @@ import { reportMarkdown, headlineFor } from "@/lib/report";
 import { downloadJson, downloadText, copyText } from "@/lib/download";
 import { MysteryBoxResults } from "./results/MysteryBoxResults";
 import { BattlesResults, RetentionResults, SellbackResults } from "./results/OtherResults";
+import { CreditsResults, UpgraderResults } from "./results/MoreResults";
 import { Badge, Button, Card } from "./ui";
 import { Icon } from "./Icon";
 
@@ -15,6 +16,8 @@ function Results({ run }: { run: RunRecord }) {
   if (r.kind === "mystery-box") return <MysteryBoxResults cfg={run.config as MysteryBoxConfig} r={r} />;
   if (r.kind === "sellback") return <SellbackResults r={r} />;
   if (r.kind === "battles") return <BattlesResults r={r} />;
+  if (r.kind === "credits") return <CreditsResults r={r} />;
+  if (r.kind === "upgrader") return <UpgraderResults r={r} />;
   return <RetentionResults r={r} />;
 }
 

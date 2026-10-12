@@ -16,6 +16,12 @@ export function SellbackResults({ r }: { r: SellbackResult }) {
         <Stat label="Credited on sell-back" value={money(r.creditedValue)} />
         <Stat label="Left the system" value={money(r.moneyLeftSystem)} sub={`cash ${money(r.withdrawnCash)} · goods ${money(r.shippedValue)}`} />
         <Stat label="Extra wager forced by withdraw-through-items" value={money(r.extraWagerForWithdrawal)} tone={r.extraWagerForWithdrawal > 0 ? "warn" : undefined} />
+        {r.autoActions !== undefined && <Stat label="Decisions missed (auto action)" value={num(r.autoActions)} sub="items sold or shipped by the window rule" tone={r.autoActions > 0 ? "warn" : undefined} />}
+        {r.keepFeesPaid !== undefined && <Stat label="Keep fees paid by players" value={money(r.keepFeesPaid)} sub="tax, shipping, insurance" />}
+        {r.expiredCredit !== undefined && <Stat label="Credit expired (breakage)" value={money(r.expiredCredit)} tone={r.expiredCredit > 0 ? "warn" : undefined} />}
+        {r.floorTopUps !== undefined && <Stat label="Guarantee floor top-ups" value={money(r.floorTopUps)} sub="paid above the buyback rule" />}
+        {r.vaultLocked !== undefined && <Stat label="Locked in the vault" value={money(r.vaultLocked)} sub="out of play until cash-out" />}
+        {r.creatorPaid !== undefined && <Stat label="Paid to box creators" value={money(r.creatorPaid)} />}
       </div>
       <Card title="Bankroll over sessions (10th, 50th, 90th percentile of agents)">
         <Lines
@@ -65,6 +71,9 @@ export function RetentionResults({ r }: { r: RetentionResult }) {
         <Stat label="Bonus cost" value={money(r.bonusCost)} sub={`${r.incrementalWagerPerBonusDollar.toFixed(2)} extra wager per bonus $`} />
         <Stat label="Hold after bonuses" value={pct(r.holdAfterBonuses)} sub={`LTV ${money(r.ltv)} per agent`} tone={r.holdAfterBonuses < 0 ? "bad" : undefined} />
         <Stat label="NGR" value={money(r.ngr)} sub={`GGR ${money(r.ggr)} · deposits ${money(r.deposits)}`} />
+        {r.missionCost !== undefined && <Stat label="Missions paid" value={money(r.missionCost)} sub="rewards for daily wager targets" />}
+        {r.freeEntryCost !== undefined && <Stat label="Free-route cost" value={money(r.freeEntryCost)} sub="items given to free entrants at equal odds" />}
+        {r.capBlockedDeposits !== undefined && <Stat label="Deposits blocked by the spend cap" value={money(r.capBlockedDeposits)} tone="good" />}
       </div>
       <Card title="Daily active agents">
         <Lines series={[{ name: "active agents", points: r.dau }]} xLabel={`day (of ${r.days})`} />

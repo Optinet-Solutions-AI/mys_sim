@@ -26,7 +26,12 @@ export function MysteryBoxResults({ cfg, r }: { cfg: MysteryBoxConfig; r: Myster
         <Stat label="Opens" value={num(r.opens)} sub={`${(r.elapsedMs / 1000).toFixed(1)} s`} />
         <Stat label="Rotations · rerolls · grinds" value={`${num(r.rotations)} · ${num(r.rerolls)} · ${num(r.grinds)}`} sub="operator-side counters" />
         <Stat label="Float fallthroughs" value={num(r.fallthroughs)} sub="rolls that fell off a rounded table" />
+        {r.drops !== undefined && <Stat label="Drops completed · retired" value={`${num(r.drops)} · ${num(r.retirements ?? 0)}`} sub={r.retirementAwards?.length ? `${r.retirementAwards.length} top items awarded at retirement` : r.lastOneAwards ? `${r.lastOneAwards} Last One prizes` : "finite pool"} tone={r.retirements && !r.retirementAwards?.length ? "bad" : undefined} />}
+        {r.pityApplied !== undefined && <Stat label="Pity applied" value={num(r.pityApplied)} sub="opens drawn from the pity subset" />}
+        {r.secretDraws !== undefined && <Stat label="Secret draws" value={num(r.secretDraws)} sub="items not on the stated table" tone="bad" />}
+        {r.ledgerRoot && <Stat label={r.publicLog ? "Public ledger root" : "Ledger root (private)"} value={<span className="font-mono text-sm">{r.ledgerRoot.slice(0, 16)}…</span>} sub="Merkle root over the sampled records" tone={r.publicLog ? "good" : undefined} />}
       </div>
+      {r.stoppedEarly && <div className="rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn">{r.stoppedEarly}.</div>}
 
       <Card title="Detector: what an outsider could conclude">
         <ul className="space-y-2">

@@ -23,7 +23,7 @@ export function detect(cfg: MysteryBoxConfig, r: MysteryBoxResult): Finding[] {
       detail: `${r.verifier.failed} of ${r.verifier.sampled} sampled opens fail honest recomputation (${Object.entries(r.verifier.reasons)
         .map(([k, v]) => `${k}: ${v}`)
         .join("; ")}).`,
-      suggests: ["Bypass", "Table swap (independent verifier on displayed odds)", "Cheapest-two mode"],
+      suggests: ["Bypass", "Table swap (independent verifier on displayed odds)", "Cheapest-two mode", "Secret item (Pop Mart)"],
     });
   } else {
     out.push({ id: "proof", title: `All ${r.verifier.sampled} sampled proofs verify`, status: "clear", detail: "The dice roll was fixed before each bet. This says nothing about the table, the values or seed selection.", suggests: [] });
@@ -108,6 +108,38 @@ export function detect(cfg: MysteryBoxConfig, r: MysteryBoxResult): Finding[] {
       detail: `${top.itemId} is stated at ${(top.stated * 100).toFixed(4)}%. Detecting a 30% shortfall at 95% confidence needs about ${detectSampleSize(top.stated, 0.3).toLocaleString()} opens; this run has ${r.opens.toLocaleString()}.`,
       suggests: [],
     });
+  }
+  // 8a. draw model and transparency options
+  if (r.stoppedEarly) {
+    out.push({ id: "stopped", title: "Run ended early: the box was delisted", status: "info", detail: r.stoppedEarly + ". StockX lists a box as out of stock when a tier's inventory runs out; the statistics below cover the opens that happened.", suggests: [] });
+  }
+  if (r.retirements) {
+    out.push({
+      id: "retire",
+      title: `${r.retirements} drop${r.retirements > 1 ? "s" : ""} retired before the top items were distributed`,
+      status: r.retirementAwards?.length ? "info" : "flag",
+      detail: r.retirementAwards?.length
+        ? `${r.retirementAwards.length} remaining top item(s) were awarded to buyers at retirement (the pool's must-distribute rule), so the stated odds held.`
+        : `Buyers of those drops paid for odds that included items nobody could win. Realized return falls below the stated return of the drop; a public pull history per drop shows the missing grails.`,
+      suggests: r.retirementAwards?.length ? [] : ["Retire the drop early (IcyBox)"],
+    });
+  }
+  if (r.secretDraws) {
+    out.push({ id: "secret", title: `${r.secretDraws.toLocaleString()} draws paid an item that is not on the stated table`, status: "flag", detail: "Each one is a proof failure (item mismatch) and an observed item outside the manifest. Disclosed as a 'secret' slot this is Pop Mart's model; undisclosed it is a table swap.", suggests: ["Secret item (Pop Mart)"] });
+  }
+  if (r.pityApplied) {
+    out.push({ id: "pity", title: `Pity ceiling applied ${r.pityApplied.toLocaleString()} times`, status: "info", detail: "Those opens were drawn from the subset at or above the pity floor, as the manifest says; the verifier recomputes them against that subset.", suggests: [] });
+  }
+  if (r.lastOneAwards) {
+    out.push({ id: "lastone", title: `${r.lastOneAwards} Last One prize${r.lastOneAwards > 1 ? "s" : ""} awarded`, status: "info", detail: "The buyer of the final copy of each completed drop also received the Last One item; it is counted in the realized return.", suggests: [] });
+  }
+  if (cfg.algo.publicLog) {
+    out.push({ id: "log", title: "Public pull log: every open is auditable by outsiders", status: "clear", detail: `All ${r.opens.toLocaleString()} opens are on a public ledger (root ${r.ledgerRoot?.slice(0, 12)}…), so the chi-square and return checks above are available to anyone, not only to the operator. This is Courtyard's model; PullValue already does it for them.`, suggests: [] });
+  } else if (cfg.algo.scheme !== "none") {
+    out.push({ id: "log", title: "No public log: outsiders see only their own opens", status: "info", detail: "Population-level checks (odds, return) need a sample nobody outside the operator has. The proof covers one open at a time.", suggests: [] });
+  }
+  if (cfg.box.model === "tiered") {
+    out.push({ id: "tiered", title: "Tier-first draw: item odds are the operator's choice", status: "info", detail: "The proof fixes the tier. Which item inside the tier is awarded depends on inventory the player cannot see, so item-level odds are unstated and unverifiable, as at StockX.", suggests: [] });
   }
   // 8b. presentation layer: the near-miss reel
   if (cfg.rigs.nearMiss) {

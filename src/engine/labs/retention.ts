@@ -15,6 +15,8 @@ interface AgentState {
   lastDayNet: number;
   inRaceTop: boolean;
   sumWager: number;
+  /** free-route visitor: never deposits, one free open per visit at equal odds */
+  free: boolean;
 }
 
 function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, CatalogItem>, incentives: boolean, onProgress?: Progress) {
@@ -24,7 +26,9 @@ function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, Catal
   const D = Math.max(1, Math.floor(cfg.days));
   const V = cfg.visitor;
   const price = cfg.box.price;
-  const agents: AgentState[] = Array.from({ length: A }, () => ({
+  const freeCount = cfg.freeEntry?.enabled ? Math.floor(A * Math.min(1, Math.max(0, cfg.freeEntry.share))) : 0;
+  const agents: AgentState[] = Array.from({ length: A }, (_, i) => ({
+    free: i < freeCount,
     active: true,
     level: 0,
     wagerWindow: 0,
@@ -39,6 +43,7 @@ function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, Catal
   }));
   const dau: number[] = [];
   let deposits = 0, wagered = 0, awarded = 0, bonusCost = 0, shippedCost = 0;
+  let missionCost = 0, freeEntryCost = 0, capBlocked = 0;
   let idx = 0;
   const tierValue = (level: number) => cfg.dailyBox.tierValues[Math.min(cfg.dailyBox.tierValues.length - 1, level)] ?? 0;
   const openOnce = () => {
@@ -81,14 +86,31 @@ function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, Catal
         ag.lastDaily = d;
       }
       // deposit and play
-      ag.balance += V.depositPerVisit;
-      ag.deposits += V.depositPerVisit;
-      deposits += V.depositPerVisit;
-      if (ag.referred && incentives && cfg.affiliate.enabled) bonusCost += V.depositPerVisit * cfg.affiliate.commission;
+      let dep = ag.free ? 0 : V.depositPerVisit;
+      if (!ag.free && cfg.spendCap?.enabled) {
+        const allowed = Math.max(0, cfg.spendCap.perDay);
+        if (dep > allowed) {
+          capBlocked += dep - allowed;
+          dep = allowed;
+        }
+      }
+      ag.balance += dep;
+      ag.deposits += dep;
+      deposits += dep;
+      if (ag.referred && incentives && cfg.affiliate.enabled) bonusCost += dep * cfg.affiliate.commission;
+      if (ag.free) {
+        // the free route: one open per visit at the same odds, paid for by the operator
+        const o = openOnce();
+        freeEntryCost += o.display;
+        awarded += o.display;
+        ag.balance += o.display;
+      }
       let k = 0;
+      let dayWager = 0;
       while (ag.balance >= price && k < V.opensPerVisit) {
         ag.balance -= price;
         wagered += price;
+        dayWager += price;
         ag.wagerWindow += price;
         ag.sumWager += price;
         k++;
@@ -96,6 +118,11 @@ function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, Catal
         awarded += o.display;
         if (o.display >= 10 * price) shippedCost += o.realized; // big wins leave as goods
         else ag.balance += o.display;
+      }
+      if (incentives && cfg.missions?.enabled && dayWager >= cfg.missions.wagerTarget) {
+        ag.balance += cfg.missions.reward;
+        bonusCost += cfg.missions.reward;
+        missionCost += cfg.missions.reward;
       }
       ag.level = Math.min(cfg.dailyBox.tierValues.length - 1, Math.floor(ag.sumWager / (50 * price)));
       ag.lastDayNet = ag.balance - before - V.depositPerVisit;
@@ -126,7 +153,7 @@ function simulate(cfg: RetentionConfig, seed: number, catalog: Map<string, Catal
   const totalW = wagers.reduce((a, b) => a + b, 0) || 1;
   const top10 = wagers.slice(0, Math.max(1, Math.floor(A * 0.1))).reduce((a, b) => a + b, 0) / totalW;
   const ret = (day: number) => (day < dau.length ? dau[day] / A : dau[dau.length - 1] / A);
-  return { dau, retention: { d1: ret(1), d7: ret(7), d30: ret(30) }, deposits, wagered, awarded, bonusCost, shippedCost, top10 };
+  return { dau, retention: { d1: ret(1), d7: ret(7), d30: ret(30) }, deposits, wagered, awarded, bonusCost, shippedCost, top10, missionCost, freeEntryCost, capBlocked };
 }
 
 export function runRetention(cfg: RetentionConfig, seed: number, catalog: Map<string, CatalogItem>, onProgress?: Progress): RetentionResult {
@@ -153,6 +180,9 @@ export function runRetention(cfg: RetentionConfig, seed: number, catalog: Map<st
     incrementalWager: incremental,
     incrementalWagerPerBonusDollar: main.bonusCost ? incremental / main.bonusCost : 0,
     raceWagerConcentrationTop10: main.top10,
+    missionCost: cfg.missions?.enabled ? main.missionCost : undefined,
+    freeEntryCost: cfg.freeEntry?.enabled ? main.freeEntryCost : undefined,
+    capBlockedDeposits: cfg.spendCap?.enabled ? main.capBlocked : undefined,
     elapsedMs: Date.now() - t0,
   };
 }

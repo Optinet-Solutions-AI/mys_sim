@@ -3,19 +3,23 @@ import { runMysteryBox } from "./labs/mysteryBox";
 import { runSellback } from "./labs/sellback";
 import { runBattles } from "./labs/battles";
 import { runRetention } from "./labs/retention";
+import { runCredits } from "./labs/credits";
+import { runUpgrader } from "./labs/upgrader";
 import type {
   AnyConfig,
   AnyResult,
   BattlesConfig,
   CatalogItem,
+  CreditsConfig,
   LabId,
   MysteryBoxConfig,
   Progress,
   RetentionConfig,
   SellbackConfig,
+  UpgraderConfig,
 } from "./types";
 
-export const ENGINE_VERSION = "0.1.0";
+export const ENGINE_VERSION = "0.2.0";
 
 export interface RunRequest {
   lab: LabId;
@@ -36,6 +40,10 @@ export function runLab(req: RunRequest, onProgress?: Progress): AnyResult {
       return runBattles(req.config as BattlesConfig, req.sizes.battles ?? 1000, req.seed, catalog, onProgress);
     case "retention":
       return runRetention(req.config as RetentionConfig, req.seed, catalog, onProgress);
+    case "credits":
+      return runCredits(req.config as CreditsConfig, req.seed, catalog, onProgress);
+    case "upgrader":
+      return runUpgrader(req.config as UpgraderConfig, req.seed, catalog, onProgress);
   }
 }
 

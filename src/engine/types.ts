@@ -2,7 +2,7 @@
 
 export type PriceLayer = "retail" | "asking" | "realized";
 export type Tier = "filler" | "common" | "rare" | "epic" | "legendary" | "grail";
-export type Category = "watch" | "bag" | "jewellery" | "sneaker" | "accessory" | "beauty" | "tech" | "credit";
+export type Category = "watch" | "bag" | "jewellery" | "sneaker" | "accessory" | "beauty" | "tech" | "credit" | "luggage" | "nothing";
 
 export interface CatalogItem {
   id: string;
@@ -19,6 +19,9 @@ export interface CatalogItem {
   icon: string;
   /** tile colour (hex) */
   color: string;
+  /** fictional catalogue item, or reconstructed from an operator's captured drop table */
+  source?: "fictional" | "captured";
+  operator?: string;
 }
 
 /** An item inside a box with its integer weight (tickets). */
@@ -27,17 +30,49 @@ export interface BoxItem {
   weight: number;
 }
 
+export type BoxModel = "weighted" | "pool" | "tiered";
+
+export interface BoxTier {
+  id: string;
+  name: string;
+  /** stated odds of the tier, percent */
+  percent: number;
+  itemIds: string[];
+  /** finite copies per item in this tier; undefined = unlimited */
+  inventory?: number;
+}
+
 export interface BoxDef {
   name: string;
   /** box price in currency units */
   price: number;
-  /** total tickets; weights must sum to this exactly */
+  /** total tickets; weights must sum to this exactly (weighted model) */
   ticketTotal: number;
   items: BoxItem[];
   /** which price layer counts as the payout value */
   valueLayer: PriceLayer;
   /** which price layer the operator displays as "value" */
   displayLayer: PriceLayer;
+  /** draw model; default weighted */
+  model?: BoxModel;
+  /** finite drop (IcyBox, kuji): copies per item drawn without replacement */
+  pool?: {
+    copies: Record<string, number>;
+    /** when-empty: a new identical drop starts; operator-may-retire: the early-retirement rig can end it; must-distribute: remaining top items are awarded at retirement */
+    retire: "when-empty" | "operator-may-retire" | "must-distribute";
+    /** kuji "Last One": the buyer of the final copy also receives this item */
+    lastOneItemId?: string;
+  };
+  /** tier-first draw (StockX): odds per tier, item picked inside the tier from inventory */
+  tiers?: BoxTier[];
+  /** StockX floor: every item worth at least this multiple of the price (builder filters below it) */
+  floorMultiple?: number;
+  /** Jemlit "guaranteed" mix applied into the weights: share of opens drawn from items at or above minValue */
+  guarantee?: { share: number; minValue: number };
+  /** gacha pity: after this many consecutive losses the next open is drawn from items at or above the multiple of price */
+  pity?: { afterLosses: number; minValueMultiple: number };
+  /** where the odds came from */
+  note?: string;
 }
 
 export type SchemeId =
@@ -71,6 +106,8 @@ export interface AlgoConfig {
   rotation: RotationId;
   rotateEvery: number;
   clientSeedMode: "player-set" | "site-default";
+  /** Courtyard: every pull appended to a public ledger, so outsiders can audit observed odds over all opens */
+  publicLog?: boolean;
 }
 
 export interface RigConfig {
@@ -98,8 +135,22 @@ export interface RigConfig {
   favouredBots?: { botRtp: number };
   /** fraction of players who ever verify (informs the detector only) */
   selectiveDisclosure?: { verifyFraction: number };
-  /** presentation only: losing spins shown stopping one tile from a top item; strip over-represents rare items */
+  /** presentation only: losing spins shown stopping beside a valuable item; strip over-represents rare items */
   nearMiss?: { rate: number; showcase: number };
+  /** IcyBox: a finite drop is retired once this fraction is sold if any item worth at least grailMultiple × price remains */
+  earlyRetire?: { atFraction: number; grailMultiple: number };
+  /** Pop Mart: an undisclosed item takes a share of tickets from the most common item; proofs fail on secret draws */
+  secretItem?: { itemId: string; percent: number };
+  /** presentation: every drop below the price celebrated like a win (loss disguised as a win) */
+  ldwCelebration?: boolean;
+  /** presentation: a live-drops ticker of bots winning top items at this rate */
+  fakeLiveFeed?: { grailsPerMinute: number };
+  /** presentation: after a loss, tell the player how many tickets away the nearest big item was */
+  ticketsAwayMessage?: boolean;
+  /** presentation: demo spins drawn from a table at this RTP instead of the real one */
+  demoOdds?: { demoRtp: number };
+  /** presentation: scarcity and social-proof cues */
+  urgency?: { stockLeft: number; viewers: number; countdownMinutes: number };
 }
 
 export interface AccountMix {
@@ -121,6 +172,16 @@ export interface OpenRecord {
   ticket: number;
   itemId: string;
   payout: number;
+  /** pool model: remaining total and copies before this draw, so the open can be recomputed */
+  poolT?: number;
+  poolCounts?: number[];
+  /** tiered model: the tier the proof resolves to */
+  tierId?: string;
+  /** pity rule applied to this open */
+  pityApplied?: boolean;
+  /** kuji Last One or retirement award attached to this open */
+  bonusItemId?: string;
+  bonusPayout?: number;
   /** honest recomputation outcome */
   verified?: boolean;
   verifyReason?: string;
@@ -160,6 +221,13 @@ export interface MysteryBoxSizes {
   verifySample: number;
 }
 
+export interface Verifier {
+  sampled: number;
+  passed: number;
+  failed: number;
+  reasons: Record<string, number>;
+}
+
 export interface MysteryBoxResult {
   kind: "mystery-box";
   opens: number;
@@ -179,8 +247,19 @@ export interface MysteryBoxResult {
   rerolls: number;
   grinds: number;
   fallthroughs: number;
-  verifier: { sampled: number; passed: number; failed: number; reasons: Record<string, number> };
+  verifier: Verifier;
   sample: OpenRecord[];
+  /** pool and tiered models */
+  drops?: number;
+  retirements?: number;
+  retirementAwards?: { itemId: string; payout: number }[];
+  lastOneAwards?: number;
+  pityApplied?: number;
+  secretDraws?: number;
+  stoppedEarly?: string;
+  /** Merkle root over the sampled records (Glass Box daily root) */
+  ledgerRoot?: string;
+  publicLog?: boolean;
   elapsedMs: number;
 }
 
@@ -204,6 +283,20 @@ export interface SellbackConfig {
     maxDeposits: number; // lifetime number of deposits; after that, a busted agent stops
     cashOutTargetMultiple: number; // try to withdraw when balance ≥ multiple × deposit
   };
+  /** IcyBox and StockX: a decision window; inattentive agents get the automatic action */
+  decision?: { windowMinutes: number; inattention: number; autoAction: "sell" | "ship" };
+  /** IcyBox: costs of keeping an item */
+  keepFees?: { taxRate: number; shipping: number; insuranceRate: number };
+  /** IcyBox: buyback at an undisclosed operator estimate of realized value */
+  estimate?: { factor: number; disclosed: boolean };
+  /** StockX: site credit expires after this many sessions unused */
+  creditExpiry?: { sessions: number };
+  /** Courtyard: guaranteed-value code, buyback never below this amount */
+  guaranteeFloor?: number;
+  /** Cases.gg: a share of every deposit locked in a vault, out of reach of re-betting until cash-out */
+  vault?: { enabled: boolean; lockFraction: number };
+  /** PackDraw Forge, Cases.gg custom boxes: share of each box price paid to the box creator */
+  creatorCut?: number;
 }
 
 export interface SellbackResult {
@@ -226,10 +319,17 @@ export interface SellbackResult {
   moneyLeftSystem: number;
   extraWagerForWithdrawal: number;
   bankrollCurve: { session: number; p10: number; p50: number; p90: number }[];
+  /** options */
+  autoActions?: number;
+  keepFeesPaid?: number;
+  expiredCredit?: number;
+  floorTopUps?: number;
+  vaultLocked?: number;
+  creatorPaid?: number;
   elapsedMs: number;
 }
 
-export type BattleMode = "normal" | "crazy" | "group" | "terminal" | "jackpot";
+export type BattleMode = "normal" | "crazy" | "group" | "terminal" | "jackpot" | "coinflip" | "break";
 
 export interface BattlesConfig {
   boxes: BoxDef[];
@@ -239,6 +339,8 @@ export interface BattlesConfig {
   players: number;
   humansPerBattle: number; // rest filled by bots when bots enabled
   bots: { enabled: boolean };
+  /** Cases.gg coinflip: house edge taken from the pot */
+  coinflipEdge?: number;
 }
 
 export interface BattlesResult {
@@ -279,6 +381,12 @@ export interface RetentionConfig {
     depositPerVisit: number;
     opensPerVisit: number;
   };
+  /** Cases.gg missions: a reward for reaching a daily wager target */
+  missions?: { enabled: boolean; wagerTarget: number; reward: number };
+  /** sweepstakes free route: a share of visitors never deposit and get one free open per visit at equal odds */
+  freeEntry?: { enabled: boolean; share: number };
+  /** Glass Box: daily spend cap per visitor */
+  spendCap?: { enabled: boolean; perDay: number };
 }
 
 export interface RetentionResult {
@@ -298,13 +406,96 @@ export interface RetentionResult {
   incrementalWager: number;
   incrementalWagerPerBonusDollar: number;
   raceWagerConcentrationTop10: number;
+  missionCost?: number;
+  freeEntryCost?: number;
+  capBlockedDeposits?: number;
   elapsedMs: number;
 }
 
-export type LabId = "mystery-box" | "sellback" | "battles" | "retention";
+/** Misty's two-stage economy: the box pays credits, credits are tickets in a draw with a fixed pool. */
+export interface CreditsConfig {
+  box: BoxDef;
+  algo: AlgoConfig;
+  rigs: RigConfig;
+  raffle: {
+    ticketPool: number; // tickets in one draw
+    ticketFace: number; // face value of one credit, in currency
+    prizeItemId: string; // the prize of the draw
+    drawRule: "when-sold-out" | "on-schedule"; // draw when the pool fills, or every scheduleEvery paid opens regardless of sell-through
+    scheduleEvery: number;
+    freeEntryShare: number; // free (postal) tickets per paid ticket, Misty's equal-odds free route
+    monthlyCap: number; // Omaze-style cap on spend per agent per 30 opens; 0 = none
+    disclosedEv: boolean; // Glass Box: show the expected value of a ticket
+  };
+  population: { agents: number; opensPerAgent: number };
+}
 
-export type AnyConfig = MysteryBoxConfig | SellbackConfig | BattlesConfig | RetentionConfig;
-export type AnyResult = MysteryBoxResult | SellbackResult | BattlesResult | RetentionResult;
+export interface CreditsResult {
+  kind: "credits";
+  agents: number;
+  opens: number;
+  spent: number;
+  physicalPaidDisplay: number;
+  physicalPaidRealized: number;
+  creditsIssued: number;
+  creditFaceValue: number;
+  ticketsPaid: number;
+  ticketsFree: number;
+  raffles: number;
+  prizesPaidTotal: number;
+  prizesToPaid: number;
+  prizesToFree: number;
+  prizePerTicket: number; // real expected value of one ticket
+  nominalRtp: number; // (physical at display + credits at face) / spent
+  endToEndRtp: number; // (physical at realized + prizes to paid players) / spent
+  hold: number;
+  unsoldShareAtDraw: number;
+  capBlockedOpens: number;
+  verifier: Verifier;
+  elapsedMs: number;
+}
+
+/** Upgrader (Jemlit, Cases.gg) and the vendor's Deals: stake money or an item for a chance at a better item. */
+export interface UpgraderConfig {
+  algo: AlgoConfig;
+  rigs: RigConfig;
+  mode: "upgrader" | "deals";
+  edge: number; // stated house edge
+  maxChance: number; // the vendor caps Deals at 80%
+  targetItemId: string;
+  valueLayer: PriceLayer;
+  stake: number; // upgrader: amount staked per attempt
+  chance: number; // deals: chosen chance of winning
+  population: { agents: number; bankroll: number; attempts: number; policy: "single" | "ladder" };
+}
+
+export interface UpgraderResult {
+  kind: "upgrader";
+  mode: "upgrader" | "deals";
+  attempts: number;
+  wins: number;
+  winRate: number;
+  statedChance: number;
+  pricePerAttempt: number;
+  targetValue: number;
+  wagered: number;
+  paid: number;
+  realizedEdge: number;
+  statedEdge: number;
+  agents: number;
+  ruined: number;
+  ruinFraction: number;
+  medianAttemptsToRuin: number | null;
+  reachedTarget: number;
+  verifier: Verifier;
+  sample: OpenRecord[];
+  elapsedMs: number;
+}
+
+export type LabId = "mystery-box" | "sellback" | "battles" | "retention" | "credits" | "upgrader";
+
+export type AnyConfig = MysteryBoxConfig | SellbackConfig | BattlesConfig | RetentionConfig | CreditsConfig | UpgraderConfig;
+export type AnyResult = MysteryBoxResult | SellbackResult | BattlesResult | RetentionResult | CreditsResult | UpgraderResult;
 
 export interface RunRecord {
   id: string;
