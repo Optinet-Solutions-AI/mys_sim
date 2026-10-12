@@ -101,13 +101,13 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
                 </>
               ) : (
                 <>
-                  <Field label="Players per battle (2 to 8)">
+                  <Field label="Seats in a battle (2 to 8)" hint="How many players open the boxes together. Empty seats are filled by bots when bots are on.">
                     <NumberInput value={cfg.players} min={2} max={8} step={1} onChange={(v) => setCfg({ ...cfg, players: v, humansPerBattle: Math.min(v, cfg.humansPerBattle) })} />
                   </Field>
                   <div className="pt-1">
                     <Toggle checked={cfg.bots.enabled} onChange={(v) => setCfg({ ...cfg, bots: { enabled: v } })} label="Bots fill the empty seats" hint="Off means every seat is a human." />
                   </div>
-                  <Field label="Humans per battle (the rest are bots)">
+                  <Field label="Real players per battle" hint="The rest of the seats are house bots. One human against three bots is the usual case.">
                     <NumberInput value={cfg.humansPerBattle} min={1} max={cfg.players} step={1} disabled={!cfg.bots.enabled} onChange={(v) => setCfg({ ...cfg, humansPerBattle: v })} />
                   </Field>
                 </>
@@ -117,7 +117,7 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
           </Card>
           <Card title="Simulation size">
             <div className="grid gap-3 md:grid-cols-2">
-              <Field label={coin ? "Flips to simulate" : "Battles to simulate"}>
+              <Field label={coin ? "Flips to simulate" : "Battles to simulate"} hint="How many to run for the statistics. More gives steadier averages and takes longer.">
                 <NumberInput value={sizes.battles} min={10} max={200000} step={100} onChange={(v) => setSizes({ battles: Math.max(10, Math.min(200000, Math.floor(v))) })} />
               </Field>
               <Field label="Seed" hint="Also seeds the live battles.">

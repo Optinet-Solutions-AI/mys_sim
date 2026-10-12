@@ -84,7 +84,7 @@ export function MysteryBoxLab({ variant, operator }: { variant: FeatureDef; oper
         <div className="space-y-4">
           {presets.length > 1 && (
             <Card title={`${operator} presets`}>
-              <Field label="Start from a preset, then adjust any section">
+              <Field label="Start from a preset, then adjust any section" hint="A preset fills every setting with a documented configuration of this source. Changing anything afterwards does not alter the preset.">
                 <Select value={preset} onChange={applyPreset} options={presets.map((p) => ({ value: p.id, label: p.name }))} />
               </Field>
             </Card>

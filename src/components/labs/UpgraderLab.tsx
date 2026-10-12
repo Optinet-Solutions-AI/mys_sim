@@ -89,20 +89,20 @@ export function UpgraderLab({ variant, operator }: { variant: FeatureDef; operat
           <Card title="Mechanic">
             <div className="grid gap-3 md:grid-cols-3">
               {!variant.lockMode && (
-                <Field label="Mode">
+                <Field label="Which side of the mechanic" hint="Upgrader: you choose the stake and the site tells you the chance. Deals: you choose the chance and the site tells you the price. Same maths either way.">
                   <Select<"upgrader" | "deals"> value={cfg.mode} onChange={(v) => setCfg({ ...cfg, mode: v })} options={[{ value: "upgrader", label: "Upgrader: stake for a chance" }, { value: "deals", label: "Deals: choose the chance, pay the price" }]} />
                 </Field>
               )}
-              <Field label="Target item"><Select<string> value={cfg.targetItemId} onChange={(v) => setCfg({ ...cfg, targetItemId: v })} options={targets} /></Field>
+              <Field label="Item to win" hint="The prize of the attempt. Its value sets the chance for a given stake, or the price for a given chance."><Select<string> value={cfg.targetItemId} onChange={(v) => setCfg({ ...cfg, targetItemId: v })} options={targets} /></Field>
               <Field label="Value layer" hint="Which price the item is valued at for the odds.">
                 <Select<PriceLayer> value={cfg.valueLayer} onChange={(v) => setCfg({ ...cfg, valueLayer: v })} options={[{ value: "retail", label: "Retail (listed)" }, { value: "asking", label: "Asking" }, { value: "realized", label: "Realized" }]} />
               </Field>
-              <Field label="Stated house edge"><NumberInput value={cfg.edge} min={0} max={0.9} step={0.01} onChange={(v) => setCfg({ ...cfg, edge: v })} /></Field>
-              <Field label="Chance cap"><NumberInput value={cfg.maxChance} min={0.01} max={0.99} step={0.01} onChange={(v) => setCfg({ ...cfg, maxChance: v })} /></Field>
+              <Field label="House cut the site states" hint="0.1 means the site keeps 10% on average: a fair 50% chance is sold as 45%, or priced as if the item were 11% dearer. Cases.gg discloses 10%."><NumberInput value={cfg.edge} min={0} max={0.9} step={0.01} onChange={(v) => setCfg({ ...cfg, edge: v })} /></Field>
+              <Field label="Highest chance allowed" hint="The vendor caps Deals at 80%; nobody can buy a near-certain win."><NumberInput value={cfg.maxChance} min={0.01} max={0.99} step={0.01} onChange={(v) => setCfg({ ...cfg, maxChance: v })} /></Field>
               {upg ? (
-                <Field label="Stake per attempt ($)"><NumberInput value={cfg.stake} min={1} step={5} onChange={(v) => setCfg({ ...cfg, stake: Math.max(1, v) })} /></Field>
+                <Field label="Stake per attempt ($)" hint="What one try costs in Upgrader mode. The chance is the stake divided by the item value, less the house cut."><NumberInput value={cfg.stake} min={1} step={5} onChange={(v) => setCfg({ ...cfg, stake: Math.max(1, v) })} /></Field>
               ) : (
-                <Field label="Chosen chance"><NumberInput value={cfg.chance} min={0.01} max={cfg.maxChance} step={0.01} onChange={(v) => setCfg({ ...cfg, chance: v })} /></Field>
+                <Field label="Chance you choose" hint="In Deals mode, 0.5 means a 50% chance; the price follows."><NumberInput value={cfg.chance} min={0.01} max={cfg.maxChance} step={0.01} onChange={(v) => setCfg({ ...cfg, chance: v })} /></Field>
               )}
             </div>
           </Card>
@@ -116,13 +116,13 @@ export function UpgraderLab({ variant, operator }: { variant: FeatureDef; operat
       content: (
         <Card title="Population (assumptions)">
           <div className="grid gap-3 md:grid-cols-3">
-            <Field label="Agents"><NumberInput value={P.agents} min={10} max={50000} step={100} onChange={(v) => setCfg({ ...cfg, population: { ...P, agents: v } })} /></Field>
-            <Field label="Bankroll per agent ($)"><NumberInput value={P.bankroll} min={1} step={10} onChange={(v) => setCfg({ ...cfg, population: { ...P, bankroll: v } })} /></Field>
-            <Field label="Attempts (ladder)"><NumberInput value={P.attempts} min={1} max={1000} step={1} onChange={(v) => setCfg({ ...cfg, population: { ...P, attempts: v } })} /></Field>
+            <Field label="Simulated players" hint="How many players try their luck."><NumberInput value={P.agents} min={10} max={50000} step={100} onChange={(v) => setCfg({ ...cfg, population: { ...P, agents: v } })} /></Field>
+            <Field label="Money each player starts with ($)" hint="When it is gone the player is bust."><NumberInput value={P.bankroll} min={1} step={10} onChange={(v) => setCfg({ ...cfg, population: { ...P, bankroll: v } })} /></Field>
+            <Field label="Most attempts per player" hint="On the ladder policy a player keeps trying up to this many times, or until they win or go bust."><NumberInput value={P.attempts} min={1} max={1000} step={1} onChange={(v) => setCfg({ ...cfg, population: { ...P, attempts: v } })} /></Field>
             <Field label="Policy" hint="Ladder: keep trying until the target is won, the attempts run out or the bankroll is gone.">
               <Select<"single" | "ladder"> value={P.policy} onChange={(v) => setCfg({ ...cfg, population: { ...P, policy: v } })} options={[{ value: "ladder", label: "Ladder until won or bust" }, { value: "single", label: "One attempt each" }]} />
             </Field>
-            <Field label="Seed">
+            <Field label="Seed" hint="A number that makes the run repeatable: same settings and seed, same results. Not a casino seed.">
               <div className="flex gap-1">
                 <NumberInput value={seed} min={0} step={1} onChange={(v) => setSeed(Math.floor(v))} />
                 <Button kind="ghost" onClick={() => setSeed(Math.floor(Math.random() * 1e9))} title="New random seed">

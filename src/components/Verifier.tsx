@@ -57,31 +57,31 @@ export function Verifier() {
       </header>
       <Card title="Recompute from inputs">
         <div className="grid gap-3 md:grid-cols-3">
-          <Field label="Scheme">
+          <Field label="Whose recipe" hint="Which site&apos;s fairness recipe to recompute with. The defaults reproduce the worked example on Jemlit&apos;s own page.">
             <Select<SchemeId> value={scheme} onChange={(v) => { setScheme(v); setMapping("native"); }} options={SCHEME_IDS.map((id) => ({ value: id, label: SCHEMES[id].name }))} />
           </Field>
-          <Field label="Mapping">
+          <Field label="How the big number becomes a ticket" hint="The squeeze from the hash to a ticket number. Native uses the recipe&apos;s own documented way.">
             <Select<MappingId | "native"> value={mapping} onChange={setMapping} options={[{ value: "native", label: "Native to scheme" }, ...MAPPING_DOCS.map((d) => ({ value: d.id, label: d.name }))]} />
           </Field>
-          <Field label="Ticket total T">
+          <Field label="How many tickets in the hat" hint="Most sites use 100,000,000. The ticket shown is drawn out of this total.">
             <NumberInput value={T} min={2} step={1} onChange={(v) => setT(Math.max(2, Math.floor(v)))} />
           </Field>
-          <Field label="Server seed">
+          <Field label="The site&apos;s secret number (server seed)" hint="Revealed by the site after the fact. Its fingerprint is what you were shown before the open.">
             <input type="text" value={serverSeed} onChange={(e) => setServerSeed(e.target.value)} />
           </Field>
-          <Field label="Client seed">
+          <Field label="Your number (client seed)" hint="Mixed in with the secret so the site cannot know the result in advance. Greyed out for recipes that do not use one.">
             <input type="text" value={clientSeed} onChange={(e) => setClientSeed(e.target.value)} disabled={!s.usesClientSeed} />
           </Field>
-          <Field label="Nonce">
+          <Field label="Counter (nonce)" hint="Goes up by one on each open, so every open gives a different result even with the same seeds.">
             <NumberInput value={nonce} min={0} step={1} onChange={setNonce} />
           </Field>
-          <Field label="Opening number (Packs.com)">
+          <Field label="Opening number (Packs.com only)" hint="Packs.com mixes in a running count of openings as well.">
             <NumberInput value={opening} min={1} step={1} onChange={setOpening} />
           </Field>
-          <Field label="Slug (Misty)">
+          <Field label="Box name (Misty only)" hint="Misty mixes the box&apos;s web address slug into the draw.">
             <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} disabled={scheme !== "misty"} />
           </Field>
-          <Field label="Beacon round / value (Razed, Glass Box)">
+          <Field label="Public beacon round and value (Razed, Glass Box)" hint="A public source of randomness nobody controls, such as a blockchain block or a randomness beacon, mixed in after everyone has committed.">
             <div className="flex gap-1">
               <NumberInput value={beaconRound} min={0} step={1} onChange={setBeaconRound} disabled={!s.usesBeacon} />
               <input type="text" value={beaconValue} onChange={(e) => setBeaconValue(e.target.value)} disabled={!s.usesBeacon} placeholder="block hash or drand value" />
@@ -114,11 +114,11 @@ export function Verifier() {
       </Card>
       <Card title="Verify a record from a run">
         <div className="grid gap-3 md:grid-cols-3">
-          <Field label="Box the record was drawn from">
+          <Field label="Box the record was drawn from" hint="The verifier looks the ticket up in this box&apos;s table to see which item the proof produces.">
             <Select<"vendor" | "glassbox"> value={boxId} onChange={setBoxId} options={[{ value: "vendor", label: VENDOR_BOX.name }, { value: "glassbox", label: GLASSBOX_BOX.name }]} />
           </Field>
           <div className="md:col-span-2">
-            <Field label="Record JSON (copy one row's fields from a run's sample, or the whole record from an exported run)">
+            <Field label="Record to check (JSON)" hint="Paste one open&apos;s record: use Copy record on a result, or take one from an exported run. The verifier recomputes the fingerprint, the digest and the ticket and compares the item.">
               <textarea rows={5} value={recordJson} onChange={(e) => setRecordJson(e.target.value)} className="font-mono text-xs" placeholder='{"serverSeed":"…","serverHash":"…","clientSeed":"…","nonce":1,"opening":1,"digest":"…","ticket":123,"itemId":"f-credit-1"}' />
             </Field>
           </div>

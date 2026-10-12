@@ -91,7 +91,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
           )}
           <Card title="Sell-back and withdrawal rules">
             <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Sell-back mode">
+              <Field label="What happens when an item is sold back" hint="Credit: the item becomes site balance at its shown value and stays inside the system (the vendor, Jemlit, StockX). Cash: the player is paid out and the money leaves (Courtyard, the Glass Box).">
                 <Select<"vendor" | "cash">
                   value={cfg.sellback.mode}
                   onChange={(m) => setCfg({ ...cfg, sellback: m === "vendor" ? { mode: "vendor", haircut: cfg.sellback.haircut } : { mode: "cash", layer: "realized", haircut: cfg.sellback.haircut } })}
@@ -102,12 +102,12 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
                 />
               </Field>
               {cfg.sellback.mode === "cash" && (
-                <Field label="Cash at price layer">
+                <Field label="Cash paid at which price" hint="Retail is the boutique price, asking the reseller listing, realized what the item actually sells for. Paying at realized is honest; paying at retail would lose money.">
                   <Select<PriceLayer> value={cfg.sellback.layer} onChange={(layer) => setCfg({ ...cfg, sellback: { mode: "cash", layer, haircut: cfg.sellback.haircut } })} options={[{ value: "retail", label: "Retail" }, { value: "asking", label: "Asking" }, { value: "realized", label: "Realized" }]} />
                 </Field>
               )}
-              <Field label="Haircut on sell-back"><NumberInput value={cfg.sellback.haircut} min={0} max={0.9} step={0.01} onChange={(v) => setCfg({ ...cfg, sellback: { ...cfg.sellback, haircut: v } })} /></Field>
-              <Field label="Withdrawal rule">
+              <Field label="Cut the site takes on a sell-back" hint="0.15 means the player gets 85% of the value. Jemlit takes 0 to 30%; StockX pays 75 to 90% of list."><NumberInput value={cfg.sellback.haircut} min={0} max={0.9} step={0.01} onChange={(v) => setCfg({ ...cfg, sellback: { ...cfg.sellback, haircut: v } })} /></Field>
+              <Field label="Can balance be withdrawn?" hint="Cash: yes, at any time. Only through items: balance can never be withdrawn; the player must win an item worth enough and ship it. The vendor&apos;s default.">
                 <Select<"cash" | "through-items">
                   value={cfg.withdrawal.mode}
                   onChange={(mode) => setCfg({ ...cfg, withdrawal: { ...cfg.withdrawal, mode } })}
@@ -118,7 +118,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
                 />
               </Field>
               {cfg.withdrawal.mode === "through-items" && (
-                <Field label="Minimum item value to withdraw ($)"><NumberInput value={cfg.withdrawal.minWithdraw} min={0} step={10} onChange={(v) => setCfg({ ...cfg, withdrawal: { ...cfg.withdrawal, minWithdraw: v } })} /></Field>
+                <Field label="Smallest item that can be withdrawn ($)" hint="Under the through-items rule, items below this value cannot be used to get money out."><NumberInput value={cfg.withdrawal.minWithdraw} min={0} step={10} onChange={(v) => setCfg({ ...cfg, withdrawal: { ...cfg.withdrawal, minWithdraw: v } })} /></Field>
               )}
               <Field label="Seed" hint="Also seeds the wallet on the test page.">
                 <div className="flex gap-1">
@@ -145,9 +145,9 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.decision} onChange={(v) => setCfg({ ...cfg, decision: v ? { windowMinutes: 2880, inattention: 0.15, autoAction: "sell" } : undefined })} label="Time-limited keep-or-sell decision" hint="After the window the automatic action applies. Inattentive agents get it." />
               {cfg.decision && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Window (minutes)"><NumberInput value={cfg.decision.windowMinutes} min={1} step={60} onChange={(v) => setCfg({ ...cfg, decision: { ...cfg.decision!, windowMinutes: Math.max(1, v) } })} /></Field>
+                  <Field label="Time to decide (minutes)" hint="How long the player has to keep or sell before the automatic action applies. IcyBox: a buyback period of days. StockX: five minutes. Courtyard: seven days."><NumberInput value={cfg.decision.windowMinutes} min={1} step={60} onChange={(v) => setCfg({ ...cfg, decision: { ...cfg.decision!, windowMinutes: Math.max(1, v) } })} /></Field>
                   <Field label="Share of agents who miss the window" hint="Assumption. Shorter windows mean more misses."><NumberInput value={cfg.decision.inattention} min={0} max={1} step={0.01} onChange={(v) => setCfg({ ...cfg, decision: { ...cfg.decision!, inattention: v } })} /></Field>
-                  <Field label="Automatic action">
+                  <Field label="What happens if they miss it" hint="Sold back to the operator (IcyBox) or charged and shipped (StockX).">
                     <Select<"sell" | "ship"> value={cfg.decision.autoAction} onChange={(v) => setCfg({ ...cfg, decision: { ...cfg.decision!, autoAction: v } })} options={[{ value: "sell", label: "Sold back to the operator" }, { value: "ship", label: "Charged and shipped" }]} />
                   </Field>
                 </div>
@@ -159,9 +159,9 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.keepFees} onChange={(v) => setCfg({ ...cfg, keepFees: v ? { taxRate: 0.08, shipping: 45, insuranceRate: 0.01 } : undefined })} label="Sales tax, shipping and insurance when keeping an item" hint="Fees push agents towards the buyback. An agent ships only if the item is worth the fees." />
               {cfg.keepFees && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Sales tax rate"><NumberInput value={cfg.keepFees.taxRate} min={0} max={0.3} step={0.005} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, taxRate: v } })} /></Field>
-                  <Field label="Shipping ($)"><NumberInput value={cfg.keepFees.shipping} min={0} step={5} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, shipping: v } })} /></Field>
-                  <Field label="Insurance rate"><NumberInput value={cfg.keepFees.insuranceRate} min={0} max={0.1} step={0.005} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, insuranceRate: v } })} /></Field>
+                  <Field label="Sales tax on kept items" hint="0.08 means 8% of the item value, charged when a player keeps an item."><NumberInput value={cfg.keepFees.taxRate} min={0} max={0.3} step={0.005} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, taxRate: v } })} /></Field>
+                  <Field label="Shipping charge ($)" hint="A flat charge when a player keeps an item."><NumberInput value={cfg.keepFees.shipping} min={0} step={5} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, shipping: v } })} /></Field>
+                  <Field label="Insurance on kept items" hint="0.01 means 1% of the item value."><NumberInput value={cfg.keepFees.insuranceRate} min={0} max={0.1} step={0.005} onChange={(v) => setCfg({ ...cfg, keepFees: { ...cfg.keepFees!, insuranceRate: v } })} /></Field>
                 </div>
               )}
             </Card>
@@ -171,7 +171,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.estimate} onChange={(v) => setCfg({ ...cfg, estimate: v ? { factor: 0.7, disclosed: false } : undefined })} label="Buyback based on an estimated value the operator sets" hint="'Determined solely by IcyBox... we do not disclose how we calculate'. Modelled as a factor on realized value." />
               {cfg.estimate && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Estimate as a share of realized value"><NumberInput value={cfg.estimate.factor} min={0.1} max={1.5} step={0.05} onChange={(v) => setCfg({ ...cfg, estimate: { ...cfg.estimate!, factor: v } })} /></Field>
+                  <Field label="Buyback offer as a share of real value" hint="0.7 means the operator offers 70% of what the item actually sells for, without saying how it got there."><NumberInput value={cfg.estimate.factor} min={0.1} max={1.5} step={0.05} onChange={(v) => setCfg({ ...cfg, estimate: { ...cfg.estimate!, factor: v } })} /></Field>
                   <div className="pt-5">
                     <Toggle checked={cfg.estimate.disclosed} onChange={(v) => setCfg({ ...cfg, estimate: { ...cfg.estimate!, disclosed: v } })} label="Formula disclosed" />
                   </div>
@@ -184,7 +184,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.creditExpiry} onChange={(v) => setCfg({ ...cfg, creditExpiry: v ? { sessions: 12 } : undefined })} label="Site credit expires when unused" hint="Unused balance becomes operator income (breakage)." />
               {cfg.creditExpiry && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Sessions unused before expiry"><NumberInput value={cfg.creditExpiry.sessions} min={1} max={365} step={1} onChange={(v) => setCfg({ ...cfg, creditExpiry: { sessions: Math.max(1, Math.floor(v)) } })} /></Field>
+                  <Field label="Visits before unused credit expires" hint="Balance that sits untouched for this many visits is lost to the player and kept by the operator."><NumberInput value={cfg.creditExpiry.sessions} min={1} max={365} step={1} onChange={(v) => setCfg({ ...cfg, creditExpiry: { sessions: Math.max(1, Math.floor(v)) } })} /></Field>
                 </div>
               )}
             </Card>
@@ -194,7 +194,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.guaranteeFloor} onChange={(v) => setCfg({ ...cfg, guaranteeFloor: v ? 300 : undefined })} label="Buyback never below a guaranteed value" hint="Guaranteed-value pack codes set a floor on the buyback offer." />
               {cfg.guaranteeFloor !== undefined && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Floor ($)"><NumberInput value={cfg.guaranteeFloor} min={0} step={10} onChange={(v) => setCfg({ ...cfg, guaranteeFloor: Math.max(0, v) })} /></Field>
+                  <Field label="Guaranteed minimum buyback ($)" hint="The operator never offers less than this for an item, whatever it is worth."><NumberInput value={cfg.guaranteeFloor} min={0} step={10} onChange={(v) => setCfg({ ...cfg, guaranteeFloor: Math.max(0, v) })} /></Field>
                 </div>
               )}
             </Card>
@@ -204,7 +204,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.vault?.enabled} onChange={(v) => setCfg({ ...cfg, vault: { enabled: v, lockFraction: cfg.vault?.lockFraction ?? 0.5 } })} label="A share of each deposit is locked out of play until cash-out" hint="A self-limiting tool: it lowers wagering and ruin, and the hold with it." />
               {cfg.vault?.enabled && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Locked share of each deposit"><NumberInput value={cfg.vault.lockFraction} min={0} max={0.95} step={0.05} onChange={(v) => setCfg({ ...cfg, vault: { enabled: true, lockFraction: v } })} /></Field>
+                  <Field label="Share of each deposit locked away" hint="0.5 means half of every deposit goes into the vault and cannot be bet until the player cashes out."><NumberInput value={cfg.vault.lockFraction} min={0} max={0.95} step={0.05} onChange={(v) => setCfg({ ...cfg, vault: { enabled: true, lockFraction: v } })} /></Field>
                 </div>
               )}
             </Card>
@@ -214,7 +214,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
               <Toggle checked={!!cfg.creatorCut} onChange={(v) => setCfg({ ...cfg, creatorCut: v ? 0.05 : undefined })} label="A share of each box price goes to the box creator" hint="Users build and list packs and earn a cut; GGR shrinks by that cut." />
               {cfg.creatorCut !== undefined && (
                 <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <Field label="Creator cut"><NumberInput value={cfg.creatorCut} min={0} max={0.5} step={0.01} onChange={(v) => setCfg({ ...cfg, creatorCut: Math.max(0, v) })} /></Field>
+                  <Field label="Share paid to the box creator" hint="0.05 means 5% of every open goes to whoever built the box."><NumberInput value={cfg.creatorCut} min={0} max={0.5} step={0.01} onChange={(v) => setCfg({ ...cfg, creatorCut: Math.max(0, v) })} /></Field>
                 </div>
               )}
             </Card>
@@ -229,15 +229,15 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
       content: (
         <Card title="Agent population (assumptions)">
           <div className="grid gap-3 md:grid-cols-3">
-            <Field label="Agents"><NumberInput value={P.agents} min={10} max={50000} step={100} onChange={(v) => setP({ agents: v })} /></Field>
-            <Field label="Deposit median ($)"><NumberInput value={P.depositMean} min={1} step={10} onChange={(v) => setP({ depositMean: v })} /></Field>
-            <Field label="Deposit spread (lognormal sigma)"><NumberInput value={P.depositSpread} min={0} max={2} step={0.1} onChange={(v) => setP({ depositSpread: v })} /></Field>
-            <Field label="Lifetime deposits (budget)"><NumberInput value={P.maxDeposits} min={1} max={100} step={1} onChange={(v) => setP({ maxDeposits: v })} /></Field>
-            <Field label="Sessions"><NumberInput value={P.sessions} min={1} max={365} step={1} onChange={(v) => setP({ sessions: v })} /></Field>
-            <Field label="Opens per session (max)"><NumberInput value={P.opensPerSession} min={1} max={200} step={1} onChange={(v) => setP({ opensPerSession: v })} /></Field>
-            <Field label="Re-bet fraction of balance per session"><NumberInput value={P.rebetFraction} min={0.05} max={1} step={0.05} onChange={(v) => setP({ rebetFraction: v })} /></Field>
-            <Field label="Ship if displayed value ≥ price ×"><NumberInput value={P.shipAboveMultiple} min={1} max={100} step={0.5} onChange={(v) => setP({ shipAboveMultiple: v })} /></Field>
-            <Field label="Cash-out target (× last deposit)"><NumberInput value={P.cashOutTargetMultiple} min={1} max={100} step={0.5} onChange={(v) => setP({ cashOutTargetMultiple: v })} /></Field>
+            <Field label="Simulated players" hint="How many players the simulation runs. More players means steadier averages and a longer run."><NumberInput value={P.agents} min={10} max={50000} step={100} onChange={(v) => setP({ agents: v })} /></Field>
+            <Field label="Typical deposit ($)" hint="The middle deposit size. Half the players deposit less, half more."><NumberInput value={P.depositMean} min={1} step={10} onChange={(v) => setP({ depositMean: v })} /></Field>
+            <Field label="How much deposits vary" hint="0 means everyone deposits the same amount; 0.8 gives a wide spread with a long tail of big depositors, which is what real data looks like."><NumberInput value={P.depositSpread} min={0} max={2} step={0.1} onChange={(v) => setP({ depositSpread: v })} /></Field>
+            <Field label="How many times a player tops up" hint="After this many deposits a busted player stops for good. This single number drives most of the hold figure."><NumberInput value={P.maxDeposits} min={1} max={100} step={1} onChange={(v) => setP({ maxDeposits: v })} /></Field>
+            <Field label="Visits per player" hint="How many separate visits each player makes over the run."><NumberInput value={P.sessions} min={1} max={365} step={1} onChange={(v) => setP({ sessions: v })} /></Field>
+            <Field label="Most opens in one visit" hint="A player stops a visit after this many opens, or earlier if the money runs out."><NumberInput value={P.opensPerSession} min={1} max={200} step={1} onChange={(v) => setP({ opensPerSession: v })} /></Field>
+            <Field label="Share of balance bet per visit" hint="0.5 means a player bets up to half of what they have in a visit."><NumberInput value={P.rebetFraction} min={0.05} max={1} step={0.05} onChange={(v) => setP({ rebetFraction: v })} /></Field>
+            <Field label="Keep an item worth at least ... times the price" hint="Anything below this gets sold back. 4 means a player only ships items shown at four times what they paid."><NumberInput value={P.shipAboveMultiple} min={1} max={100} step={0.5} onChange={(v) => setP({ shipAboveMultiple: v })} /></Field>
+            <Field label="Try to cash out at ... times the deposit" hint="When the balance reaches this multiple of the last deposit, the player tries to take the money out."><NumberInput value={P.cashOutTargetMultiple} min={1} max={100} step={0.5} onChange={(v) => setP({ cashOutTargetMultiple: v })} /></Field>
           </div>
           <Help>Agents sell back everything below the ship threshold. These numbers are assumptions until data replaces them.</Help>
         </Card>

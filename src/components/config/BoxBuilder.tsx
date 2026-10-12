@@ -161,20 +161,20 @@ export function BoxBuilder({ box, onChange, compact = false, lockModel = false, 
       }
     >
       <div className="grid gap-3 md:grid-cols-5">
-        <Field label="Box name">
+        <Field label="Name" hint="A label for this box. It appears in results and reports.">
           <input type="text" value={box.name} onChange={(e) => onChange({ ...box, name: e.target.value })} />
         </Field>
-        <Field label="Box price ($)" hint={model === "weighted" ? "With the solver on, changing the price re-solves the odds for the same target return." : undefined}>
+        <Field label="Price per open ($)" hint={model === "weighted" ? "What one open costs. With the return slider on, changing the price re-spreads the odds to keep the same return." : "What one open costs."}>
           <NumberInput value={box.price} min={0.5} step={0.5} onChange={(v) => resolveNow({ price: Math.max(0.5, v) })} />
         </Field>
-        <Field label="Value layer" hint="The price layer that counts as payout and that the return is computed on. The vendor uses listed (retail) values; the Glass Box uses realized.">
+        <Field label="Price that counts as the payout" hint="What an item is worth when it is won. Retail is the boutique price, asking is what resellers list it for, realized is what it actually sells for. The vendor counts retail, which flatters the return; the Glass Box counts realized.">
           <Select value={box.valueLayer} onChange={(v) => resolveNow({ layer: v })} options={LAYERS} />
         </Field>
-        <Field label="Display layer" hint="What players are shown as the item's value.">
+        <Field label="Price players are shown" hint="The value printed next to each item on the box page. Operators show retail because it is the biggest number.">
           <Select value={box.displayLayer} onChange={(v) => onChange({ ...box, displayLayer: v })} options={LAYERS} />
         </Field>
-        <Field label="Draw model" hint="Weighted: fixed odds (every case site). Finite drop: copies drawn without replacement (IcyBox, kuji, lucky bags). Tiered: the proof picks a tier, the operator picks the item inside it (StockX).">
-          <Select<BoxModel> value={model} onChange={switchModel} disabled={lockModel} options={[{ value: "weighted", label: "Weighted odds" }, { value: "pool", label: "Finite drop (pool)" }, { value: "tiered", label: "Tier-first (StockX)" }]} />
+        <Field label="How the draw works" hint="Fixed odds: every open has the same chances (every case site). Finite drop: a set number of copies drawn without replacement, so the odds move as it sells (IcyBox, kuji, lucky bags). Tier-first: the draw picks a tier at stated odds and the operator picks the item inside it (StockX).">
+          <Select<BoxModel> value={model} onChange={switchModel} disabled={lockModel} options={[{ value: "weighted", label: "Fixed odds (weighted)" }, { value: "pool", label: "Finite drop (pool)" }, { value: "tiered", label: "Tier-first (StockX)" }]} />
         </Field>
       </div>
 
@@ -190,7 +190,7 @@ export function BoxBuilder({ box, onChange, compact = false, lockModel = false, 
 
       {model === "weighted" && !locked && (
         <div className="mt-3 flex flex-wrap items-end gap-3">
-          <Field label="Odds mode">
+          <Field label="How the odds are set" hint="Return slider: pick a target return and the odds are spread across the items automatically, piling tickets on the cheap items as real tables do. Type percentages: enter each item&apos;s chance yourself.">
             <Select
               value={mode}
               onChange={(m) => {
@@ -198,13 +198,13 @@ export function BoxBuilder({ box, onChange, compact = false, lockModel = false, 
                 if (m === "solver") onChange({ ...box, items: resolve(ids, box.price, box.valueLayer, targetRtp), guarantee: undefined });
               }}
               options={[
-                { value: "solver", label: "RTP solver (the vendor's knob)" },
-                { value: "manual", label: "Manual percentages" },
+                { value: "solver", label: "Return slider (the vendor's knob)" },
+                { value: "manual", label: "Type the percentages" },
               ]}
             />
           </Field>
           {mode === "solver" && (
-            <Field label={`Target RTP on ${box.valueLayer} value: ${pct(targetRtp, 0)}`} hint="Weights follow value^(−beta); beta is solved so expected value = RTP × price.">
+            <Field label={`Target return: ${pct(targetRtp, 0)} of every $100, counted at ${box.valueLayer} prices`} hint="Of every $100 players put in, how much comes back on average, at the chosen price. The vendor defaults to 90% at retail. Under the hood the odds follow value to the power of minus beta, with beta solved to hit the target.">
               <input type="range" min={0.3} max={1.3} step={0.01} value={targetRtp} onChange={(e) => { const v = Number(e.target.value); setTargetRtp(v); resolveNow({ rtp: v }); }} className="w-56" />
             </Field>
           )}

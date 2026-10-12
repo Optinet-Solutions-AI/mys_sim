@@ -91,7 +91,7 @@ export function CreditsLab({ variant, operator }: { variant: FeatureDef; operato
             <div className="grid gap-3 md:grid-cols-3">
               <Field label="Ticket pool" hint="Numbers in one draw."><NumberInput value={R.ticketPool} min={100} step={1000} onChange={(v) => setR({ ticketPool: Math.max(100, Math.floor(v)) })} /></Field>
               <Field label="Credit face value ($)" hint="What one credit is presented as being worth."><NumberInput value={R.ticketFace} min={0.01} step={0.05} onChange={(v) => setR({ ticketFace: Math.max(0.01, v) })} /></Field>
-              <Field label="Prize"><Select<string> value={R.prizeItemId} onChange={(v) => setR({ prizeItemId: v })} options={prizeOptions} /></Field>
+              <Field label="Prize of the draw" hint="One winner per draw takes this item. Its real value divided by the pool is what one ticket is really worth."><Select<string> value={R.prizeItemId} onChange={(v) => setR({ prizeItemId: v })} options={prizeOptions} /></Field>
               <Field label="Draw rule" hint="On the date regardless of sell-through (unsold numbers redrawn among sold ones), or when the pool sells out.">
                 <Select<"when-sold-out" | "on-schedule"> value={R.drawRule} onChange={(v) => setR({ drawRule: v })} options={[{ value: "on-schedule", label: "On the date, regardless of sell-through" }, { value: "when-sold-out", label: "When the pool sells out" }]} />
               </Field>
@@ -99,7 +99,7 @@ export function CreditsLab({ variant, operator }: { variant: FeatureDef; operato
                 <Field label="Paid opens between draws" hint="Stands in for the calendar: how many paid opens happen before the draw date."><NumberInput value={R.scheduleEvery} min={10} step={100} onChange={(v) => setR({ scheduleEvery: Math.max(10, Math.floor(v)) })} /></Field>
               )}
               <Field label="Free entries per paid ticket" hint="The free route with equal odds."><NumberInput value={R.freeEntryShare} min={0} max={5} step={0.01} onChange={(v) => setR({ freeEntryShare: Math.max(0, v) })} /></Field>
-              <Field label="Spend cap per agent ($, 0 = none)"><NumberInput value={R.monthlyCap} min={0} step={10} onChange={(v) => setR({ monthlyCap: Math.max(0, v) })} /></Field>
+              <Field label="Spend cap per player ($, 0 = none)" hint="Omaze-style: nobody can spend more than this on tickets. Opens above the cap are refused."><NumberInput value={R.monthlyCap} min={0} step={10} onChange={(v) => setR({ monthlyCap: Math.max(0, v) })} /></Field>
               <div className="pt-5">
                 <Toggle checked={R.disclosedEv} onChange={(v) => setR({ disclosedEv: v })} label="Disclose the expected value of a ticket" hint="Show prize ÷ pool next to the face value." />
               </div>
@@ -115,9 +115,9 @@ export function CreditsLab({ variant, operator }: { variant: FeatureDef; operato
       content: (
         <Card title="Population">
           <div className="grid gap-3 md:grid-cols-3">
-            <Field label="Agents"><NumberInput value={cfg.population.agents} min={10} max={50000} step={100} onChange={(v) => setCfg({ ...cfg, population: { ...cfg.population, agents: v } })} /></Field>
-            <Field label="Opens per agent"><NumberInput value={cfg.population.opensPerAgent} min={1} max={500} step={1} onChange={(v) => setCfg({ ...cfg, population: { ...cfg.population, opensPerAgent: v } })} /></Field>
-            <Field label="Seed">
+            <Field label="Simulated players" hint="How many players open boxes and enter the draws."><NumberInput value={cfg.population.agents} min={10} max={50000} step={100} onChange={(v) => setCfg({ ...cfg, population: { ...cfg.population, agents: v } })} /></Field>
+            <Field label="Opens per player" hint="How many boxes each player opens over the run."><NumberInput value={cfg.population.opensPerAgent} min={1} max={500} step={1} onChange={(v) => setCfg({ ...cfg, population: { ...cfg.population, opensPerAgent: v } })} /></Field>
+            <Field label="Seed" hint="A number that makes the run repeatable: same settings and seed, same results. Not a casino seed.">
               <div className="flex gap-1">
                 <NumberInput value={seed} min={0} step={1} onChange={(v) => setSeed(Math.floor(v))} />
                 <Button kind="ghost" onClick={() => setSeed(Math.floor(Math.random() * 1e9))} title="New random seed">
