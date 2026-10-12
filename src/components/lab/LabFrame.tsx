@@ -15,12 +15,12 @@ export interface Chip {
 }
 
 /** Frame for one operator feature: title, two plain-language guides (player view, settings view), the cog, chips, then the stage. */
-export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, rigCount, settingsOpen, children }: { doc: FeatureDoc; operator: string; featureKey?: string; lab?: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
+export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, rigCount, children }: { doc: FeatureDoc; operator: string; featureKey?: string; lab?: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen?: boolean; children: ReactNode }) {
   const [guide, setGuide] = useState<"player" | "settings" | null>(null);
   const g = (featureKey && GUIDES[featureKey]) || (lab && GUIDE_BY_LAB[lab]) || { player: [doc.what], settings: doc.configure };
   const badge = rigCount > 0 ? <span className="cog-badge">{rigCount}</span> : null;
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4 pb-8">
       <header className="flex items-center gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <h1 className="text-2xl font-semibold">{doc.title}</h1>
@@ -47,12 +47,6 @@ export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, ri
         ))}
       </div>
       {children}
-      {!settingsOpen && (
-        <button type="button" className="fab" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
-          <Icon name="ph:gear-six" size={30} className="text-white" />
-          {badge}
-        </button>
-      )}
       <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: how it works for a player`} icon="ph:user" bullets={g.player} extra={[{ title: "Source", text: doc.source }]} />
       <GuideModal open={guide === "settings"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: the settings, explained`} icon="ph:gear-six" bullets={g.settings} extra={SETTINGS_PLAIN} />
     </div>
