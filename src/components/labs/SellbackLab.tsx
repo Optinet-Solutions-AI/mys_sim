@@ -258,6 +258,8 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
     <>
       <LabFrame
         doc={variant.doc}
+        featureKey={variant.key}
+        lab={variant.lab}
         operator={operator}
         rigCount={rigs.length}
         onSettings={openSettings}

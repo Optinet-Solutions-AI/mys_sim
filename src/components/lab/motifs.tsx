@@ -1,0 +1,250 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
+import type { BoxTier, CatalogItem } from "@/engine/types";
+import { ItemTile } from "../ItemTile";
+import { Icon } from "../Icon";
+import { money, pctSmart } from "@/lib/format";
+import { reelPosition } from "./reelMotion";
+import type { SpinInfo } from "./Reel";
+
+function reduced() {
+  return typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** A face-down card that shakes, then flips to reveal the item (IcyBox drops, blind boxes, lucky bags, the Glass Box). */
+export function CardFlip({ winner, spinId, onDone, fast = false, label, back }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string; back?: React.ReactNode }) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  const [phase, setPhase] = useState<"idle" | "shake" | "flip" | "done">("idle");
+  const [shown, setShown] = useState<CatalogItem | null>(null);
+  useEffect(() => {
+    if (!spinId || !winner) return;
+    setShown(winner);
+    if (fast || reduced()) {
+      setPhase("done");
+      const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
+      return () => clearTimeout(t);
+    }
+    setPhase("shake");
+    const t1 = setTimeout(() => setPhase("flip"), 1600);
+    const t2 = setTimeout(() => {
+      setPhase("done");
+      onDoneRef.current?.({ staged: null });
+    }, 1600 + 950);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+  const flipped = phase === "flip" || phase === "done";
+  return (
+    <div className="flex items-center justify-center py-3" style={{ perspective: 900 }}>
+      <div className={`card3d relative h-[232px] w-[176px] ${flipped ? "flipped" : ""} ${phase === "shake" ? "animate-shake" : ""}`}>
+        <div className="card-face absolute inset-0 flex flex-col items-center justify-center rounded-2xl border border-line bg-accent text-white shadow-lg">
+          <div className="card-pattern absolute inset-0 rounded-2xl opacity-25" />
+          {back ?? <Icon name="ph:package" size={56} className="text-white" />}
+          <div className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/90">{label}</div>
+        </div>
+        <div className="card-face card-back absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-surface p-3 shadow-lg">
+          {shown && (
+            <>
+              <ItemTile item={shown} size={96} />
+              <div className="text-center">
+                <div className="text-[11px] text-ink-3">{shown.brand}</div>
+                <div className="line-clamp-2 text-sm font-semibold leading-tight">{shown.name}</div>
+                <div className="mt-1 font-mono text-xs text-ink-2">{money(shown.retail)}</div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** A pack that wobbles and tears open to reveal the card (Courtyard). */
+export function PackRip({ winner, spinId, onDone, fast = false, label }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string }) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  const [phase, setPhase] = useState<"idle" | "wobble" | "rip" | "done">("idle");
+  const [shown, setShown] = useState<CatalogItem | null>(null);
+  useEffect(() => {
+    if (!spinId || !winner) return;
+    setShown(winner);
+    if (fast || reduced()) {
+      setPhase("done");
+      const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
+      return () => clearTimeout(t);
+    }
+    setPhase("wobble");
+    const t1 = setTimeout(() => setPhase("rip"), 1300);
+    const t2 = setTimeout(() => {
+      setPhase("done");
+      onDoneRef.current?.({ staged: null });
+    }, 1300 + 1000);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+  const open = phase === "rip" || phase === "done";
+  return (
+    <div className="relative mx-auto my-3 h-[232px] w-[200px]">
+      {/* the card underneath */}
+      <div className={`absolute inset-x-4 bottom-2 top-6 flex flex-col items-center justify-center gap-2 rounded-xl border border-line bg-surface p-3 shadow ${open ? "animate-rise" : "opacity-0"}`}>
+        {shown && (
+          <>
+            <ItemTile item={shown} size={88} />
+            <div className="text-center">
+              <div className="text-[11px] text-ink-3">{shown.brand}</div>
+              <div className="line-clamp-2 text-sm font-semibold leading-tight">{shown.name}</div>
+              <div className="mt-1 font-mono text-xs text-ink-2">{money(shown.realized)} FMV</div>
+            </div>
+          </>
+        )}
+      </div>
+      {/* the pack: top and bottom halves */}
+      <div className={`pack-half absolute inset-x-0 top-0 h-1/2 rounded-t-2xl bg-accent ${phase === "wobble" ? "animate-wobble" : ""} ${open ? "pack-top-open" : ""}`}>
+        <div className="card-pattern absolute inset-0 rounded-t-2xl opacity-25" />
+        <div className="absolute inset-x-0 bottom-2 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-white/90">{label}</div>
+      </div>
+      <div className={`pack-half absolute inset-x-0 bottom-0 h-1/2 rounded-b-2xl bg-accent ${phase === "wobble" ? "animate-wobble" : ""} ${open ? "pack-bottom-open" : ""}`}>
+        <div className="card-pattern absolute inset-0 rounded-b-2xl opacity-25" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Icon name="ph:cube" size={40} className="text-white" />
+        </div>
+      </div>
+      <div className={`pointer-events-none absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 border-t border-dashed border-white/70 ${open ? "opacity-0" : ""}`} />
+    </div>
+  );
+}
+
+/** StockX: a cursor runs down the tier ladder and settles on the drawn tier, then the item fades in. */
+export function TierLadder({ tiers, winner, winnerTierId, spinId, onDone, fast = false, price }: { tiers: BoxTier[]; winner: CatalogItem | null; winnerTierId?: string; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; price: number }) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  const [cursor, setCursor] = useState(-1);
+  const [phase, setPhase] = useState<"idle" | "run" | "done">("idle");
+  const [shown, setShown] = useState<CatalogItem | null>(null);
+  const raf = useRef(0);
+  useEffect(() => {
+    if (!spinId || !winner) return;
+    const n = Math.max(1, tiers.length);
+    const target = Math.max(0, tiers.findIndex((t) => t.id === winnerTierId));
+    setShown(null);
+    if (fast || reduced()) {
+      setCursor(target);
+      setShown(winner);
+      setPhase("done");
+      const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
+      return () => clearTimeout(t);
+    }
+    setPhase("run");
+    const laps = 4;
+    const D = laps * n + target;
+    const dur = 3000;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - t0) / dur);
+      const pos = reelPosition(k, D, 2.4);
+      setCursor(Math.floor(pos) % n);
+      if (k < 1) raf.current = requestAnimationFrame(step);
+      else {
+        setCursor(target);
+        setShown(winner);
+        setPhase("done");
+        setTimeout(() => onDoneRef.current?.({ staged: null }), 500);
+      }
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+  return (
+    <div className="grid gap-3 md:grid-cols-[1fr_200px]">
+      <div className="space-y-1.5">
+        {tiers.map((t, i) => (
+          <div key={t.id} className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition ${cursor === i ? (phase === "done" ? "border-accent bg-accent-soft font-semibold animate-glow" : "border-accent bg-accent-soft") : "border-line bg-surface"}`}>
+            <span>{t.name}</span>
+            <span className="font-mono text-xs text-ink-2">{pctSmart(t.percent / 100)}</span>
+          </div>
+        ))}
+        <div className="text-[11px] text-ink-3">Every item in this box is worth at least {money(price)} before processing fees.</div>
+      </div>
+      <div className="flex min-h-[160px] items-center justify-center rounded-xl border border-dashed border-line bg-surface p-3">
+        {shown ? (
+          <div className="flex flex-col items-center gap-2 animate-pop">
+            <ItemTile item={shown} size={88} />
+            <div className="text-center">
+              <div className="text-[11px] text-ink-3">{shown.brand}</div>
+              <div className="line-clamp-2 text-sm font-semibold leading-tight">{shown.name}</div>
+              <div className="mt-1 font-mono text-xs text-ink-2">list {money(shown.retail)}</div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-xs text-ink-3">{phase === "run" ? "selecting tier…" : "your item appears here"}</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Misty, kuji, Omaze: a ticket whose foil wipes away to reveal the result. */
+export function TicketScratch({ winner, spinId, onDone, fast = false, label, credits }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string; credits?: boolean }) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  const [phase, setPhase] = useState<"idle" | "scratch" | "done">("idle");
+  const [shown, setShown] = useState<CatalogItem | null>(null);
+  useEffect(() => {
+    if (!spinId || !winner) return;
+    setShown(winner);
+    if (fast || reduced()) {
+      setPhase("done");
+      const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
+      return () => clearTimeout(t);
+    }
+    setPhase("idle");
+    const t0 = setTimeout(() => setPhase("scratch"), 50);
+    const t1 = setTimeout(() => {
+      setPhase("done");
+      onDoneRef.current?.({ staged: null });
+    }, 2300);
+    return () => {
+      clearTimeout(t0);
+      clearTimeout(t1);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+  const isCredit = shown?.category === "credit";
+  return (
+    <div className="mx-auto my-3 w-full max-w-md">
+      <div className="ticket relative overflow-hidden rounded-2xl border border-line bg-surface shadow">
+        <div className="flex items-center gap-4 p-4">
+          <div className="shrink-0 rounded-xl bg-accent-soft p-3 text-accent-ink">
+            <Icon name="ph:ticket" size={36} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-3">{label}</div>
+            <div className="relative mt-1 h-16">
+              <div className="absolute inset-0 flex items-center gap-3">
+                {shown && (
+                  <>
+                    <ItemTile item={shown} size={48} />
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold">{shown.name}</div>
+                      <div className="text-xs text-ink-2">{isCredit && credits ? `${Math.round(shown.retail)} entries` : money(shown.retail)}</div>
+                    </div>
+                  </>
+                )}
+              </div>
+              <div className={`scratch-foil absolute inset-0 rounded-md ${phase === "scratch" ? "scratched" : phase === "done" ? "gone" : ""}`} />
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-dashed border-line px-4 py-2 text-[11px] text-ink-3">No. {String(spinId).padStart(6, "0")} · one draw per ticket</div>
+      </div>
+    </div>
+  );
+}

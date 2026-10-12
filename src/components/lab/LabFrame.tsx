@@ -1,9 +1,11 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
 import type { FeatureDoc } from "@/lib/operators";
+import { GUIDES, GUIDE_BY_LAB, SETTINGS_PLAIN } from "@/lib/skins";
+import type { LabId } from "@/engine/types";
 import { Icon } from "../Icon";
-import { Badge, Card, Info } from "../ui";
+import { Badge, Info } from "../ui";
+import { GuideModal } from "./GuideModal";
 
 export interface Chip {
   label: ReactNode;
@@ -12,20 +14,24 @@ export interface Chip {
   tip?: string;
 }
 
-/** Frame for one operator feature: title, the cog (header and floating), summary chips, help on demand, then the stage. */
-export function LabFrame({ doc, operator, chips, onSettings, rigCount, settingsOpen, children }: { doc: FeatureDoc; operator: string; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
-  const [help, setHelp] = useState(false);
+/** Frame for one operator feature: title, two plain-language guides (player view, settings view), the cog, chips, then the stage. */
+export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, rigCount, settingsOpen, children }: { doc: FeatureDoc; operator: string; featureKey?: string; lab?: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
+  const [guide, setGuide] = useState<"player" | "settings" | null>(null);
+  const g = (featureKey && GUIDES[featureKey]) || (lab && GUIDE_BY_LAB[lab]) || { player: [doc.what], settings: doc.configure };
   const badge = rigCount > 0 ? <span className="cog-badge">{rigCount}</span> : null;
   return (
     <div className="space-y-4 pb-20">
-      <header className="flex items-center gap-3">
+      <header className="flex items-center gap-2">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <h1 className="text-2xl font-semibold">{doc.title}</h1>
           <Badge tone="accent">{operator}</Badge>
           <Info size={16}>{doc.what}</Info>
         </div>
-        <button type="button" className={`btn btn-icon rounded-full ${help ? "border-accent text-accent-ink" : ""}`} data-tip="How this feature works" data-tip-end="" onClick={() => setHelp((h) => !h)} aria-label="How this feature works">
-          <Icon name="ph:question" size={20} />
+        <button type="button" className="btn rounded-full" data-tip="How this works for a player, in plain words" data-tip-end="" onClick={() => setGuide("player")}>
+          <Icon name="ph:user" size={18} /> <span className="hidden sm:inline">Player view</span>
+        </button>
+        <button type="button" className="btn rounded-full" data-tip="What the settings and the algorithm mean, in plain words" data-tip-end="" onClick={() => setGuide("settings")}>
+          <Icon name="ph:question" size={18} /> <span className="hidden sm:inline">Settings explained</span>
         </button>
         <button type="button" className="btn-cog" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
           <Icon name="ph:gear-six" size={26} className="text-white" />
@@ -40,39 +46,6 @@ export function LabFrame({ doc, operator, chips, onSettings, rigCount, settingsO
           </button>
         ))}
       </div>
-      {help && (
-        <Card
-          title={`${operator} · ${doc.title}`}
-          actions={
-            <Link href="/docs" className="text-xs">
-              Full docs
-            </Link>
-          }
-        >
-          <p className="mb-3 text-sm text-ink-2">{doc.what}</p>
-          <div className="grid gap-4 text-sm md:grid-cols-2">
-            <div>
-              <h3 className="mb-1 font-semibold">Settings (cog)</h3>
-              <ul className="list-disc space-y-1 pl-5">
-                {doc.configure.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-1 font-semibold">Results</h3>
-              <ul className="list-disc space-y-1 pl-5">
-                {doc.read.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <p className="mt-3 text-xs text-ink-3">
-            <b>Source:</b> {doc.source}
-          </p>
-        </Card>
-      )}
       {children}
       {!settingsOpen && (
         <button type="button" className="fab" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
@@ -80,6 +53,8 @@ export function LabFrame({ doc, operator, chips, onSettings, rigCount, settingsO
           {badge}
         </button>
       )}
+      <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: how it works for a player`} icon="ph:user" bullets={g.player} extra={[{ title: "Source", text: doc.source }]} />
+      <GuideModal open={guide === "settings"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: the settings, explained`} icon="ph:gear-six" bullets={g.settings} extra={SETTINGS_PLAIN} />
     </div>
   );
 }

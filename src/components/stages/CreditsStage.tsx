@@ -8,6 +8,7 @@ import { Icon } from "../Icon";
 import { ItemTile } from "../ItemTile";
 import { Badge, Card, Info, Stat } from "../ui";
 import { CountUp } from "../lab/CountUp";
+import { cta, useSkin } from "../lab/SkinContext";
 
 interface Session {
   spent: number;
@@ -36,6 +37,7 @@ export function CreditsStage({ cfg, seed, onSettings }: { cfg: CreditsConfig; se
     }
   }
   const live = liveRef.current.live;
+  const skin = useSkin();
   const [s, setS] = useState<Session>(EMPTY);
   const logN = useRef(0);
   useEffect(() => setS(EMPTY), [key]);
@@ -127,7 +129,7 @@ export function CreditsStage({ cfg, seed, onSettings }: { cfg: CreditsConfig; se
               <div className="text-xs text-ink-2">{money(price)} per open</div>
             </div>
             <button type="button" className="btn btn-primary btn-lg" onClick={open}>
-              <Icon name="ph:play" size={18} className="text-white" /> Open for {money(price)}
+              <Icon name="ph:play" size={18} className="text-white" /> {cta(skin.terms.openCta, money(price))}
             </button>
             <button type="button" className="btn" onClick={reset}>
               <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset

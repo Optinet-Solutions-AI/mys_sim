@@ -144,8 +144,8 @@ table {
   z-index: 70;
   width: max-content;
   max-width: 260px;
-  background: var(--color-ink);
-  color: #fff;
+  background: var(--tip-bg, var(--color-ink));
+  color: var(--tip-fg, #fff);
   border-radius: 8px;
   padding: 6px 9px;
   font-size: 12px;
@@ -172,8 +172,8 @@ table {
   z-index: 70;
   width: max-content;
   max-width: min(340px, 80vw);
-  background: var(--color-ink);
-  color: #fff;
+  background: var(--tip-bg, var(--color-ink));
+  color: var(--tip-fg, #fff);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 12px;
@@ -258,3 +258,41 @@ table {
 .animate-slide { animation: slideIn 0.3s ease-out both; }
 @keyframes winflash { 0%, 100% { background: var(--color-good-soft); } 50% { background: color-mix(in srgb, var(--color-good) 35%, var(--color-good-soft)); } }
 .animate-winflash { animation: winflash 0.6s ease-in-out 3; }
+
+/* Operator skins: the page wrapper overrides the theme variables; serif skins switch the body face. */
+.op-skin { background: var(--color-paper); color: var(--color-ink); }
+.op-serif, .op-serif h1, .op-serif h2, .op-serif .font-semibold { font-family: Georgia, "Times New Roman", serif; }
+.op-skin input[type="number"], .op-skin input[type="text"], .op-skin select, .op-skin textarea { background: var(--color-surface); color: var(--color-ink); border-color: var(--color-line); }
+.op-banner { background: linear-gradient(135deg, var(--color-accent-soft), var(--color-surface) 70%); }
+
+/* Card flip (IcyBox drops, blind boxes, lucky bags, the Glass Box). */
+.card3d { transform-style: preserve-3d; transition: transform 0.95s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.card3d.flipped { transform: rotateY(180deg); }
+.card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.card-back { transform: rotateY(180deg); }
+.card-pattern { background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.35) 0 6px, transparent 6px 14px); }
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  20% { transform: rotate(-2deg) translateX(-2px); }
+  40% { transform: rotate(2deg) translateX(2px); }
+  60% { transform: rotate(-4deg) translateX(-4px); }
+  80% { transform: rotate(4deg) translateX(4px); }
+  100% { transform: rotate(0deg); }
+}
+.animate-shake { animation: shake 0.45s ease-in-out 3; }
+
+/* Pack rip (Courtyard). */
+.pack-half { transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.9s ease; }
+.pack-top-open { transform: translateY(-120%) rotate(-6deg); opacity: 0; }
+.pack-bottom-open { transform: translateY(60%); opacity: 0; }
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1.5deg); }
+  75% { transform: rotate(1.5deg); }
+}
+.animate-wobble { animation: wobble 0.4s ease-in-out 3; }
+
+/* Scratch ticket (Misty, kuji, Omaze). */
+.scratch-foil { background: repeating-linear-gradient(135deg, #c9ccd3 0 8px, #b4b8c1 8px 16px); transition: clip-path 2s cubic-bezier(0.3, 0.7, 0.2, 1); clip-path: inset(0 0 0 0); }
+.scratch-foil.scratched { clip-path: inset(0 0 0 100%); }
+.scratch-foil.gone { display: none; }

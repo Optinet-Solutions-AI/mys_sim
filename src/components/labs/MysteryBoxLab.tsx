@@ -126,6 +126,8 @@ export function MysteryBoxLab({ variant, operator }: { variant: FeatureDef; oper
     <>
       <LabFrame
         doc={variant.doc}
+        featureKey={variant.key}
+        lab={variant.lab}
         operator={operator}
         rigCount={rigs.length}
         onSettings={openSettings}
@@ -137,7 +139,7 @@ export function MysteryBoxLab({ variant, operator }: { variant: FeatureDef; oper
           { label: `${num(sizes.opens)} opens · seed ${seed}`, section: "run", tone: "accent" },
         ]}
       >
-        <MysteryBoxStage cfg={cfg} seed={seed} onSettings={openSettings} />
+        <MysteryBoxStage cfg={cfg} seed={seed} onSettings={openSettings} featureKey={variant.key} />
         <SimulateBar
           label={`Run ${num(sizes.opens)} opens`}
           hint="Stated vs observed odds, realized return with its error bar, proof checks and the detector, computed in a background worker."

@@ -144,6 +144,8 @@ export function CreditsLab({ variant, operator }: { variant: FeatureDef; operato
     <>
       <LabFrame
         doc={variant.doc}
+        featureKey={variant.key}
+        lab={variant.lab}
         operator={operator}
         rigCount={rigs.length}
         onSettings={openSettings}

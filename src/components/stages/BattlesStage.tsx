@@ -11,6 +11,7 @@ import { ItemTile } from "../ItemTile";
 import { Badge, Card, Info } from "../ui";
 import { MiniReel } from "../lab/MiniReel";
 import { CountUp } from "../lab/CountUp";
+import { useSkin } from "../lab/SkinContext";
 
 interface Session {
   key: string;
@@ -53,6 +54,7 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
   const pools = useMemo(() => (session.table ? session.table.openers.map((o) => o.displayed.items.map((r) => ({ item: r.item, weight: r.weight }))) : []), [session.table]);
   const coin = cfg.mode === "coinflip";
   const brk = cfg.mode === "break";
+  const skin = useSkin();
 
   const [outcome, setOutcome] = useState<BattleOutcome | null>(null);
   const [revealed, setRevealed] = useState<boolean[]>([]);
@@ -322,7 +324,7 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={busy}>
-            <Icon name="ph:play" size={18} className="text-white" /> {busy ? (coin ? "Flipping…" : "Battle in progress…") : outcome ? (coin ? "Flip again" : "Next battle") : coin ? "Flip" : "Start battle"}
+            <Icon name="ph:play" size={18} className="text-white" /> {busy ? (coin ? "Flipping…" : "Battle in progress…") : outcome ? (coin ? "Flip again" : "Next battle") : coin ? "Flip" : skin.terms.startBattle}
           </button>
           <button type="button" className="btn" onClick={reset} disabled={busy}>
             <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset session

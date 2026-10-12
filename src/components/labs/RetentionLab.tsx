@@ -198,6 +198,8 @@ export function RetentionLab({ variant, operator }: { variant: FeatureDef; opera
     <>
       <LabFrame
         doc={variant.doc}
+        featureKey={variant.key}
+        lab={variant.lab}
         operator={operator}
         rigCount={rigs.length}
         onSettings={openSettings}

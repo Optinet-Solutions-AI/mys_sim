@@ -4,13 +4,17 @@ import type { CatalogItem, MysteryBoxConfig } from "@/engine/types";
 import { expectedValue, retargetBox } from "@/engine/table";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import { LiveOpener, type LiveOpen } from "@/lib/live";
+import { MOTIF_BY_FEATURE } from "@/lib/skins";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { copyText } from "@/lib/download";
 import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
 import { Badge, Card, Info, Stat } from "../ui";
 import { Reel, type ReelPoolEntry, type SpinInfo } from "../lab/Reel";
+import { CardFlip, PackRip, TicketScratch, TierLadder } from "../lab/motifs";
 import { CountUp } from "../lab/CountUp";
+import { OperatorPanel } from "../lab/OperatorPanel";
+import { cta, useSkin } from "../lab/SkinContext";
 
 interface Tally {
   opens: number;
@@ -89,7 +93,8 @@ function Viewers({ base }: { base: number }) {
   return <>{num(n)}</>;
 }
 
-export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConfig; seed: number; onSettings: (section?: string) => void }) {
+export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: MysteryBoxConfig; seed: number; onSettings: (section?: string) => void; featureKey?: string }) {
+  const skin = useSkin();
   const key = useMemo(() => JSON.stringify([cfg.box, cfg.algo, cfg.rigs, seed]), [cfg.box, cfg.algo, cfg.rigs, seed]);
   const liveRef = useRef<{ key: string; live: LiveOpener | null; demo: LiveOpener | null; error: string | null } | null>(null);
   if (!liveRef.current || liveRef.current.key !== key) {
@@ -156,6 +161,11 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const nearMiss = cfg.rigs.nearMiss;
   const ldw = !!cfg.rigs.ldwCelebration;
   const urgency = cfg.rigs.urgency;
+  // the reveal motif: the feature's own, else the source's; tier ladders need a tiered box, reels suit anything
+  let motif = (featureKey && MOTIF_BY_FEATURE[featureKey]) || skin.motif;
+  if (motif === "tiers" && cfg.box.model !== "tiered") motif = "cardflip";
+  if (cfg.box.model === "tiered" && motif !== "reel") motif = "tiers";
+  const T = skin.terms;
 
   const account = (opens: LiveOpen[], staged = 0) =>
     setTally((t) => {
@@ -256,21 +266,21 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const tileSize = batch && batch.length > 20 ? 32 : 52;
   const isWin = (o: LiveOpen) => o.payout >= price;
   const celebrate = !!last && (isWin(last) || ldw);
-  // "tickets away" framing: distance from the drawn ticket to the nearest range of a big item
   const ticketsAway = (() => {
     if (!cfg.rigs.ticketsAwayMessage || !last || isWin(last)) return null;
-    const T = last.rec.poolT ?? table.T;
+    const tt = last.rec.poolT ?? table.T;
     const big = table.items.filter((r) => r.item[layer] >= 10 * price);
     if (!big.length) return null;
     let best: { item: CatalogItem; d: number } | null = null;
     for (const r of big) {
-      const from = Math.round((r.from / table.T) * T);
-      const to = Math.round((r.to / table.T) * T);
+      const from = Math.round((r.from / table.T) * tt);
+      const to = Math.round((r.to / table.T) * tt);
       const d = last.rec.ticket < from ? from - last.rec.ticket : last.rec.ticket >= to ? last.rec.ticket - to + 1 : 0;
       if (!best || d < best.d) best = { item: r.item, d };
     }
     return best;
   })();
+  const pendingItem = pending?.item ?? null;
 
   return (
     <div className="space-y-4">
@@ -318,7 +328,11 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           </label>
         </div>
         <div className="mt-3">
-          <Reel pool={pool} winner={pending?.item ?? null} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />
+          {motif === "reel" && <Reel pool={pool} winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />}
+          {motif === "cardflip" && <CardFlip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
+          {motif === "packrip" && <PackRip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
+          {motif === "tiers" && cfg.box.tiers && <TierLadder tiers={cfg.box.tiers} winner={pendingItem} winnerTierId={pending?.rec.tierId} spinId={spinId} onDone={reveal} fast={fast} price={price} />}
+          {motif === "ticket" && <TicketScratch winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={cfg.box.name.split(" · ")[0]} credits={skin.id === "misty"} />}
         </div>
         {urgency && (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
@@ -336,18 +350,18 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
         )}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button type="button" className={`btn btn-lg ${demo ? "" : "btn-primary"}`} onClick={openOne} disabled={spinning}>
-            <Icon name="ph:play" size={18} className={demo ? "" : "text-white"} /> {spinning ? "Opening…" : demo ? "Open demo (free)" : `Open for ${money(price)}`}
+            <Icon name="ph:play" size={18} className={demo ? "" : "text-white"} /> {spinning ? "Opening…" : demo ? "Open demo (free)" : cta(T.openCta, money(price))}
           </button>
           <button type="button" className="btn" onClick={() => openMany(10)} disabled={spinning || demo}>
-            Open ×10
+            ×10
           </button>
           <button type="button" className="btn" onClick={() => openMany(100)} disabled={spinning || demo}>
-            Open ×100
+            ×100
           </button>
           <button type="button" className="btn" onClick={reset} disabled={spinning} data-tip="New session: fresh seeds and counters">
             <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset
           </button>
-          <div className={`ml-auto grid gap-2 text-right text-xs ${nearMiss || demoLive ? "grid-cols-5" : "grid-cols-4"}`}>
+          <div className={`ml-auto grid gap-2 text-right text-xs ${(nearMiss && motif === "reel") || demoLive ? "grid-cols-5" : "grid-cols-4"}`}>
             <div>
               <div className="text-ink-3">opens</div>
               <div className="font-semibold tabular-nums">{num(tally.opens)}</div>
@@ -368,7 +382,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
               <div className="text-ink-3">session RTP</div>
               <div className={`font-semibold tabular-nums ${tally.opens && sessionRtp < statedRtp - 0.15 ? "text-bad" : ""}`}>{tally.opens ? pct(sessionRtp) : "—"}</div>
             </div>
-            {nearMiss && (
+            {nearMiss && motif === "reel" && (
               <div data-tip="Losing spins shown as near misses by the reel setting; the odds were unchanged" data-tip-end="">
                 <div className="text-warn">near misses</div>
                 <div className="font-semibold tabular-nums text-warn">
@@ -376,7 +390,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
                 </div>
               </div>
             )}
-            {!nearMiss && demoLive && (
+            {!(nearMiss && motif === "reel") && demoLive && (
               <div data-tip="Return of the free demo spins against the paid ones" data-tip-end="">
                 <div className="text-warn">demo RTP</div>
                 <div className="font-semibold tabular-nums text-warn">{demoTally.opens ? pct(demoTally.returned / (demoTally.opens * price)) : "—"}</div>
@@ -406,7 +420,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           <div className="flex flex-wrap gap-1.5">
             {batch.map((o, i) =>
               i < batchRevealed ? (
-                <div key={o.n} className={`animate-flip flex flex-col items-center ${ldw || isWin(o) ? "rounded-xl" : ""} ${(ldw || isWin(o)) && batch.length <= 20 ? "animate-winflash" : ""}`} data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
+                <div key={o.n} className={`animate-flip flex flex-col items-center ${(ldw || isWin(o)) && batch.length <= 20 ? "animate-winflash rounded-xl" : ""}`} data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
                   <ItemTile item={o.item} size={tileSize} />
                   {batch.length <= 20 && <span className={`mt-0.5 font-mono text-[10px] ${isWin(o) ? "text-good" : "text-ink-3"}`}>{money(o.payout)}</span>}
                 </div>
@@ -428,7 +442,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           <Card
             title={
               <>
-                {celebrate ? "You won!" : "You got"}
+                {celebrate ? T.wonTitle : T.openedTitle}
                 {lastDemo && <Badge tone="warn">demo</Badge>}
                 {celebrate && !isWin(last) && <Info>Celebrated by the losses-disguised-as-wins rig: this drop is worth less than the open cost.</Info>}
               </>
@@ -505,7 +519,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           >
             {cfg.algo.scheme === "none" ? (
               <p className="flex items-center gap-1 text-sm text-ink-2">
-                No commitment published. <Info>The player gets a result and nothing to check it against. This is how the vendor platform works by default.</Info>
+                No commitment published. <Info>The player gets a result and nothing to check it against.</Info>
               </p>
             ) : (
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[11px]">
@@ -538,9 +552,11 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
         </div>
       )}
 
+      <OperatorPanel skin={skin} cfg={cfg} live={live} last={last && !lastDemo ? last : null} history={history} spent={tally.spent} />
+
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <Card
-          title="In the box"
+          title={`In the ${T.unit}`}
           actions={
             <button type="button" className="chip" onClick={() => onSettings("box")}>
               edit items and odds
@@ -570,7 +586,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
         </Card>
         <Card title="Recent pulls">
           {history.length === 0 ? (
-            <p className="text-xs text-ink-3">Open the box to start.</p>
+            <p className="text-xs text-ink-3">Open the {T.unit} to start.</p>
           ) : (
             <ul className="space-y-1">
               {history.map((o) => (

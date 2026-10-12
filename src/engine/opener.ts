@@ -143,6 +143,16 @@ export class Opener {
     this.rotate();
   }
 
+  /** The commitment currently published for the next open (empty when there is no scheme). */
+  get commitment(): string {
+    return this.algo.scheme === "none" ? "" : this.serverHash;
+  }
+
+  /** Pool model: copies left, total and sold in the current drop. */
+  get poolStatus(): { left: number; total: number; sold: number } | null {
+    return this.model === "pool" ? { left: this.poolTotal, total: this.poolInitialTotal, sold: this.poolSold } : null;
+  }
+
   private resetPool() {
     this.poolRemaining = this.poolInitial.slice();
     this.poolTotal = this.poolInitialTotal;
