@@ -35,9 +35,17 @@ economy rules, battle modes), its own presets and only the options that operator
 are locked to the published odds unless you unlock them to experiment. Across all of them the research toggles
 are the same: the commitment scheme, the ticket mapping, the rigs and the detector.
 
-Within a feature the pattern is the same everywhere: you land on the **test page** and can play at once; the
-**cog** holds the settings in sections; the summary chips open the matching section; **Run simulation** produces
-the statistics below the test page. Live opens and simulations share the same engine, rigs and verifier.
+Each source page has its own **look**: palette, typography and wording (`src/lib/skins.ts`), its own reveal motif
+(card flip for IcyBox drops and blind boxes, tier ladder for StockX, pack rip for Courtyard, scratch ticket for
+Misty, kuji and Omaze, reels for the case sites, a transparent card for the Glass Box) and an operator panel that
+reproduces what that operator shows around a result (keep-or-sell timers, credit offers, the public pull log,
+seeds, entries). The looks are inspired by the public products; no logos or assets are copied.
+
+Within a feature the pattern is the same everywhere: you land on the **test page** and can play at once; two
+buttons explain it in plain language, **Player view** (how it works for a player) and **Settings explained**
+(what the configuration and the algorithm mean, with a glossary); the **cog** holds the settings in sections; the
+summary chips open the matching section; **Run simulation** produces the statistics below the test page. Live
+opens and simulations share the same engine, rigs and verifier.
 
 | Route | Source | Features |
 |---|---|---|
