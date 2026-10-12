@@ -71,10 +71,11 @@ export function Reel({ pool, winner, spinId, onDone, fast = false }: { pool: Ree
       fallback = setTimeout(done, 60);
       return () => clearTimeout(fallback);
     }
-    el.style.transition = "transform 3.6s cubic-bezier(0.08, 0.82, 0.12, 1)";
+    // a long run-up, a slow brake and a hair of overshoot, like the sites do
+    el.style.transition = "transform 4.4s cubic-bezier(0.08, 0.8, 0.15, 1.02)";
     el.style.transform = `translateX(${target}px)`;
     el.addEventListener("transitionend", done, { once: true });
-    fallback = setTimeout(done, 4200);
+    fallback = setTimeout(done, 5000);
     return () => {
       el.removeEventListener("transitionend", done);
       if (fallback) clearTimeout(fallback);

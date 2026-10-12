@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BattlesConfig } from "@/engine/types";
 import { BATTLE_MODES, playBattle, prepareBattle, type BattleOutcome, type BattleTable } from "@/engine/labs/battles";
 import { CATALOG_BY_ID } from "@/engine/catalog";
@@ -9,6 +9,8 @@ import { money, num, pct } from "@/lib/format";
 import { Icon } from "../Icon";
 import { ItemTile } from "../ItemTile";
 import { Badge, Card } from "../ui";
+import { MiniReel } from "../lab/MiniReel";
+import { CountUp } from "../lab/CountUp";
 
 interface Session {
   key: string;
@@ -26,6 +28,15 @@ interface Tally {
 }
 const EMPTY: Tally = { battles: 0, humanWins: 0, humanSpent: 0, humanWon: 0, pot: 0 };
 
+// pacing with "fast reveal" off: every seat's reel spins for SPIN_MS, seats start STAGGER_MS apart,
+// then values and totals settle for SETTLE_MS before the next round; the winner is announced after FINAL_MS.
+const SPIN_MS = 2400;
+const STAGGER_MS = 160;
+const SETTLE_MS = 1100;
+const FINAL_MS = 900;
+
+type Phase = "idle" | "round" | "settle" | "done";
+
 export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; seed: number; onSettings: (section?: string) => void }) {
   const key = useMemo(() => JSON.stringify([cfg, seed]), [cfg, seed]);
   const sRef = useRef<Session | null>(null);
@@ -38,52 +49,93 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
     }
   }
   const session = sRef.current;
+  const pools = useMemo(() => (session.table ? session.table.openers.map((o) => o.displayed.items.map((r) => ({ item: r.item, weight: r.weight }))) : []), [session.table]);
+
   const [outcome, setOutcome] = useState<BattleOutcome | null>(null);
-  const [revealed, setRevealed] = useState(0);
-  const [phase, setPhase] = useState<"idle" | "revealing" | "done">("idle");
+  const [revealed, setRevealed] = useState<boolean[]>([]);
+  const [round, setRound] = useState(0);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [battleNo, setBattleNo] = useState(0);
   const [fast, setFast] = useState(false);
   const [tally, setTally] = useState<Tally>(EMPTY);
 
   useEffect(() => {
     setOutcome(null);
-    setRevealed(0);
+    setRevealed([]);
+    setRound(0);
     setPhase("idle");
     setTally(EMPTY);
   }, [key]);
 
-  // reveal pulls one by one
-  useEffect(() => {
-    if (phase !== "revealing" || !outcome) return;
-    if (revealed >= outcome.pulls.length) {
-      setPhase("done");
-      return;
-    }
-    const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const ms = fast || reduce ? 20 : 240;
-    const t = setTimeout(() => setRevealed((r) => r + 1), ms);
-    return () => clearTimeout(t);
-  }, [phase, revealed, outcome, fast]);
+  const players = session.table?.players ?? 0;
+  const humans = session.table?.humans ?? 0;
+  const rounds = cfg.boxes.length;
 
+  // a round is over when every seat has landed
+  useEffect(() => {
+    if (phase !== "round" || !outcome || !players) return;
+    for (let p = 0; p < players; p++) if (!revealed[round * players + p]) return;
+    setPhase("settle");
+  }, [revealed, phase, round, outcome, players]);
+
+  // settle, then next round or the announcement
+  useEffect(() => {
+    if (phase !== "settle" || !outcome) return;
+    const last = round + 1 >= rounds;
+    const t = setTimeout(
+      () => {
+        if (last) setPhase("done");
+        else {
+          setRound((r) => r + 1);
+          setPhase("round");
+        }
+      },
+      fast ? 120 : last ? FINAL_MS : SETTLE_MS,
+    );
+    return () => clearTimeout(t);
+  }, [phase, round, rounds, outcome, fast]);
+
+  // book the battle once it is over
   useEffect(() => {
     if (phase !== "done" || !outcome || !session.table) return;
-    const { humans, entry } = session.table;
+    const { entry } = session.table;
     const humanWon = outcome.share.slice(0, humans).reduce((a, b) => a + b, 0);
-    const humanWin = cfg.mode === "group" ? humans / session.table.players : outcome.winner >= 0 && outcome.winner < humans ? 1 : 0;
+    const humanWin = cfg.mode === "group" ? humans / players : outcome.winner >= 0 && outcome.winner < humans ? 1 : 0;
     setTally((t) => ({ battles: t.battles + 1, humanWins: t.humanWins + humanWin, humanSpent: t.humanSpent + entry * humans, humanWon: t.humanWon + humanWon, pot: t.pot + outcome.pot }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  const markRevealed = useCallback((idx: number) => {
+    setRevealed((prev) => {
+      if (prev[idx]) return prev;
+      const c = prev.slice();
+      c[idx] = true;
+      return c;
+    });
+  }, []);
+
+  const busy = phase === "round" || phase === "settle";
   const start = () => {
-    if (!session.table || phase === "revealing") return;
+    if (!session.table || busy) return;
     const o = playBattle(session.table, cfg, session.rng, session.counter, 0);
+    const n = rounds * session.table.players;
     setOutcome(o);
-    setRevealed(0);
-    setPhase("revealing");
+    setBattleNo((b) => b + 1);
+    if (fast) {
+      setRevealed(new Array(n).fill(true));
+      setRound(rounds - 1);
+      setPhase("settle");
+    } else {
+      setRevealed(new Array(n).fill(false));
+      setRound(0);
+      setPhase("round");
+    }
   };
   const reset = () => {
     sRef.current = null;
     setOutcome(null);
-    setRevealed(0);
+    setRevealed([]);
+    setRound(0);
     setPhase("idle");
     setTally(EMPTY);
   };
@@ -99,18 +151,31 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
     );
   }
 
-  const { players, humans, entry } = session.table;
+  const { entry } = session.table;
   const mode = BATTLE_MODES.find((m) => m.id === cfg.mode)!;
-  const rounds = cfg.boxes.length;
-  const pullAt = (r: number, p: number) => (outcome ? outcome.pulls[r * players + p] : undefined);
-  const isRevealed = (r: number, p: number) => r * players + p < revealed;
+  const done = phase === "done" && outcome;
+  const activeBox = cfg.boxes[Math.min(round, rounds - 1)];
   const runningTotal = (p: number) => {
     if (!outcome) return 0;
     let s = 0;
-    for (let r = 0; r < rounds; r++) if (isRevealed(r, p)) s += outcome.pulls[r * players + p].rec.payout;
+    for (let r = 0; r < rounds; r++) if (revealed[r * players + p]) s += outcome.pulls[r * players + p].rec.payout;
     return s;
   };
-  const done = phase === "done" && outcome;
+  const seatScore = (p: number) => (cfg.mode === "terminal" ? (done ? outcome.lastRound[p] : revealed[(rounds - 1) * players + p] && outcome ? outcome.lastRound[p] : 0) : runningTotal(p));
+
+  const winnerLine = () => {
+    if (!done) return null;
+    if (cfg.mode === "group") return { tone: "accent", title: `Pot ${money(outcome.pot)} split ${players} ways`, sub: `${money(outcome.pot / players)} each against an entry of ${money(entry)}. The house kept ${money(entry * players - outcome.pot)}.` };
+    const w = outcome.winner;
+    const name = seatName(w, humans);
+    const human = w < humans;
+    return {
+      tone: human ? "good" : "bad",
+      title: human ? (w === 0 ? `You win the pot of ${money(outcome.pot)}` : `${name} wins the pot of ${money(outcome.pot)}`) : `${name} (house bot) takes the pot of ${money(outcome.pot)}`,
+      sub: `Players paid ${money(entry * players)} in; the house kept ${money(entry * players - outcome.pot)}.${outcome.tied ? " Tie broken at random." : ""}`,
+    };
+  };
+  const wl = winnerLine();
 
   return (
     <div className="space-y-4">
@@ -129,17 +194,32 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
             </div>
             <div className="text-xs text-ink-2">{mode.rule}</div>
           </div>
-          <label className="flex items-center gap-1 text-xs text-ink-2">
-            <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} /> fast reveal
+          <label className="flex items-center gap-1 text-xs text-ink-2" title="Off: every seat spins a reel round by round. On: show the result at once.">
+            <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} disabled={busy} /> fast reveal
           </label>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {cfg.boxes.map((b, i) => (
-            <button key={i} type="button" className="chip" onClick={() => onSettings("boxes")}>
+            <button key={i} type="button" className={`chip ${busy && i === round ? "chip-accent" : ""}`} onClick={() => onSettings("boxes")}>
               <Icon name="ph:package" size={12} /> Round {i + 1}: {b.name.split(" · ")[0]} · {money(b.price)}
             </button>
           ))}
+          {busy && (
+            <span className="ml-auto flex items-center gap-1 text-xs text-accent-ink animate-rise">
+              <Icon name="ph:timer" size={14} /> Round {round + 1} of {rounds}: {activeBox.name.split(" · ")[0]} {phase === "round" ? "opening…" : "settled"}
+            </span>
+          )}
         </div>
+
+        {wl && (
+          <div className={`mt-3 animate-pop rounded-xl border px-4 py-3 text-center ${wl.tone === "good" ? "border-good/40 bg-good-soft" : wl.tone === "bad" ? "border-bad/40 bg-bad-soft" : "border-accent/40 bg-accent-soft"}`}>
+            <div className="flex items-center justify-center gap-2 text-base font-semibold">
+              <Icon name={wl.tone === "good" ? "ph:confetti" : wl.tone === "bad" ? "ph:robot" : "ph:users"} size={22} className={wl.tone === "good" ? "text-good" : wl.tone === "bad" ? "text-bad" : "text-accent-ink"} />
+              {wl.title}
+            </div>
+            <div className="text-xs text-ink-2">{wl.sub}</div>
+          </div>
+        )}
 
         <div className="mt-4 overflow-x-auto">
           <div className="grid min-w-[560px] gap-2" style={{ gridTemplateColumns: `repeat(${players}, minmax(0, 1fr))` }}>
@@ -157,21 +237,30 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
                       <div className="truncate text-sm font-semibold">{seatName(p, humans)}</div>
                       <div className="text-[10px] uppercase tracking-wide text-ink-3">{isBot ? "house bot" : "human"}</div>
                     </div>
-                    {win && cfg.mode !== "group" && <Icon name="ph:crown" size={20} className="ml-auto text-warn" />}
+                    {win && cfg.mode !== "group" && <Icon name="ph:crown" size={20} className="ml-auto animate-pop text-warn" />}
                   </div>
                   <div className="mt-2 space-y-1.5">
                     {Array.from({ length: rounds }, (_, r) => {
-                      const pull = pullAt(r, p);
-                      const show = pull && isRevealed(r, p);
-                      const item = show ? CATALOG_BY_ID.get(pull.rec.itemId) : undefined;
+                      const idx = r * players + p;
+                      const pull = outcome?.pulls[idx];
+                      const item = pull ? CATALOG_BY_ID.get(pull.rec.itemId) : undefined;
+                      const isRevealed = !!(outcome && revealed[idx]);
+                      const spinning = !!(outcome && item && !revealed[idx] && phase === "round" && r === round);
+                      if (spinning) {
+                        return (
+                          <div key={`${battleNo}-${r}-${p}`}>
+                            <MiniReel pool={pools[r]} winner={item!} delay={p * STAGGER_MS} duration={SPIN_MS} onDone={() => markRevealed(idx)} />
+                          </div>
+                        );
+                      }
                       return (
                         <div key={r} className="flex h-12 items-center gap-2 rounded-lg border border-line bg-surface px-2">
-                          {show && item ? (
+                          {isRevealed && item && pull ? (
                             <>
                               <div className="animate-pop">
                                 <ItemTile item={item} size={36} />
                               </div>
-                              <div className="min-w-0 flex-1">
+                              <div className="min-w-0 flex-1 animate-rise">
                                 <div className="truncate text-xs">{item.name}</div>
                                 <div className={`font-mono text-xs ${pull.rec.payout >= cfg.boxes[r].price ? "text-good" : "text-ink-3"}`}>{money(pull.rec.payout)}</div>
                               </div>
@@ -188,10 +277,12 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
                   </div>
                   <div className="mt-2 flex items-baseline justify-between border-t border-line pt-1.5">
                     <span className="text-[11px] text-ink-3">{cfg.mode === "terminal" ? "last round" : "total"}</span>
-                    <span className="font-mono text-sm font-semibold">{money(cfg.mode === "terminal" && done ? outcome.lastRound[p] : runningTotal(p))}</span>
+                    <span className="font-mono text-sm font-semibold tabular-nums">
+                      <CountUp value={seatScore(p)} format={money} />
+                    </span>
                   </div>
                   {done && (
-                    <div className={`mt-1 text-right text-xs ${outcome.share[p] > 0 ? "font-semibold text-accent-ink" : "text-ink-3"}`}>
+                    <div className={`mt-1 text-right text-xs animate-rise ${outcome.share[p] > 0 ? "font-semibold text-accent-ink" : "text-ink-3"}`}>
                       {outcome.share[p] > 0 ? `takes ${money(outcome.share[p])}` : "takes nothing"}
                     </div>
                   )}
@@ -202,25 +293,12 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={phase === "revealing"}>
-            <Icon name="ph:play" size={18} className="text-white" /> {phase === "revealing" ? "Opening…" : outcome ? "Next battle" : "Start battle"}
+          <button type="button" className="btn btn-primary btn-lg" onClick={start} disabled={busy}>
+            <Icon name="ph:play" size={18} className="text-white" /> {busy ? "Battle in progress…" : outcome ? "Next battle" : "Start battle"}
           </button>
-          <button type="button" className="btn" onClick={reset} disabled={phase === "revealing"}>
+          <button type="button" className="btn" onClick={reset} disabled={busy}>
             <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset session
           </button>
-          {done && (
-            <span className="text-sm">
-              {cfg.mode === "group" ? (
-                <>
-                  Pot {money(outcome.pot)} split {players} ways: {money(outcome.pot / players)} each against an entry of {money(entry)}.
-                </>
-              ) : (
-                <>
-                  <b>{seatName(outcome.winner, humans)}</b> takes the pot of {money(outcome.pot)} {outcome.tied ? "(tie broken at random)" : ""} · players paid {money(entry * players)} in, the house kept {money(entry * players - outcome.pot)}.
-                </>
-              )}
-            </span>
-          )}
           <div className="ml-auto grid grid-cols-4 gap-2 text-right text-xs">
             <div>
               <div className="text-ink-3">battles</div>
