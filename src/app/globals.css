@@ -300,3 +300,27 @@ table {
 /* Idle marquee: the reel keeps scrolling until the first spin. */
 @keyframes reelIdle { from { transform: translateX(0); } to { transform: translateX(var(--reel-idle-dist, -1300px)); } }
 .reel-idle { animation: reelIdle var(--reel-idle-dur, 20s) linear infinite; }
+
+/* Box opening: shake, a sliver of light, the lid swings open, the item rises out. */
+.mbox { perspective: 900px; }
+.mbox-lid { transform-origin: 50% 0%; transition: transform 0.85s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.mbox-lid.ajar { transform: rotateX(-10deg); }
+.mbox-lid.open { transform: rotateX(-125deg); }
+.mbox-item { transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1.08), opacity 0.35s ease 0.1s; transform: translateY(44px) scale(0.45); opacity: 0; }
+.mbox-item.out { transform: translateY(-128px) scale(1); opacity: 1; }
+@keyframes glowPulse { 0%, 100% { opacity: 0.1; } 50% { opacity: 1; } }
+.mbox-glow { animation: glowPulse 0.5s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.animate-bob { animation: bob 2.4s ease-in-out infinite; }
+@keyframes shakeHard {
+  0% { transform: rotate(0deg) translateX(0); }
+  15% { transform: rotate(-3deg) translateX(-3px); }
+  30% { transform: rotate(3deg) translateX(3px); }
+  45% { transform: rotate(-5deg) translateX(-5px); }
+  60% { transform: rotate(5deg) translateX(5px); }
+  75% { transform: rotate(-3deg) translateX(-3px); }
+  100% { transform: rotate(0deg) translateX(0); }
+}
+.animate-shake-hard { animation: shakeHard 0.5s ease-in-out 3; }
+@keyframes burst { from { transform: scale(0.4); opacity: 0.9; } to { transform: scale(2.2); opacity: 0; } }
+.mbox-burst { animation: burst 0.9s ease-out both; }

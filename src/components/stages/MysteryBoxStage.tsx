@@ -11,7 +11,7 @@ import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
 import { Badge, Card, Info, Stat } from "../ui";
 import { Reel, type ReelPoolEntry, type SpinInfo } from "../lab/Reel";
-import { CardFlip, PackRip, TicketScratch, TierLadder } from "../lab/motifs";
+import { BoxOpen, CardFlip, PackRip, TicketScratch, TierLadder } from "../lab/motifs";
 import { CountUp } from "../lab/CountUp";
 import { OperatorPanel } from "../lab/OperatorPanel";
 import { cta, useSkin } from "../lab/SkinContext";
@@ -26,6 +26,7 @@ interface Tally {
   best: LiveOpen | null;
 }
 const EMPTY: Tally = { opens: 0, spent: 0, returned: 0, displayed: 0, losses: 0, staged: 0, best: null };
+const MOTIF_LABEL: Record<Motif, string> = { boxopen: "open the box", reel: "horizontal reel", cardflip: "card flip", packrip: "pack rip", tiers: "tier ladder", ticket: "scratch ticket" };
 
 /** A fabricated ticker of other players winning top items (the fake-live-feed rig). */
 function LiveFeed({ pool, price, perMinute }: { pool: ReelPoolEntry[]; price: number; perMinute: number }) {
@@ -327,8 +328,9 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
           )}
           <label className="flex items-center gap-1 text-xs text-ink-2" data-tip="How the open is shown. The default is this source's own style; the draw is the same whatever you pick." data-tip-end="">
             Reveal
-            <select value={motifChoice} onChange={(e) => setMotifChoice(e.target.value as Motif | "auto")} className="w-36" disabled={spinning}>
-              <option value="auto">{skin.id === "vendor" ? "reel (default)" : "source default"}</option>
+            <select value={motifChoice} onChange={(e) => setMotifChoice(e.target.value as Motif | "auto")} className="w-40" disabled={spinning}>
+              <option value="auto">default ({MOTIF_LABEL[defaultMotif]})</option>
+              <option value="boxopen">open the box</option>
               <option value="reel">horizontal reel</option>
               <option value="cardflip">card flip</option>
               <option value="packrip">pack rip</option>
@@ -342,6 +344,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
         </div>
         <div className="mt-3">
           {motif === "reel" && <Reel pool={pool} winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />}
+          {motif === "boxopen" && <BoxOpen winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
           {motif === "cardflip" && <CardFlip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
           {motif === "packrip" && <PackRip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
           {motif === "tiers" && cfg.box.tiers && <TierLadder tiers={cfg.box.tiers} winner={pendingItem} winnerTierId={pending?.rec.tierId} spinId={spinId} onDone={reveal} fast={fast} price={price} />}

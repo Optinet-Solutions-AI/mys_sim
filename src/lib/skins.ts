@@ -2,7 +2,7 @@
 // reveal motif (how an open is shown), the words used, and which operator panel sits beside the result.
 // Inspired by the operators' public products; no logos or assets are copied.
 
-export type Motif = "reel" | "cardflip" | "packrip" | "tiers" | "ticket";
+export type Motif = "boxopen" | "reel" | "cardflip" | "packrip" | "tiers" | "ticket";
 
 export interface SkinTerms {
   unit: string; // box, case, pack, drop, ticket, bag
@@ -67,7 +67,7 @@ export const SKINS: Record<string, Skin> = {
     dark: false,
     font: "sans",
     vars: light("#0f6b6b", "#0a5252", "#dbecea", "#f6f7f5"),
-    motif: "reel",
+    motif: "boxopen",
     terms: { ...base, unit: "box", openCta: "Open box · {price}", openedTitle: "You got", wonTitle: "You won!" },
     panel: "vendor",
     tagline: "White-label case site, as demoed",
@@ -77,7 +77,7 @@ export const SKINS: Record<string, Skin> = {
     dark: false,
     font: "serif",
     vars: light("#1f5fd0", "#173f8a", "#e4edfc", "#f4f7fc", "#ffffff", "#d9e1ef"),
-    motif: "cardflip",
+    motif: "boxopen",
     terms: { unit: "drop", openCta: "Open drop · {price}", openedTitle: "Your drop", wonTitle: "Grail!", startBattle: "Start", sellBack: "Sell back to IcyBox", ship: "Keep it", balance: "Wallet" },
     panel: "icybox",
     tagline: "Luxury app: cards, drops, keep or sell back",
@@ -137,7 +137,7 @@ export const SKINS: Record<string, Skin> = {
     dark: false,
     font: "sans",
     vars: light("#0f6b6b", "#0a5252", "#dbecea", "#f2f7f6", "#ffffff", "#cfe0dc"),
-    motif: "cardflip",
+    motif: "boxopen",
     terms: { unit: "box", openCta: "Open · {price}", openedTitle: "You got", wonTitle: "You won", startBattle: "Open together", sellBack: "Cash out", ship: "Ship it", balance: "Cash" },
     panel: "glassbox",
     tagline: "Our design: everything shown before you open",
@@ -147,7 +147,7 @@ export const SKINS: Record<string, Skin> = {
     dark: false,
     font: "sans",
     vars: light("#6b4f2a", "#4a3519", "#efe4d4", "#faf6f0", "#ffffff", "#e6dccc"),
-    motif: "cardflip",
+    motif: "boxopen",
     terms: { unit: "box", openCta: "Open · {price}", openedTitle: "You got", wonTitle: "You won", startBattle: "Start break", sellBack: "Sell", ship: "Keep", balance: "Balance" },
     tagline: "Retail chance formats",
   },
@@ -166,10 +166,10 @@ export const SKINS: Record<string, Skin> = {
 export const MOTIF_BY_FEATURE: Record<string, Motif> = {
   kuji: "ticket",
   omaze: "ticket",
-  popmart: "cardflip",
-  fukubukuro: "cardflip",
-  gacha: "cardflip",
-  "glass-luckybag": "cardflip",
+  popmart: "boxopen",
+  fukubukuro: "boxopen",
+  gacha: "boxopen",
+  "glass-luckybag": "boxopen",
 };
 
 export function skinFor(operatorId: string): Skin {

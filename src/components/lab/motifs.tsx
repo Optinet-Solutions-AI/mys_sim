@@ -11,6 +11,79 @@ function reduced() {
   return typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** A mystery box: it bobs while idle, shakes, shows a sliver of light under the lid, then the lid swings open and the item rises out. */
+export function BoxOpen({ winner, spinId, onDone, fast = false, label }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string }) {
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
+  const [phase, setPhase] = useState<"idle" | "shake" | "tease" | "open" | "done">("idle");
+  const [shown, setShown] = useState<CatalogItem | null>(null);
+  useEffect(() => {
+    if (!spinId) {
+      setPhase("idle");
+      setShown(null);
+      return;
+    }
+    if (!winner) return;
+    setShown(winner);
+    if (fast || reduced()) {
+      setPhase("done");
+      const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
+      return () => clearTimeout(t);
+    }
+    setPhase("shake");
+    const t1 = setTimeout(() => setPhase("tease"), 1500);
+    const t2 = setTimeout(() => setPhase("open"), 1500 + 700);
+    const t3 = setTimeout(() => {
+      setPhase("done");
+      onDoneRef.current?.({ staged: null });
+    }, 1500 + 700 + 1100);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+  const open = phase === "open" || phase === "done";
+  return (
+    <div className="mbox relative mx-auto my-2 h-[272px] w-[240px]">
+      {/* the item: behind the front of the box until it rises out */}
+      <div className={`mbox-item absolute left-1/2 top-[128px] z-10 flex -translate-x-1/2 flex-col items-center gap-1 ${open ? "out" : ""}`}>
+        {shown && (
+          <>
+            <div className="relative">
+              {phase === "open" && <div className="mbox-burst absolute inset-0 rounded-full bg-accent-soft" />}
+              <ItemTile item={shown} size={92} />
+            </div>
+            <div className="w-[220px] text-center">
+              <div className="text-[11px] text-ink-3">{shown.brand}</div>
+              <div className="line-clamp-2 text-sm font-semibold leading-tight">{shown.name}</div>
+              <div className="font-mono text-xs text-ink-2">{money(shown.retail)}</div>
+            </div>
+          </>
+        )}
+      </div>
+      <div className={`absolute inset-x-0 bottom-0 top-[112px] ${phase === "shake" ? "animate-shake-hard" : phase === "idle" ? "animate-bob" : ""}`}>
+        {/* back wall */}
+        <div className="absolute left-6 right-6 top-0 z-0 h-[130px] rounded-b-2xl bg-accent-ink opacity-90" />
+        {/* light under the lid */}
+        <div className={`absolute left-8 right-8 top-[2px] z-20 h-2 rounded-full bg-white blur-[3px] ${phase === "tease" ? "mbox-glow" : "opacity-0"}`} />
+        {/* front */}
+        <div className="absolute left-6 right-6 top-[14px] z-20 flex h-[120px] items-center justify-center rounded-b-2xl bg-accent shadow-lg">
+          <div className="card-pattern absolute inset-0 rounded-b-2xl opacity-20" />
+          <div className="absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-white/25" />
+          <Icon name="ph:question" size={44} className="relative text-white" />
+          <div className="absolute inset-x-0 bottom-2 text-center text-[10px] font-semibold uppercase tracking-[0.25em] text-white/90">{label}</div>
+        </div>
+        {/* lid */}
+        <div className={`mbox-lid absolute left-4 right-4 top-0 z-30 h-[26px] rounded-lg bg-accent-ink shadow ${phase === "tease" ? "ajar" : open ? "open" : ""}`}>
+          <div className="absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-white/25" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** A face-down card that shakes, then flips to reveal the item (IcyBox drops, blind boxes, lucky bags, the Glass Box). */
 export function CardFlip({ winner, spinId, onDone, fast = false, label, back }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string; back?: React.ReactNode }) {
   const onDoneRef = useRef(onDone);
