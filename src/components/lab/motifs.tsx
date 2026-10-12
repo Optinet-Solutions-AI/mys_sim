@@ -46,24 +46,18 @@ export function BoxOpen({ winner, spinId, onDone, fast = false, label }: { winne
   }, [spinId]);
   const open = phase === "open" || phase === "done";
   return (
-    <div className="mbox relative mx-auto my-2 h-[272px] w-[240px]">
-      {/* the item: behind the front of the box until it rises out */}
-      <div className={`mbox-item absolute left-1/2 top-[128px] z-10 flex -translate-x-1/2 flex-col items-center gap-1 ${open ? "out" : ""}`}>
-        {shown && (
-          <>
+    <div className="mx-auto my-2 w-[240px]">
+      <div className="mbox relative h-[250px]">
+        {/* the item: behind the front of the box until it rises out, then above everything */}
+        <div className={`mbox-item absolute left-1/2 top-[128px] flex -translate-x-1/2 flex-col items-center ${open ? "out z-40" : "z-10"}`}>
+          {shown && (
             <div className="relative">
               {phase === "open" && <div className="mbox-burst absolute inset-0 rounded-full bg-accent-soft" />}
               <ItemTile item={shown} size={92} />
             </div>
-            <div className="w-[220px] text-center">
-              <div className="text-[11px] text-ink-3">{shown.brand}</div>
-              <div className="line-clamp-2 text-sm font-semibold leading-tight">{shown.name}</div>
-              <div className="font-mono text-xs text-ink-2">{money(shown.retail)}</div>
-            </div>
-          </>
-        )}
-      </div>
-      <div className={`absolute inset-x-0 bottom-0 top-[112px] ${phase === "shake" ? "animate-shake-hard" : phase === "idle" ? "animate-bob" : ""}`}>
+          )}
+        </div>
+        <div className={`absolute inset-x-0 bottom-0 top-[112px] ${phase === "shake" ? "animate-shake-hard" : phase === "idle" ? "animate-bob" : ""}`}>
         {/* back wall */}
         <div className="absolute left-6 right-6 top-0 z-0 h-[130px] rounded-b-2xl bg-accent-ink opacity-90" />
         {/* light under the lid */}
@@ -75,10 +69,21 @@ export function BoxOpen({ winner, spinId, onDone, fast = false, label }: { winne
           <Icon name="ph:question" size={44} className="relative text-white" />
           <div className="absolute inset-x-0 bottom-2 text-center text-[10px] font-semibold uppercase tracking-[0.25em] text-white/90">{label}</div>
         </div>
-        {/* lid */}
-        <div className={`mbox-lid absolute left-4 right-4 top-0 z-30 h-[26px] rounded-lg bg-accent-ink shadow ${phase === "tease" ? "ajar" : open ? "open" : ""}`}>
-          <div className="absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-white/25" />
+          {/* lid */}
+          <div className={`mbox-lid absolute left-4 right-4 top-0 z-30 h-[26px] rounded-lg bg-accent-ink shadow ${phase === "tease" ? "ajar" : open ? "open" : ""}`}>
+            <div className="absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-white/25" />
+          </div>
         </div>
+      </div>
+      {/* the caption lives under the box, clear of the lid and the front */}
+      <div className={`mt-2 h-14 text-center ${open && shown ? "animate-rise" : "invisible"}`}>
+        {shown && (
+          <>
+            <div className="text-[11px] text-ink-3">{shown.brand}</div>
+            <div className="line-clamp-1 text-sm font-semibold leading-tight">{shown.name}</div>
+            <div className="font-mono text-xs text-ink-2">{money(shown.retail)}</div>
+          </>
+        )}
       </div>
     </div>
   );
