@@ -276,12 +276,16 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
     settings: ["Incentives plus missions and the free route share.", "Run compares against a control with incentives off and prices the free route."],
   },
   "misty-boxes": {
-    player: ["A $10 or $50 box pays a watch rarely and credits the rest of the time. One credit is one entry in a prize competition.", "The box page values credits at face ('entries from $1'), so the numbers look generous.", "Each open has its own seed and can be checked with Misty's verifier."],
-    settings: ["Box & items: the captured table, locked to the published odds.", "Algorithm: Misty's recipe with a seed per open.", "Run shows the return with credits at face against what a credit is really worth."],
+    player: ["You pay $10 and spin. About one open in 61 pays a physical item: perfume or a lipstick most of those times, a Louis Vuitton piece about once in 350, the Rolex once in 25,000.", "The other 98 opens in 100 pay Mistees, usually one to three of them. Two outcomes also give a free spin that pays a few more Mistees.", "Mistees are site credit: they can only be spent on more boxes or products on the site and never become money. The page does not say what one Mistee is worth in dollars.", "Before you pay you see the fingerprint of the secret seed; at the open the seed is revealed and the odds table is frozen onto your open, so you can check the draw at once."],
+    settings: ["Box & items: the live table, locked to the published odds. The Mistee items are valued at an assumed $1 face; change them to test another rate.", "Algorithm: Misty's recipe with a seed per open.", "Run shows the return with Mistees at face against what they really cost Misty, which is about 37 cents each if they are only ever spent on boxes."],
+  },
+  "misty-mistees": {
+    player: ["Almost every open pays you Mistees instead of an item. You cannot cash them; you can only open more boxes with them.", "Each of those opens pays mostly Mistees again, so the credit goes round and round, shrinking a little each time, until it is gone or a physical item finally drops.", "The only thing that ever leaves Misty is a physical item. Everything else is a number on your account."],
+    settings: ["The live table and Misty's recipe.", "Agents: how much they deposit, how often they come back, when they would rather ship than keep spinning.", "Run gives the hold (how much of the deposits never leaves), how few opens end in a shipped item, and how many extra opens the credit funded."],
   },
   "misty-credits": {
-    player: ["Your credits go into a draw with 100,000 numbers for one prize. The draw happens on a date whether or not all numbers sold.", "Anyone can enter free by post with the same odds."],
-    settings: ["The draw: pool size, face value, prize, draw rule, free-entry share.", "Run gives the nominal return (credits at face) against the real one after the draw, and what one credit is worth."],
+    player: ["A competition sells numbered entries for one prize out of a fixed pool, and draws on a set date whether or not all numbers sold.", "Anyone can enter free by postcard with the same odds, provided the skill question is answered correctly.", "This tab models the two-stage version captured on 9 October, where box credits were entries; by 12 October Misty described Mistees as site credit for boxes instead."],
+    settings: ["The draw: pool size, face value, prize, draw rule, free-entry share.", "Run gives the nominal return (entries at face) against the real one after the draw, and what one entry is worth."],
   },
   "glass-box": {
     player: ["Before you open, you see the whole box committed: items, odds, three prices and the cash-out value, with its fingerprint. A public beacon adds randomness nobody controls.", "After the open you can check everything at once, and the value shown is what the item actually sells for."],

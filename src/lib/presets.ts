@@ -228,6 +228,7 @@ export const PRESETS = {
     { id: "packs", name: "Packs.com scheme (per-open rotation, 32-bit ticket)", config: { ...DEFAULT_MYSTERY, algo: { ...STANDARD_PF_ALGO, scheme: "packs" as const, rotation: "per-open" as const } } },
     { id: "glassbox", name: "Glass Box: manifest, beacon, per-open rotation, realized value, public log", config: { ...DEFAULT_MYSTERY, box: GLASSBOX_BOX, algo: GLASSBOX_ALGO } },
     { id: "captured-jemlit", name: "Captured: Jemlit Apple eBox (reconstructed), Jemlit scheme", config: { ...DEFAULT_MYSTERY, box: CAPTURED_BOXES.jemlitApple, algo: JEMLIT_ALGO } },
+    { id: "captured-misty-live", name: "Captured: Misty Timepiece Suite $10, live table 12 Oct 2026, Misty scheme", config: { ...DEFAULT_MYSTERY, box: CAPTURED_BOXES.mistyTimepieceLive, algo: MISTY_ALGO } },
     { id: "captured-misty-ts", name: "Captured: Misty Timepiece Suite $10 (reconstructed), Misty scheme", config: { ...DEFAULT_MYSTERY, box: CAPTURED_BOXES.mistyTimepiece, algo: MISTY_ALGO } },
     { id: "captured-misty-ph", name: "Captured: Misty Penthouse $50 (reconstructed), Misty scheme", config: { ...DEFAULT_MYSTERY, box: CAPTURED_BOXES.mistyPenthouse, algo: MISTY_ALGO } },
     { id: "captured-cases", name: "Captured: Cases.gg Pack Up $1,813 (reconstructed), rotation every 1,000", config: { ...DEFAULT_MYSTERY, box: CAPTURED_BOXES.casesPackUp, algo: CASES_ALGO } },
