@@ -22,7 +22,7 @@ const want = {
     "scales","detective","bug","shield-check","dice-five","shuffle","lock-key","key","seal-check","chart-bar",
     "chart-line-up","robot","users-three","user","flask","gauge","gift","package","coins","diamond","handbag","watch",
     "sneaker","crown-simple","house","folders","clock-counter-clockwise","git-branch","plus","minus","caret-down",
-    "caret-right","funnel","magnifying-glass","file-text","file-code","hash","cube","stack","target","lightning","timer"],
+    "caret-right","funnel","magnifying-glass","file-text","file-code","hash","cube","stack","target","lightning","timer","gear","gear-six","question","x","arrow-counter-clockwise","arrows-clockwise","fast-forward","truck","hand-coins","crown","calendar-check","calendar-blank","medal","confetti","play-circle","caret-left","storefront","piggy-bank","money","arrow-up-right","arrow-down-right","equals","users","skull","sun","fire","arrow-left","sliders"],
 };
 const out = {};
 let missing = [];

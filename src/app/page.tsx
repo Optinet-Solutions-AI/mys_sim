@@ -55,10 +55,10 @@ export default function Home() {
 
       <Card title="How to use it">
         <ol className="list-decimal space-y-1 pl-5 text-sm">
-          <li>Open a lab and pick a preset, for example the vendor default or a rigged variant.</li>
-          <li>Adjust the box (items, RTP knob, which price layer counts as value), the algorithm (scheme, mapping, rotation) and any rigs.</li>
-          <li>Set the size and a seed, run, and read the Results tab: stated versus observed odds, realized return with its error bar, proof verification and the detector.</li>
-          <li>Save the run to history to compare later or export a Markdown report for the research documents.</li>
+          <li>Open a lab: you land on the test page. Press Open to open a pack with the reveal, or Start battle to play one battle round by round.</li>
+          <li>Press the cog (Settings) to change anything: items and odds, the RTP knob, the algorithm, the rigs, the number of bots, and how many opens or battles to simulate. The summary chips under the title open the right section.</li>
+          <li>Press Run simulation for the statistics: stated versus observed odds, realized return with its error bar, proof verification and the detector. Results appear below the test page.</li>
+          <li>Save the run to history to compare later, or download the Markdown report for the research documents.</li>
         </ol>
       </Card>
 

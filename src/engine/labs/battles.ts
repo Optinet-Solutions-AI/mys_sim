@@ -1,8 +1,8 @@
-import type { BattlesConfig, BattlesResult, CatalogItem, Progress } from "../types";
+import type { BattlesConfig, BattlesResult, CatalogItem, OpenRecord, Progress } from "../types";
 import { Opener } from "../opener";
-import { sfc32 } from "../rng";
+import { sfc32, type Rng } from "../rng";
 import { linearHistogram } from "../metrics";
-import { resolveTable, retargetBox } from "../table";
+import { resolveTable, retargetBox, type ResolvedTable } from "../table";
 
 export const BATTLE_MODES: { id: BattlesConfig["mode"]; name: string; rule: string }[] = [
   { id: "normal", name: "Normal", rule: "Highest total value over all rounds takes every item." },
@@ -12,10 +12,33 @@ export const BATTLE_MODES: { id: BattlesConfig["mode"]; name: string; rule: stri
   { id: "jackpot", name: "Jackpot", rule: "A winner is drawn with probability proportional to each player's total." },
 ];
 
-export function runBattles(cfg: BattlesConfig, battles: number, seed: number, catalog: Map<string, CatalogItem>, onProgress?: Progress): BattlesResult {
-  const t0 = Date.now();
-  const rng = sfc32(seed);
-  const N = Math.max(1, Math.floor(battles));
+/** Everything a battle needs that stays fixed across battles: openers, bot tables, seat counts, entry. */
+export interface BattleTable {
+  openers: Opener[];
+  botTables?: ResolvedTable[];
+  players: number;
+  humans: number;
+  entry: number;
+}
+
+export interface BattlePull {
+  round: number;
+  player: number;
+  isBot: boolean;
+  rec: OpenRecord;
+}
+
+export interface BattleOutcome {
+  pulls: BattlePull[]; // round-major, seat-minor, in the order they were drawn
+  totals: number[];
+  lastRound: number[];
+  pot: number;
+  winner: number; // -1 for group mode
+  tied: boolean;
+  share: number[]; // what each seat takes home
+}
+
+export function prepareBattle(cfg: BattlesConfig, catalog: Map<string, CatalogItem>, rng: Rng): BattleTable {
   const players = Math.max(2, Math.floor(cfg.players));
   const humans = cfg.bots.enabled ? Math.min(players, Math.max(1, Math.floor(cfg.humansPerBattle))) : players;
   const openers = cfg.boxes.map((b, i) => new Opener(b, cfg.algo, cfg.rigs, catalog, rng, "box" + i));
@@ -23,54 +46,77 @@ export function runBattles(cfg: BattlesConfig, battles: number, seed: number, ca
     ? cfg.boxes.map((b) => resolveTable(retargetBox(b, cfg.rigs.favouredBots!.botRtp, catalog), b.ticketTotal, catalog))
     : undefined;
   const entry = cfg.boxes.reduce((a, b) => a + b.price, 0);
+  return { openers, botTables, players, humans, entry };
+}
+
+/** Plays one battle. The same function serves the live arena and the statistics run. */
+export function playBattle(t: BattleTable, cfg: BattlesConfig, rng: Rng, counter: { idx: number }, progress: number): BattleOutcome {
+  const { players, humans } = t;
+  const totals = new Array<number>(players).fill(0);
+  const lastRound = new Array<number>(players).fill(0);
+  const pulls: BattlePull[] = [];
+  let pot = 0;
+  for (let r = 0; r < cfg.boxes.length; r++) {
+    for (let p = 0; p < players; p++) {
+      const isBot = p >= humans;
+      const rec = t.openers[r].open(counter.idx++, isBot ? "bot" : "human", progress, isBot && t.botTables ? t.botTables[r] : undefined);
+      totals[p] += rec.payout;
+      lastRound[p] = rec.payout;
+      pot += rec.payout;
+      pulls.push({ round: r, player: p, isBot, rec });
+    }
+  }
+  const share = new Array<number>(players).fill(0);
+  let winner = -1;
+  let tied = false;
+  const score = cfg.mode === "terminal" ? lastRound : totals;
+  if (cfg.mode === "group") {
+    share.fill(pot / players);
+  } else if (cfg.mode === "jackpot") {
+    const sum = score.reduce((a, x) => a + x, 0);
+    let u = rng.next() * (sum || 1);
+    winner = players - 1;
+    for (let p = 0; p < players; p++) {
+      u -= score[p] || (sum ? 0 : 1 / players);
+      if (u <= 0) {
+        winner = p;
+        break;
+      }
+    }
+  } else {
+    const best = cfg.mode === "crazy" ? Math.min(...score) : Math.max(...score);
+    const tiedSeats = score.map((v, i) => (v === best ? i : -1)).filter((i) => i >= 0);
+    if (tiedSeats.length > 1) tied = true;
+    winner = tiedSeats[rng.int(tiedSeats.length)];
+  }
+  if (winner >= 0) share[winner] = pot;
+  return { pulls, totals, lastRound, pot, winner, tied, share };
+}
+
+export function runBattles(cfg: BattlesConfig, battles: number, seed: number, catalog: Map<string, CatalogItem>, onProgress?: Progress): BattlesResult {
+  const t0 = Date.now();
+  const rng = sfc32(seed);
+  const N = Math.max(1, Math.floor(battles));
+  const t = prepareBattle(cfg, catalog, rng);
+  const { players, humans, entry } = t;
   const avgSingle = entry / Math.max(1, cfg.boxes.length);
   let totalWagered = 0, totalPaid = 0, humanWins = 0, botWins = 0, ties = 0, topPot = 0;
   const multiples: number[] = [];
-  let idx = 0;
+  const counter = { idx: 0 };
   const step = Math.max(1, Math.floor(N / 100));
 
   for (let b = 0; b < N; b++) {
-    const totals = new Array(players).fill(0);
-    const lastRound = new Array(players).fill(0);
-    let pot = 0;
-    for (let r = 0; r < cfg.boxes.length; r++) {
-      for (let p = 0; p < players; p++) {
-        const isBot = p >= humans;
-        const rec = openers[r].open(idx++, isBot ? "bot" : "human", b / N, isBot && botTables ? botTables[r] : undefined);
-        totals[p] += rec.payout;
-        lastRound[p] = rec.payout;
-        pot += rec.payout;
-      }
-    }
+    const o = playBattle(t, cfg, rng, counter, b / N);
     totalWagered += entry * players;
-    totalPaid += pot;
-    if (pot / entry > topPot) topPot = pot / entry;
-    multiples.push(pot / (entry * players));
-    let winner = -1;
-    const score = cfg.mode === "terminal" ? lastRound : totals;
+    totalPaid += o.pot;
+    if (o.pot / entry > topPot) topPot = o.pot / entry;
+    multiples.push(o.pot / (entry * players));
     if (cfg.mode === "group") {
-      // everyone receives pot/players; count as a human "win" share for rates
       humanWins += humans / players;
       botWins += (players - humans) / players;
-    } else if (cfg.mode === "jackpot") {
-      const sum = score.reduce((a, x) => a + x, 0);
-      let u = rng.next() * (sum || 1);
-      winner = players - 1;
-      for (let p = 0; p < players; p++) {
-        u -= score[p] || (sum ? 0 : 1 / players);
-        if (u <= 0) {
-          winner = p;
-          break;
-        }
-      }
     } else {
-      const best = cfg.mode === "crazy" ? Math.min(...score) : Math.max(...score);
-      const tied = score.map((v, i) => (v === best ? i : -1)).filter((i) => i >= 0);
-      if (tied.length > 1) ties++;
-      winner = tied[rng.int(tied.length)];
-    }
-    if (winner >= 0) {
-      if (winner < humans) humanWins++;
+      if (o.tied) ties++;
+      if (o.winner < humans) humanWins++;
       else botWins++;
     }
     if (b % step === 0 && onProgress) onProgress(b, N);

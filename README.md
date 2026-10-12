@@ -29,13 +29,18 @@ npx tsc --noEmit                 # type check
 
 ## What is in it (phase 1, wave 1: the vendor's features)
 
+Every lab follows one pattern: you land on the **test page** and can play at once; the **cog** (Settings)
+holds all configuration in sections (run size and seed, box and items, algorithm, rigs, accounts or population);
+the summary chips under the title open the matching section; **Run simulation** produces the statistics, which
+appear below the test page. Live opens and simulations share the same engine, rigs and verifier.
+
 | Route | What it does |
 |---|---|
 | `/` | Hub: the four labs, how to use them, the wave roadmap |
-| `/labs/mystery-box` | One box opened N times. Box builder with the RTP solver or manual percentages, algorithm panel, rig toolkit, account mix. Results: realized RTP with standard error at three price layers, chi-square against stated odds, proof verification, detector, bias map, payout histogram, per-item table, sample of opens with proof fields |
-| `/labs/sellback` | Agents deposit, open, sell back or ship, re-bet. Vendor economy (credit at displayed value, withdraw only through items) or cash economy. Results: hold, GGR, sell-back and ship rates, ruin, bankroll percentiles |
-| `/labs/battles` | Multi-box battles with bots filling seats. Five modes (normal, crazy, group, terminal, jackpot), each testable alone. Results: wager multiplier, realized edge, human win rate against the equal-odds expectation, pot distribution |
-| `/labs/retention` | Daily boxes with expiry, wager races, affiliate bonuses, against a control run on the same seed. Results: retention curves, bonus cost, incremental wager per bonus dollar, LTV, hold after bonuses |
+| `/labs/mystery-box` | Test page: open a pack with a reveal reel, see the item and its proof (verifier result), open ×10 or ×100, session tally, box contents, recent pulls. Settings: box builder with the RTP solver or manual percentages, algorithm, rigs, account mix, run size. Results: realized RTP with standard error at three price layers, chi-square against stated odds, proof verification, detector, bias map, payout histogram, per-item table, sample of opens with proof fields |
+| `/labs/sellback` | Test page: a wallet walkthrough (deposit, open, sell back or ship, withdraw under the chosen rule, auto-play a session) next to the operator's view of the same money. Settings: economy rules, agent population, box, algorithm, rigs. Results: hold, GGR, sell-back and ship rates, ruin, bankroll percentiles |
+| `/labs/battles` | Test page: an arena with human and bot seats, played round by round, winner and pot, session tally against the fair win rate. Settings: mode (normal, crazy, group, terminal, jackpot), players, bots, boxes per round, algorithm, rigs, run size. Results: wager multiplier, realized edge, human win rate against the equal-odds expectation, pot distribution |
+| `/labs/retention` | Test page: the offer as a visitor sees it (daily box, races, affiliate) and the horizon. Settings: visitors and days, incentives, visitor model, box, algorithm, rigs. Results against a control run on the same seed: retention curves, bonus cost, incremental wager per bonus dollar, LTV, hold after bonuses |
 | `/catalog` | 48 fictional luxury items with retail, asking and realized prices and placeholder icon tiles |
 | `/runs`, `/runs/[id]` | Saved runs (IndexedDB), compare two runs of the same lab, export JSON or a Markdown report |
 | `/verify` | The engine's verifier as a tool: recompute commitment, digest and ticket from seeds; verify a pasted record |

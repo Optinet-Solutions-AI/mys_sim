@@ -80,3 +80,54 @@ table {
     animation: none !important;
   }
 }
+
+/* Buttons and chips used by the lab stages. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.6rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+.btn:hover { background: var(--color-paper); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.btn-primary:hover { background: var(--color-accent-ink); }
+.btn-danger { background: var(--color-bad-soft); border-color: transparent; color: var(--color-bad); }
+.btn-danger:hover { background: var(--color-bad-soft); filter: brightness(0.97); }
+.btn-lg { padding: 0.8rem 1.4rem; font-size: 1rem; border-radius: 0.8rem; }
+.btn-icon { padding: 0.45rem; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  color: var(--color-ink-2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chip:hover { border-color: var(--color-accent); color: var(--color-accent-ink); }
+.chip-bad { border-color: color-mix(in srgb, var(--color-bad) 45%, transparent); background: var(--color-bad-soft); color: var(--color-bad); }
+.chip-accent { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+
+/* Reveal animations. */
+@keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.animate-pop { animation: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 0%, transparent); } 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-accent) 30%, transparent); } }
+.animate-glow { animation: glow 1.1s ease-in-out 2; }
+@keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.animate-rise { animation: rise 0.3s ease-out both; }
+.reel-mask { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }

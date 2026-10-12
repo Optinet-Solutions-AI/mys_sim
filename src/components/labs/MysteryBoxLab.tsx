@@ -1,91 +1,168 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { MysteryBoxConfig, MysteryBoxResult } from "@/engine/types";
 import { DEFAULT_MYSTERY, PRESETS } from "@/lib/presets";
 import { useRun } from "@/lib/useRun";
-import { persistRun } from "@/lib/runs";
-import { LabShell } from "../LabShell";
+import { buildRun, persistRun } from "@/lib/runs";
+import { reportMarkdown } from "@/lib/report";
+import { downloadText } from "@/lib/download";
+import { activeRigNames, algoLabel } from "@/lib/live";
+import { money, num } from "@/lib/format";
+import { LabFrame } from "../lab/LabFrame";
+import { SettingsDialog } from "../lab/SettingsDialog";
+import { SimulateBar } from "../lab/SimulateBar";
+import { ResultsSection } from "../lab/ResultsSection";
+import { MysteryBoxStage } from "../stages/MysteryBoxStage";
 import { BoxBuilder } from "../config/BoxBuilder";
 import { AlgoPanel } from "../config/AlgoPanel";
 import { RigPanel } from "../config/RigPanel";
 import { AccountsPanel } from "../config/AccountsPanel";
-import { RunControls } from "../RunControls";
 import { MysteryBoxResults } from "../results/MysteryBoxResults";
-import { Card, Field, Select } from "../ui";
+import { Button, Card, Field, NumberInput, Select } from "../ui";
+import { Icon } from "../Icon";
 
 export function MysteryBoxLab() {
   const [cfg, setCfg] = useState<MysteryBoxConfig>(DEFAULT_MYSTERY);
   const [preset, setPreset] = useState("vendor");
   const [sizes, setSizes] = useState<Record<string, number>>({ opens: 100000, verifySample: 200 });
   const [seed, setSeed] = useState(42);
+  const [settings, setSettings] = useState<{ open: boolean; section: string }>({ open: false, section: "run" });
   const [saved, setSaved] = useState(false);
   const [lastCfg, setLastCfg] = useState<MysteryBoxConfig | null>(null);
+  const [lastSizes, setLastSizes] = useState(sizes);
+  const [lastSeed, setLastSeed] = useState(seed);
   const sim = useRun();
   const result = sim.result && sim.result.kind === "mystery-box" ? (sim.result as MysteryBoxResult) : null;
+  const openSettings = useCallback((section?: string) => setSettings({ open: true, section: section ?? "run" }), []);
+  const closeSettings = useCallback(() => setSettings((s) => ({ ...s, open: false })), []);
 
   const start = async () => {
     setSaved(false);
     const snapshot = JSON.parse(JSON.stringify(cfg)) as MysteryBoxConfig;
     setLastCfg(snapshot);
+    setLastSizes(sizes);
+    setLastSeed(seed);
     try {
       await sim.run({ lab: "mystery-box", config: snapshot, sizes, seed });
     } catch {
-      /* shown by status */
+      /* shown in the bar */
     }
   };
+  useEffect(() => {
+    if (sim.status === "done") requestAnimationFrame(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [sim.status]);
+
+  const runName = () => (lastCfg ? `${lastCfg.box.name} · ${lastCfg.algo.scheme}` : "run");
   const save = async () => {
     if (!result || !lastCfg) return;
-    await persistRun("mystery-box", `${lastCfg.box.name} · ${lastCfg.algo.scheme}`, lastCfg, sizes, seed, result);
+    await persistRun("mystery-box", runName(), lastCfg, lastSizes, lastSeed, result);
     setSaved(true);
   };
-  const warn = sizes.opens > 1_000_000 ? "Runs above a million opens may take a minute or more in the browser; server runs arrive in phase 2." : undefined;
+  const report = () => {
+    if (!result || !lastCfg) return;
+    downloadText(`mystery-box-${lastSeed}.md`, reportMarkdown(buildRun("mystery-box", runName(), lastCfg, lastSizes, lastSeed, result)), "text/markdown");
+  };
+  const applyPreset = (id: string) => {
+    setPreset(id);
+    const p = PRESETS.mystery.find((x) => x.id === id);
+    if (p) setCfg(JSON.parse(JSON.stringify(p.config)));
+  };
+  const rigs = activeRigNames(cfg.rigs);
+  const stale = !!lastCfg && JSON.stringify(lastCfg) !== JSON.stringify(cfg);
 
   return (
-    <LabShell
-      lab="mystery-box"
-      hasResults={!!result}
-      configure={
-        <>
-          <Card title="Preset">
-            <Field label="Start from a preset, then adjust anything below">
-              <Select
-                value={preset}
-                onChange={(id) => {
-                  setPreset(id);
-                  const p = PRESETS.mystery.find((x) => x.id === id);
-                  if (p) setCfg(JSON.parse(JSON.stringify(p.config)));
-                }}
-                options={PRESETS.mystery.map((p) => ({ value: p.id, label: p.name }))}
-              />
-            </Field>
-          </Card>
-          <BoxBuilder box={cfg.box} onChange={(box) => setCfg({ ...cfg, box })} />
-          <AlgoPanel algo={cfg.algo} onChange={(algo) => setCfg({ ...cfg, algo })} />
-          <RigPanel lab="mystery-box" rigs={cfg.rigs} onChange={(rigs) => setCfg({ ...cfg, rigs })} />
-          <AccountsPanel accounts={cfg.accounts} onChange={(accounts) => setCfg({ ...cfg, accounts })} />
-        </>
-      }
-      run={
-        <RunControls
-          sizes={sizes}
-          sizeDefs={[
-            { key: "opens", label: "Opens", min: 100, max: 5_000_000, step: 1000 },
-            { key: "verifySample", label: "Proofs to verify", min: 0, max: 5000, step: 50, hint: "First N opens are recomputed by the honest verifier." },
-          ]}
-          onSizes={setSizes}
-          seed={seed}
-          onSeed={setSeed}
+    <>
+      <LabFrame
+        lab="mystery-box"
+        rigCount={rigs.length}
+        onSettings={openSettings}
+        chips={[
+          { label: `${money(cfg.box.price)} box · ${cfg.box.items.length} items · RTP on ${cfg.box.valueLayer}`, section: "box" },
+          { label: algoLabel(cfg.algo), section: "algo" },
+          rigs.length ? { label: `Rigs: ${rigs.join(", ")}`, section: "rigs", tone: "bad" } : { label: "No rigs: honest operator", section: "rigs" },
+          { label: `${num(sizes.opens)} opens · seed ${seed}`, section: "run", tone: "accent" },
+        ]}
+      >
+        <MysteryBoxStage cfg={cfg} seed={seed} onSettings={openSettings} />
+        <SimulateBar
+          label={`Run ${num(sizes.opens)} opens`}
+          hint="Stated vs observed odds, realized return with its error bar, proof checks and the detector, computed in a background worker."
           status={sim.status}
           progress={sim.progress}
           elapsed={sim.elapsed}
+          error={sim.error}
           onRun={start}
           onCancel={sim.cancel}
-          onSave={save}
-          saved={saved}
-          warning={sim.error ?? warn}
+          onSettings={() => openSettings("run")}
         />
-      }
-      results={result && lastCfg ? <MysteryBoxResults cfg={lastCfg} r={result} /> : null}
-    />
+        {result && lastCfg && (
+          <ResultsSection title="Simulation results" meta={`${num(result.opens)} opens · seed ${lastSeed} · ${lastCfg.box.name} · ${algoLabel(lastCfg.algo)}`} stale={stale} saved={saved} onSave={save} onReport={report}>
+            <MysteryBoxResults cfg={lastCfg} r={result} />
+          </ResultsSection>
+        )}
+      </LabFrame>
+
+      <SettingsDialog
+        open={settings.open}
+        onClose={closeSettings}
+        title="Mystery Boxes · settings"
+        active={settings.section}
+        onActive={(id) => setSettings({ open: true, section: id })}
+        footer={
+          <>
+            <Button kind="ghost" onClick={() => applyPreset(preset)}>
+              <Icon name="ph:arrow-counter-clockwise" size={14} /> Reset to preset
+            </Button>
+            <span className="text-xs text-ink-3">Live opens restart with a fresh session when settings change.</span>
+            <span className="ml-auto" />
+            <Button onClick={closeSettings}>Done</Button>
+          </>
+        }
+        sections={[
+          {
+            id: "run",
+            label: "Run & presets",
+            icon: "ph:fast-forward",
+            content: (
+              <div className="space-y-4">
+                <Card title="Preset">
+                  <Field label="Start from a preset, then adjust any section">
+                    <Select value={preset} onChange={applyPreset} options={PRESETS.mystery.map((p) => ({ value: p.id, label: p.name }))} />
+                  </Field>
+                </Card>
+                <Card title="Simulation size">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Field label="Opens" hint="Up to 5,000,000 in the browser. Above a million takes a minute or more.">
+                      <NumberInput value={sizes.opens} min={100} max={5_000_000} step={1000} onChange={(v) => setSizes({ ...sizes, opens: Math.max(100, Math.min(5_000_000, Math.floor(v))) })} />
+                    </Field>
+                    <Field label="Proofs to verify" hint="The first N opens are recomputed by the honest verifier.">
+                      <NumberInput value={sizes.verifySample} min={0} max={5000} step={50} onChange={(v) => setSizes({ ...sizes, verifySample: Math.max(0, Math.min(5000, Math.floor(v))) })} />
+                    </Field>
+                    <Field label="Seed" hint="Same settings and seed give identical results. It also seeds the live opens.">
+                      <div className="flex gap-1">
+                        <NumberInput value={seed} min={0} step={1} onChange={(v) => setSeed(Math.floor(v))} />
+                        <Button kind="ghost" onClick={() => setSeed(Math.floor(Math.random() * 1e9))} title="New random seed">
+                          <Icon name="ph:shuffle" size={16} />
+                        </Button>
+                      </div>
+                    </Field>
+                  </div>
+                </Card>
+              </div>
+            ),
+          },
+          { id: "box", label: "Box & items", icon: "ph:package", content: <BoxBuilder box={cfg.box} onChange={(box) => setCfg({ ...cfg, box })} /> },
+          { id: "algo", label: "Algorithm", icon: "ph:shield-check", content: <AlgoPanel algo={cfg.algo} onChange={(algo) => setCfg({ ...cfg, algo })} /> },
+          {
+            id: "rigs",
+            label: "Rigs",
+            icon: "ph:detective",
+            badge: rigs.length ? <span className="ml-auto rounded-full bg-bad px-1.5 text-[10px] text-white">{rigs.length}</span> : undefined,
+            content: <RigPanel lab="mystery-box" rigs={cfg.rigs} onChange={(rigs) => setCfg({ ...cfg, rigs })} />,
+          },
+          { id: "accounts", label: "Accounts", icon: "ph:users-three", content: <AccountsPanel accounts={cfg.accounts} onChange={(accounts) => setCfg({ ...cfg, accounts })} /> },
+        ]}
+      />
+    </>
   );
 }

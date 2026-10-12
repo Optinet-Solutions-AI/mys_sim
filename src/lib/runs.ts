@@ -10,10 +10,11 @@ function boxesOf(config: AnyConfig): BoxDef[] {
   return [];
 }
 
-export async function persistRun(lab: LabId, name: string, config: AnyConfig, sizes: Record<string, number>, seed: number, result: AnyResult): Promise<RunRecord> {
+/** Freezes a run: config, sizes, seed, the catalogue items it used, and the result. */
+export function buildRun(lab: LabId, name: string, config: AnyConfig, sizes: Record<string, number>, seed: number, result: AnyResult): RunRecord {
   const ids = new Set(boxesOf(config).flatMap((b) => b.items.map((i) => i.itemId)));
   const catalogSnapshot: CatalogItem[] = [...ids].map((id) => CATALOG_BY_ID.get(id)!).filter(Boolean);
-  const run: RunRecord = {
+  return {
     id: newId("run"),
     lab,
     name,
@@ -25,6 +26,10 @@ export async function persistRun(lab: LabId, name: string, config: AnyConfig, si
     catalogSnapshot,
     result,
   };
+}
+
+export async function persistRun(lab: LabId, name: string, config: AnyConfig, sizes: Record<string, number>, seed: number, result: AnyResult): Promise<RunRecord> {
+  const run = buildRun(lab, name, config, sizes, seed, result);
   await saveRun(run, headlineFor(result));
   return run;
 }
