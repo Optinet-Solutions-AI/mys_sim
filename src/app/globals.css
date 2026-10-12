@@ -324,3 +324,11 @@ table {
 .animate-shake-hard { animation: shakeHard 0.5s ease-in-out 3; }
 @keyframes burst { from { transform: scale(0.4); opacity: 0.9; } to { transform: scale(2.2); opacity: 0; } }
 .mbox-burst { animation: burst 0.9s ease-out both; }
+
+/* Items flying out of the box (or the reel) into their slots. */
+@keyframes flyIn {
+  from { transform: translate(var(--dx, 0px), var(--dy, -40px)) scale(0.25); opacity: 0; }
+  35% { opacity: 1; }
+  to { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+.animate-fly { animation: flyIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }

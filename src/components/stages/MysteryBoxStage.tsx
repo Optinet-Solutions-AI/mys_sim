@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import type { CatalogItem, MysteryBoxConfig } from "@/engine/types";
 import { expectedValue, retargetBox } from "@/engine/table";
 import { CATALOG_BY_ID } from "@/engine/catalog";
@@ -70,6 +70,28 @@ function LiveFeed({ pool, price, perMinute }: { pool: ReelPoolEntry[]; price: nu
   );
 }
 
+/** Mounts its child flying in from the centre of `origin` (the box or the reel) to its own slot. */
+function FlyIn({ origin, children, className = "" }: { origin: RefObject<HTMLDivElement | null>; children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const o = origin.current;
+    if (!el) return;
+    if (o) {
+      const a = o.getBoundingClientRect();
+      const b = el.getBoundingClientRect();
+      el.style.setProperty("--dx", `${a.left + a.width / 2 - (b.left + b.width / 2)}px`);
+      el.style.setProperty("--dy", `${a.top + a.height / 2 - (b.top + b.height / 2)}px`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <div ref={ref} className={`animate-fly ${className}`}>
+      {children}
+    </div>
+  );
+}
+
 function Countdown({ minutes }: { minutes: number }) {
   const [left, setLeft] = useState(minutes * 60);
   useEffect(() => {
@@ -126,7 +148,9 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
   const [lastStaged, setLastStaged] = useState<CatalogItem | null>(null);
   const [batch, setBatch] = useState<LiveOpen[] | null>(null);
   const [batchRevealed, setBatchRevealed] = useState(0);
+  const [batchWait, setBatchWait] = useState(false); // the box is still opening before the items pour out
   const batchPending = useRef<LiveOpen[] | null>(null);
+  const originRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<LiveOpen[]>([]);
   const [tally, setTally] = useState<Tally>(EMPTY);
   const [demoTally, setDemoTally] = useState({ opens: 0, returned: 0 });
@@ -139,6 +163,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
     setLastStaged(null);
     setBatch(null);
     setBatchRevealed(0);
+    setBatchWait(false);
     batchPending.current = null;
     setHistory([]);
     setTally(EMPTY);
@@ -220,6 +245,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
     const list: LiveOpen[] = [];
     for (let i = 0; i < n; i++) list.push(live.open(tag));
     setBatch(list);
+    setLast(null);
     const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (fast || reduce) {
       setBatchRevealed(n);
@@ -228,21 +254,32 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
       setBatchRevealed(0);
       batchPending.current = list;
       setSpinning(true);
+      if (motif === "boxopen") {
+        // the box opens first, then the items pour out of it
+        setBatchWait(true);
+        setPending(null);
+        setSpinId((s) => s + 1);
+      }
     }
+  };
+  // a motif finished: a single open is revealed, or the box is open and the batch may pour
+  const onMotifDone = (info?: SpinInfo) => {
+    if (pending) reveal(info);
+    else if (batchWait) setBatchWait(false);
   };
   // staggered reveal of a batch
   useEffect(() => {
-    if (!batch || !batchPending.current) return;
+    if (!batch || !batchPending.current || batchWait) return;
     if (batchRevealed >= batch.length) {
       const list = batchPending.current;
       batchPending.current = null;
       finishBatch(list);
       return;
     }
-    const t = setTimeout(() => setBatchRevealed((r) => r + 1), batch.length > 20 ? 26 : 170);
+    const t = setTimeout(() => setBatchRevealed((r) => r + 1), batch.length > 20 ? 40 : 190);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [batch, batchRevealed]);
+  }, [batch, batchRevealed, batchWait]);
   const reset = () => {
     liveRef.current = null;
     clearSession();
@@ -342,13 +379,54 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
             <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} disabled={spinning} /> skip animation
           </label>
         </div>
-        <div className="mt-3">
-          {motif === "reel" && <Reel pool={pool} winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />}
-          {motif === "boxopen" && <BoxOpen winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
-          {motif === "cardflip" && <CardFlip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
-          {motif === "packrip" && <PackRip winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={T.unit} />}
-          {motif === "tiers" && cfg.box.tiers && <TierLadder tiers={cfg.box.tiers} winner={pendingItem} winnerTierId={pending?.rec.tierId} spinId={spinId} onDone={reveal} fast={fast} price={price} />}
-          {motif === "ticket" && <TicketScratch winner={pendingItem} spinId={spinId} onDone={reveal} fast={fast} label={cfg.box.name.split(" · ")[0]} credits={skin.id === "misty"} />}
+        <div className={`mt-3 flex flex-col gap-3 ${batch ? "md:flex-row md:items-start" : ""}`}>
+          <div ref={originRef} className={batch ? (motif === "reel" ? "md:w-[46%] md:shrink-0" : "md:w-[260px] md:shrink-0") : ""}>
+            {motif === "reel" && <Reel pool={pool} winner={pendingItem} spinId={spinId} onDone={onMotifDone} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />}
+            {motif === "boxopen" && <BoxOpen winner={pendingItem} spinId={spinId} onDone={onMotifDone} fast={fast} label={T.unit} pour={batch && batchWait ? batch.length : 0} />}
+            {motif === "cardflip" && <CardFlip winner={pendingItem} spinId={spinId} onDone={onMotifDone} fast={fast} label={T.unit} />}
+            {motif === "packrip" && <PackRip winner={pendingItem} spinId={spinId} onDone={onMotifDone} fast={fast} label={T.unit} />}
+            {motif === "tiers" && cfg.box.tiers && <TierLadder tiers={cfg.box.tiers} winner={pendingItem} winnerTierId={pending?.rec.tierId} spinId={spinId} onDone={onMotifDone} fast={fast} price={price} />}
+            {motif === "ticket" && <TicketScratch winner={pendingItem} spinId={spinId} onDone={onMotifDone} fast={fast} label={cfg.box.name.split(" · ")[0]} credits={skin.id === "misty"} />}
+          </div>
+          {batch && (
+            <div className="min-w-0 flex-1 rounded-xl border border-line bg-paper p-3">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span className="font-semibold">{batch.length} opens</span>
+                <span className="text-ink-2 tabular-nums">
+                  {batchWait ? (
+                    "opening…"
+                  ) : batchDone ? (
+                    <>
+                      spent {money(batch.length * price)} · back {money(batchBack)} · best {money(Math.max(...batch.map((o) => o.payout)))}
+                    </>
+                  ) : (
+                    <>
+                      {batchRevealed}/{batch.length} · back <CountUp value={batchBack} format={money} duration={200} />
+                    </>
+                  )}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {batch.map((o, i) =>
+                  i < batchRevealed ? (
+                    <FlyIn key={o.n} origin={originRef} className={`flex flex-col items-center ${(ldw || isWin(o)) && batch.length <= 20 ? "animate-winflash rounded-xl" : ""}`}>
+                      <div data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
+                        <ItemTile item={o.item} size={tileSize} />
+                      </div>
+                      {batch.length <= 20 && <span className={`mt-0.5 font-mono text-[10px] ${isWin(o) ? "text-good" : "text-ink-3"}`}>{money(o.payout)}</span>}
+                    </FlyIn>
+                  ) : (
+                    <div key={o.n} className="flex flex-col items-center">
+                      <div className="flex items-center justify-center rounded-xl border border-dashed border-line bg-surface" style={{ width: tileSize, height: tileSize }}>
+                        <Icon name="ph:package" size={Math.round(tileSize * 0.5)} className="text-ink-3" />
+                      </div>
+                      {batch.length <= 20 && <span className="mt-0.5 text-[10px] text-ink-3">·</span>}
+                    </div>
+                  ),
+                )}
+              </div>
+            </div>
+          )}
         </div>
         {urgency && (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
@@ -415,43 +493,6 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
           </div>
         </div>
       </Card>
-
-      {batch && (
-        <Card
-          title={`${batch.length} opens`}
-          actions={
-            <span className="text-xs text-ink-2 tabular-nums">
-              {batchDone ? (
-                <>
-                  spent {money(batch.length * price)} · back {money(batchBack)} · best {money(Math.max(...batch.map((o) => o.payout)))}
-                </>
-              ) : (
-                <>
-                  {batchRevealed}/{batch.length} · back <CountUp value={batchBack} format={money} duration={200} />
-                </>
-              )}
-            </span>
-          }
-        >
-          <div className="flex flex-wrap gap-1.5">
-            {batch.map((o, i) =>
-              i < batchRevealed ? (
-                <div key={o.n} className={`animate-flip flex flex-col items-center ${(ldw || isWin(o)) && batch.length <= 20 ? "animate-winflash rounded-xl" : ""}`} data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
-                  <ItemTile item={o.item} size={tileSize} />
-                  {batch.length <= 20 && <span className={`mt-0.5 font-mono text-[10px] ${isWin(o) ? "text-good" : "text-ink-3"}`}>{money(o.payout)}</span>}
-                </div>
-              ) : (
-                <div key={o.n} className="flex flex-col items-center">
-                  <div className="flex items-center justify-center rounded-xl border border-dashed border-line bg-paper" style={{ width: tileSize, height: tileSize }}>
-                    <Icon name="ph:package" size={Math.round(tileSize * 0.5)} className="text-ink-3" />
-                  </div>
-                  {batch.length <= 20 && <span className="mt-0.5 text-[10px] text-ink-3">·</span>}
-                </div>
-              ),
-            )}
-          </div>
-        </Card>
-      )}
 
       {last && !batch && (
         <div className="grid gap-4 lg:grid-cols-2">

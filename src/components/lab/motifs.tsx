@@ -12,7 +12,7 @@ function reduced() {
 }
 
 /** A mystery box: it bobs while idle, shakes, shows a sliver of light under the lid, then the lid swings open and the item rises out. */
-export function BoxOpen({ winner, spinId, onDone, fast = false, label }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string }) {
+export function BoxOpen({ winner, spinId, onDone, fast = false, label, pour = 0 }: { winner: CatalogItem | null; spinId: number; onDone?: (i: SpinInfo) => void; fast?: boolean; label: string; /** batch mode: open the box without an item; the stage pours the items out afterwards */ pour?: number }) {
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
   const [phase, setPhase] = useState<"idle" | "shake" | "tease" | "open" | "done">("idle");
@@ -23,8 +23,8 @@ export function BoxOpen({ winner, spinId, onDone, fast = false, label }: { winne
       setShown(null);
       return;
     }
-    if (!winner) return;
-    setShown(winner);
+    if (!winner && !pour) return;
+    setShown(pour ? null : winner);
     if (fast || reduced()) {
       setPhase("done");
       const t = setTimeout(() => onDoneRef.current?.({ staged: null }), 30);
