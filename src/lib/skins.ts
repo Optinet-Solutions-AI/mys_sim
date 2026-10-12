@@ -128,7 +128,7 @@ export const SKINS: Record<string, Skin> = {
     font: "serif",
     vars: light("#b4236b", "#7f1849", "#fbe3ee", "#fdf5f9", "#ffffff", "#efd6e2"),
     motif: "ticket",
-    terms: { unit: "box", openCta: "Enter · {price}", openedTitle: "Your prize", wonTitle: "Winner!", startBattle: "Start", sellBack: "Convert to entries", ship: "Claim prize", balance: "Entries" },
+    terms: { unit: "box", openCta: "Tap to spin · {price}", openedTitle: "You pulled", wonTitle: "Grail!", startBattle: "Start", sellBack: "Trade in for Mistees", ship: "Ship it", balance: "Mistees" },
     panel: "misty",
     tagline: "Prize competitions: entries, draws, postal route",
   },
@@ -276,8 +276,24 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
     settings: ["Incentives plus missions and the free route share.", "Run compares against a control with incentives off and prices the free route."],
   },
   "misty-boxes": {
-    player: ["You pay $10 and spin. About one open in 61 pays a physical item: perfume or a lipstick most of those times, a Louis Vuitton piece about once in 350, the Rolex once in 25,000.", "The other 98 opens in 100 pay Mistees, usually one to three of them. Two outcomes also give a free spin that pays a few more Mistees.", "Mistees are site credit: they can only be spent on more boxes or products on the site and never become money. The page never says in words what one is worth, but its data counts each Mistee as $1.", "Before you pay you see the fingerprint of the secret seed; at the open the seed is revealed and the odds table is frozen onto your open, so you can check the draw at once."],
-    settings: ["Box & items: the live table, locked to the published odds. The Mistee items are valued at the $1 face found in the page data; change them to test another rate.", "Algorithm: Misty's recipe with a seed per open.", "Run shows the return with Mistees at face against what they really cost Misty, which is about 37 cents each if they are only ever spent on boxes."],
+    player: [
+      "Pick one of the thirteen boxes, pay its price and tap to spin. The strip stops on one outcome.",
+      "Most spins pay Mistees, Misty's site credit: one to a few of them. A piece drops rarely; on the $10 Timepiece Suite about one spin in 61, and the Rolex once in 25,000.",
+      "Some outcomes carry one or two free spins, which pay a few more Mistees from a small second table.",
+      "A piece can be shipped or traded in for Mistees. Mistees never become money: they only buy more boxes or products on the site.",
+      "Before you pay you see the fingerprint of a secret. After the spin the secret is revealed, together with your seed, the spin number and the odds table used, so you can recompute the result. The steps are written out under the box.",
+    ],
+    settings: [
+      "Box & odds: the live table of the chosen box. Every percentage can be changed; the sum, the chance of a piece and what the box pays back (on screen and really) update as you type.",
+      "Per player: give any player a table of their own, by multiplying the odds of the pieces or by editing each outcome. In live play choose who is spinning; in the simulation players share the opens.",
+      "What things are worth: one Mistee on screen ($1 in the page data) and really (about 37 cents if it only buys boxes); pieces at resale.",
+      "The proof: Misty's recipe (secret committed per open, your seed, spin number, frozen table) or plain random with nothing to check.",
+      "Run opens the box thousands of times and compares counts, returns and per-player results with what the tables say.",
+    ],
+  },
+  "misty-boxes-generic": {
+    player: ["The same Timepiece Suite table inside the shared research lab, so it can be compared with the other sources.", "One open in 61 pays a piece; the rest pay Mistees counted at $1 face."],
+    settings: ["Box & items: the live table, locked to the published odds (unlock to experiment).", "Algorithm: swap the scheme and mapping; research rigs; the detector.", "Run shows the return with Mistees at face against what they really cost Misty."],
   },
   "misty-mistees": {
     player: ["Almost every open pays you Mistees instead of an item. You cannot cash them; you can only open more boxes with them.", "Each of those opens pays mostly Mistees again, so the credit goes round and round, shrinking a little each time, until it is gone or a physical item finally drops.", "The only thing that ever leaves Misty is a physical item. Everything else is a number on your account."],
@@ -316,4 +332,5 @@ export const GUIDE_BY_LAB: Record<string, { player: string[]; settings: string[]
   retention: GUIDES["vendor-retention"],
   credits: GUIDES["misty-credits"],
   upgrader: GUIDES["jemlit-upgrader"],
+  misty: GUIDES["misty-boxes"],
 };

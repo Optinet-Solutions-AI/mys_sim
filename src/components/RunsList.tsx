@@ -5,7 +5,7 @@ import { deleteRun, listRuns, type RunSummary } from "@/lib/store";
 import { Badge, Button, Card, Th, Td } from "./ui";
 import { Icon } from "./Icon";
 
-const LAB_LABEL: Record<string, string> = { "mystery-box": "Mystery Boxes", sellback: "Sell-back", battles: "Battles", retention: "Retention", credits: "Credits & draws", upgrader: "Upgrader & Deals" };
+const LAB_LABEL: Record<string, string> = { "mystery-box": "Mystery Boxes", sellback: "Sell-back", battles: "Battles", retention: "Retention", credits: "Credits & draws", upgrader: "Upgrader & Deals", misty: "Misty boxes" };
 
 export function RunsList() {
   const [runs, setRuns] = useState<RunSummary[] | null>(null);

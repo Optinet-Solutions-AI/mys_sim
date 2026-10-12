@@ -5,6 +5,7 @@ import { runBattles } from "./labs/battles";
 import { runRetention } from "./labs/retention";
 import { runCredits } from "./labs/credits";
 import { runUpgrader } from "./labs/upgrader";
+import { runMisty } from "./labs/misty";
 import type {
   AnyConfig,
   AnyResult,
@@ -17,6 +18,7 @@ import type {
   RetentionConfig,
   SellbackConfig,
   UpgraderConfig,
+  MistyConfig,
 } from "./types";
 
 export const ENGINE_VERSION = "0.2.0";
@@ -44,6 +46,8 @@ export function runLab(req: RunRequest, onProgress?: Progress): AnyResult {
       return runCredits(req.config as CreditsConfig, req.seed, catalog, onProgress);
     case "upgrader":
       return runUpgrader(req.config as UpgraderConfig, req.seed, catalog, onProgress);
+    case "misty":
+      return runMisty(req.config as MistyConfig, req.seed, onProgress);
   }
 }
 

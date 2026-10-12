@@ -1,6 +1,7 @@
 // The hub is organised by source. Each operator has its own features, each with its own structure, presets and
 // allowed settings. Nothing from one operator is mixed into another's screens.
 import { applyGuarantee } from "@/engine/table";
+import { DEFAULT_MISTY, mistyConfigFor } from "./mistyPresets";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import type { AnyConfig, BattleMode, BattlesConfig, CreditsConfig, LabId, MysteryBoxConfig, RetentionConfig, SellbackConfig, UpgraderConfig } from "@/engine/types";
 import {
@@ -505,15 +506,36 @@ export const OPERATORS: OperatorDef[] = [
     features: [
       {
         key: "misty-boxes",
+        lab: "misty",
+        doc: {
+          title: "Mystery boxes",
+          short: "The thirteen live boxes, their names, prices and exact odds, opened the way the site does it.",
+          what: "A copy of Misty's box mechanism as captured from the live site on 12 October 2026: all thirteen boxes with their real names, prices and page weights, the free-spin table, Mistees as site credit, the trade-in of a piece for Mistees, and the proof (a secret committed before payment, your own seed, a spin number, the odds table frozen onto the open, the secret revealed after). Below the box the decision of every spin is written out step by step. The cog is the back office: every outcome's percentage, the free-spin table, what a Mistee is worth, and a table of their own for any player.",
+          configure: ["Box & odds: pick a box; edit any outcome's percent; the free-spin table.", "Per player: give a player their own odds (a multiplier on the pieces, or every outcome by hand) and a share of the traffic.", "What things are worth: a Mistee on screen ($1 in the page data) and really (about 37 cents); items at resale.", "The proof: on (Misty's recipe) or off."],
+          read: ["Return at face against real; counts per outcome against the stated odds; per-player returns; proofs recomputed."],
+          source: "Live box pages, terms and verifier text captured 12 October 2026 (research/captures/misty-boxes-2026-10-12.json); research/06-misty-box-mechanism.md.",
+        },
+        initial: DEFAULT_MISTY,
+        presets: [
+          { id: "timepiece", name: "The Timepiece Suite · $10", config: mistyConfigFor("timepiece-suite") },
+          { id: "handbag", name: "The Handbag Suite · $10", config: mistyConfigFor("handbag-suite") },
+          { id: "vanity", name: "The Vanity · $10", config: mistyConfigFor("vanity") },
+          { id: "glam", name: "The Glam Room · $25", config: mistyConfigFor("glam-room") },
+          { id: "penthouse", name: "The Penthouse · $50", config: mistyConfigFor("penthouse") },
+          { id: "parisian", name: "The Parisian Suite · $50", config: mistyConfigFor("parisian-suite") },
+        ],
+      },
+      {
+        key: "misty-boxes-generic",
         lab: "mystery-box",
         lockModel: true,
         lockItems: true,
         rigIds: GENERIC_RIGS,
         doc: {
-          title: "Timepiece Suite",
-          short: "The live table: 1 in 61 opens pays an item; the rest pay Mistees.",
-          what: "Misty's $10 Timepiece Suite as it stands on the live page (captured 12 October 2026): 17 outcomes, a Rolex at 1 in 25,000, a 1.65% chance of any physical item, Mistees the other 98% of the time, and two Free Spin outcomes with their own small table. The seed is committed before you pay and revealed at the open, and the odds table is frozen onto each open. The 9 October reconstruction and the Penthouse are kept as presets.",
-          configure: ["The table is the live capture (unlock to experiment); Misty's scheme with a seed per open.", "Misty's page data values a Mistee at $1 (100 cents each in the odds-table data, never stated in words); change the credit items to test another rate.", "Research rigs."],
+          title: "Research view",
+          short: "The Timepiece Suite inside the common research lab: schemes, mappings, rigs, detector.",
+          what: "The same live Timepiece Suite table run through the shared research engine, so Misty can be compared with the other sources on one footing: swap the commit-reveal scheme, the mapping, switch on research rigs, and read the detector. The 9 October reconstruction and the Penthouse are kept as presets.",
+          configure: ["The table is the live capture (unlock to experiment); Misty's scheme with a seed per open.", "Research rigs."],
           read: ["Return with Mistees at face against what they cost Misty; proofs; the detector."],
           source: "Live page and terms captured 12 October 2026 (research/captures); dossier 1 §2.1 for the 9 October capture.",
         },

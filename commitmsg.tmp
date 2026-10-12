@@ -1,9 +1,26 @@
-Misty: Mistee face value is $1 per the page data; 2% outcome gives two free spins
+Misty: copy the live box mechanism one to one (13 boxes, proof, narration, back office)
 
-The odds-table data behind the box page values every Mistee outcome at
-100 cents per Mistee (valueCents, fxRate 1), so the $1 face is Misty's own
-figure rather than an assumption. The 2% Free Spin outcome carries
-freeSpins: 2, so it is worth about 5.4 Mistees, not 3.7. Comments, guides
-and the box note updated; smoke: stated 65.9%, realized 64.6%, cash 36.0%.
+All thirteen live box pages were captured on 12 October 2026 and parsed into
+src/engine/mistyLive.generated.ts: real names, prices, exact page weights
+(sum 100 per box), free-spin tables and the fairness text.
+
+- engine/labs/misty.ts: a dedicated opener that reproduces one open as the
+  site describes it (secret committed per open, client seed, nonce,
+  HMAC-SHA256 keyed DRAW-slug-seed-client-nonce, 13-hex roll, odds table
+  hashed and frozen onto the open, free spins on the next nonces, reveal,
+  rotate), a verifier, the per-open maths (cost per outcome, return at face
+  and real), per-player tables, and a runner with chi-square and proofs
+- new lab id "misty" wired through runLab, worker, runs, report, run detail
+- MistyStage: box strip, spin strip, playing-as, Mistee balance, trade-in,
+  proof panel with "Check this open", a step-by-step narration of every
+  spin and the general logic underneath
+- MistyLab: back office behind the cog: odds per outcome with sum and cost
+  per open, free-spin table, Mistee face and real value, per-player odds
+  (pieces multiplier or row by row), proof on or off, run size
+- MistyResults: counts against stated odds, returns, per player, proofs
+- operators: Misty's first tab is the copy; the generic view stays as
+  "Research view"; skins and guides updated
+- scripts/smoke-misty.ts: every box, proofs, tampered seed, VIP table
+- README: Misty section
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

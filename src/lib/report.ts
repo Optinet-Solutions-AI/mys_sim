@@ -15,6 +15,8 @@ export function headlineFor(result: AnyResult): string {
       return `${result.agents.toLocaleString()} agents × ${result.days} days · D7 ${pct(result.retention.d7, 0)} · D30 ${pct(result.retention.d30, 0)} · bonus ${money(result.bonusCost)}`;
     case "credits":
       return `${result.opens.toLocaleString()} opens · nominal RTP ${pct(result.nominalRtp)} · end-to-end ${pct(result.endToEndRtp)} · ${result.raffles} draws · hold ${pct(result.hold)}`;
+    case "misty":
+      return `${result.opens.toLocaleString()} opens of ${result.boxName} · return ${pct(result.returnFace)} at face (table ${pct(result.expectedFace)}) · ${pct(result.returnReal)} real · item 1 in ${result.items > 0 ? Math.round(result.opens / result.items).toLocaleString() : "∞"} · proofs ${result.verifier.passed}/${result.verifier.sampled}`;
     case "upgrader":
       return `${result.attempts.toLocaleString()} ${result.mode} attempts · win ${pct(result.winRate, 2)} (stated ${pct(result.statedChance, 2)}) · edge ${pct(result.realizedEdge)} (stated ${pct(result.statedEdge)}) · ruin ${pct(result.ruinFraction)}`;
   }
@@ -77,6 +79,16 @@ export function reportMarkdown(run: RunRecord): string {
     lines.push(`| Agents · opens | ${r.agents.toLocaleString()} · ${r.opens.toLocaleString()} |`, `| Spent | ${money(r.spent)} |`, `| Physical paid (display / realized) | ${money(r.physicalPaidDisplay)} / ${money(r.physicalPaidRealized)} |`);
     lines.push(`| Credits issued (face ${money(r.creditFaceValue)}) | ${r.creditsIssued.toLocaleString()} |`, `| Tickets paid / free | ${r.ticketsPaid.toLocaleString()} / ${r.ticketsFree.toLocaleString()} |`, `| Draws · prizes paid | ${r.raffles} · ${money(r.prizesPaidTotal)} (to paid ${money(r.prizesToPaid)}, to free ${money(r.prizesToFree)}) |`);
     lines.push(`| Real value of one ticket | ${money(r.prizePerTicket)} |`, `| Nominal RTP (credits at face) | ${pct(r.nominalRtp)} |`, `| End-to-end RTP (prizes to paid players) | ${pct(r.endToEndRtp)} |`, `| Operator hold | ${pct(r.hold)} |`, `| Unsold share at draw | ${pct(r.unsoldShareAtDraw)} |`, `| Proofs verified | ${r.verifier.passed}/${r.verifier.sampled} |`);
+  } else if (r.kind === "misty") {
+    lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
+    lines.push(`| Box | ${r.boxName} at ${money(r.price)} |`, `| Opens · paid | ${r.opens.toLocaleString()} · ${money(r.spent)} |`, `| Return at face (table) | ${pct(r.returnFace)} (${pct(r.expectedFace)}) |`, `| Return in real money (table) | ${pct(r.returnReal)} (${pct(r.expectedReal)}) |`);
+    lines.push(`| Physical items | ${r.items.toLocaleString()} worth ${money(r.itemValue)} listed, ${money(r.itemValueReal)} at resale |`, `| Mistees handed out | ${r.mistees.toLocaleString()} (${(r.mistees / Math.max(1, r.opens)).toFixed(2)} per open, table ${r.expectedMistees.toFixed(2)}) |`, `| Free spins | ${r.freeSpins.toLocaleString()} |`, `| Odds check | chi-square p = ${r.chi.pValue.toFixed(4)} |`, `| Proofs verified | ${r.verifier.passed}/${r.verifier.sampled} |`);
+    lines.push("", "## Outcomes", "", `| Outcome | Stated odds | Expected | Actual |`, `|---|---|---|---|`);
+    for (const o of r.byOutcome) lines.push(`| ${o.label} | ${o.percent.toFixed(4)}% | ${o.expected.toFixed(1)} | ${o.actual} |`);
+    if (r.perPlayer.length > 1) {
+      lines.push("", "## Per player", "", `| Player | Opens | Items | Mistees | Return at face | Their table says |`, `|---|---|---|---|---|---|`);
+      for (const p of r.perPlayer) lines.push(`| ${p.name} | ${p.opens} | ${p.items} | ${p.mistees} | ${pct(p.returnFace)} | ${pct(p.expectedFace)} |`);
+    }
   } else if (r.kind === "upgrader") {
     lines.push("## Results", "", `| Metric | Value |`, `|---|---|`);
     lines.push(`| Mode | ${r.mode} |`, `| Attempts · wins | ${r.attempts.toLocaleString()} · ${r.wins.toLocaleString()} |`, `| Win rate (stated chance) | ${pct(r.winRate, 2)} (${pct(r.statedChance, 2)}) |`, `| Price per attempt · target value | ${money(r.pricePerAttempt)} · ${money(r.targetValue)} |`);
