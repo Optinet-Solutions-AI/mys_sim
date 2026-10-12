@@ -1,7 +1,7 @@
 import { AGENT_DOCS, MAPPING_DOCS, RNG_DOCS, SCHEME_DOCS, TABLE_DOCS, type DocEntry } from "@/engine/registry";
 import { RIGS } from "@/engine/rigs";
 import { BATTLE_MODES } from "@/engine/labs/battles";
-import { LAB_DOCS } from "@/lib/labDocs";
+import { OPERATORS } from "@/lib/operators";
 import { Badge, Card } from "@/components/ui";
 
 function Entry({ d }: { d: DocEntry }) {
@@ -63,16 +63,23 @@ export default function DocsPage() {
         </nav>
       </header>
 
-      <Card title={<span id="labs">Labs</span>}>
-        <div className="grid gap-3 md:grid-cols-2">
-          {Object.entries(LAB_DOCS).map(([id, d]) => (
-            <div key={id} className="rounded-lg border border-line bg-paper p-3 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{d.title}</span>
-                <Badge tone="accent">{d.wave}</Badge>
+      <Card title={<span id="labs">Sources and their features</span>}>
+        <div className="space-y-4">
+          {OPERATORS.map((o) => (
+            <div key={o.id} className="rounded-lg border border-line bg-paper p-3 text-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{o.name}</span>
+                <Badge tone="accent">{o.kind === "operator" ? "operator" : o.kind === "ours" ? "our design" : o.kind}</Badge>
+                <span className="text-[11px] text-ink-3">{o.sources}</span>
               </div>
-              <p className="mt-1 text-ink-2">{d.what}</p>
-              <div className="mt-1 text-[11px] text-ink-3">Source: {d.source}</div>
+              <p className="mt-1 text-ink-2">{o.description}</p>
+              <ul className="mt-2 grid gap-1 md:grid-cols-2">
+                {o.features.map((f) => (
+                  <li key={f.key} className="rounded-md border border-line bg-surface px-2 py-1 text-xs">
+                    <b>{f.doc.title}.</b> {f.doc.what}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>

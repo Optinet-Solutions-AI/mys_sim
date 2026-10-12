@@ -1,7 +1,21 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { OPERATORS } from "@/lib/operators";
 import { Icon } from "./Icon";
+
+const NAV_ICON: Record<string, string> = {
+  vendor: "ph:storefront",
+  icybox: "ph:watch",
+  stockx: "ph:sneaker",
+  courtyard: "ph:ticket",
+  jemlit: "ph:cube",
+  cases: "ph:dice-five",
+  misty: "ph:handbag",
+  glassbox: "ph:shield-check",
+  adjacent: "ph:gift",
+  presentation: "ph:sparkle",
+};
 
 const groups: { label: string; items: { href: string; label: string; icon: string }[] }[] = [
   {
@@ -13,20 +27,12 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
     ],
   },
   {
-    label: "Labs · wave 1 (vendor)",
-    items: [
-      { href: "/labs/mystery-box", label: "Mystery Boxes", icon: "ph:package" },
-      { href: "/labs/sellback", label: "Sell-back / Cart", icon: "ph:wallet" },
-      { href: "/labs/battles", label: "Battles", icon: "ph:users-three" },
-      { href: "/labs/retention", label: "Retention", icon: "ph:gift" },
-    ],
+    label: "Operators",
+    items: OPERATORS.filter((o) => o.kind === "operator").map((o) => ({ href: `/operators/${o.id}`, label: o.name.replace(" Mystery Boxes", "").replace(" platform", ""), icon: NAV_ICON[o.id] ?? "ph:package" })),
   },
   {
-    label: "Labs · wave 3 (Misty, Jemlit, Cases.gg)",
-    items: [
-      { href: "/labs/credits", label: "Credits & draws", icon: "ph:ticket" },
-      { href: "/labs/upgrader", label: "Upgrader & Deals", icon: "ph:arrow-up-right" },
-    ],
+    label: "Ours and others",
+    items: OPERATORS.filter((o) => o.kind !== "operator").map((o) => ({ href: `/operators/${o.id}`, label: o.name, icon: NAV_ICON[o.id] ?? "ph:package" })),
   },
   {
     label: "Tools",
@@ -45,7 +51,7 @@ export function Nav() {
         <Icon name="fluent:package" size={28} />
         <div className="leading-tight">
           <div className="font-semibold">Box Simulator</div>
-          <div className="text-xs text-ink-3">research sandbox · v0.1</div>
+          <div className="text-xs text-ink-3">research sandbox · v0.3</div>
         </div>
       </Link>
       {groups.map((g) => (
@@ -71,9 +77,6 @@ export function Nav() {
           </ul>
         </div>
       ))}
-      <div className="mt-8 px-2 text-[11px] leading-snug text-ink-3">
-        Icons: Fluent Emoji (MIT) and Phosphor (MIT). No real money, no real players; every participant is a simulated agent.
-      </div>
     </aside>
   );
 }

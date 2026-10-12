@@ -10,8 +10,8 @@ function defaultValue(r: RigDoc): RigValue {
   return Object.fromEntries(r.params.map((p) => [p.key, p.defaultValue]));
 }
 
-export function RigPanel({ rigs, onChange, lab }: { rigs: RigConfig; onChange: (r: RigConfig) => void; lab: LabId }) {
-  const list = RIGS.filter((r) => r.labs.includes(lab));
+export function RigPanel({ rigs, onChange, lab, allow }: { rigs: RigConfig; onChange: (r: RigConfig) => void; lab: LabId; allow?: string[] }) {
+  const list = RIGS.filter((r) => r.labs.includes(lab) && (!allow || allow.includes(r.id)));
   const active = Object.keys(rigs).filter((k) => (rigs as Record<string, unknown>)[k]);
   return (
     <Card

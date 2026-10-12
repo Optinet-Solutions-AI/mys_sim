@@ -1,27 +1,12 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { Badge, Card } from "@/components/ui";
-import { LAB_DOCS } from "@/lib/labDocs";
+import { OPERATORS } from "@/lib/operators";
 
-const labs = [
-  { href: "/labs/mystery-box", id: "mystery-box", icon: "fluent:package" },
-  { href: "/labs/sellback", id: "sellback", icon: "fluent:money-bag" },
-  { href: "/labs/battles", id: "battles", icon: "fluent:trophy" },
-  { href: "/labs/retention", id: "retention", icon: "fluent:wrapped-gift" },
-  { href: "/labs/credits", id: "credits", icon: "fluent:ticket" },
-  { href: "/labs/upgrader", id: "upgrader", icon: "fluent:chart-increasing" },
-] as const;
-
-const waves = [
-  { wave: "1", source: "Vendor platform", status: "in", items: "Mystery boxes with the 90% RTP knob, sell-back and cart, battles with bots, retention (daily boxes, races, affiliates)" },
-  { wave: "1b", source: "Vendor platform", status: "in", items: "Deals (in the Upgrader & Deals lab); withdraw only through items (Sell-back option)" },
-  { wave: "2", source: "IcyBox · StockX · Courtyard", status: "in", items: "Finite drops with early retirement; tier-first draw, value floor and finite inventory; EV pricing and public pull log; buyback windows, keep fees, undisclosed estimates, credit expiry, guarantee floors (Sell-back options)" },
-  { wave: "3", source: "Jemlit · Cases.gg · Misty", status: "in", items: "Reconstructed real drop tables as presets; guaranteed-tier mix; rotation every 1,000; Upgrader; coinflip; vault; missions; free-entry parity; the Credits & draws lab" },
-  { wave: "4", source: "Glass Box (ours)", status: "in", items: "Manifest commitment, beacon, per-open rotation, public ledger root, pools that must distribute, pity ceiling, spend caps, lucky bag, break mode, pooled draw with disclosed EV" },
-  { wave: "5", source: "Adjacent models", status: "in", items: "Kuji Last One, Pop Mart secret item, fukubukuro lucky bag, breaks, Omaze-style draws with a free route and a cap, gacha pity" },
-];
+const KIND_LABEL: Record<string, string> = { operator: "Operators we audited", ours: "Our design", adjacent: "Adjacent models", research: "Research" };
 
 export default function Home() {
+  const kinds = ["operator", "ours", "adjacent", "research"] as const;
   return (
     <div className="space-y-6">
       <header className="max-w-3xl">
@@ -30,68 +15,46 @@ export default function Home() {
           <Badge>phase 1 · browser only</Badge>
         </div>
         <h1 className="text-3xl font-semibold">Mystery Box Simulator</h1>
-        <p className="mt-2 text-ink-2">Open packs, run battles, and test any algorithm or rig on simulated players. No real money; every run is reproducible.</p>
+        <p className="mt-2 text-ink-2">Each source has its own section with its own features, structure and presets. Open one, play, press the cog to change settings, run the simulation for the statistics.</p>
       </header>
 
-      <section>
-        <h2 className="mb-2 text-lg font-semibold">Labs</h2>
-        <div className="grid gap-3 md:grid-cols-2">
-          {labs.map((l) => {
-            const d = LAB_DOCS[l.id];
-            return (
-              <Link key={l.id} href={l.href} className="group rounded-xl border border-line bg-surface p-4 no-underline transition hover:border-accent">
+      {kinds.map((k) => (
+        <section key={k}>
+          <h2 className="mb-2 text-lg font-semibold">{KIND_LABEL[k]}</h2>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {OPERATORS.filter((o) => o.kind === k).map((o) => (
+              <Link key={o.id} href={`/operators/${o.id}`} className="group rounded-xl border border-line bg-surface p-4 no-underline transition hover:border-accent">
                 <div className="flex items-start gap-3">
-                  <Icon name={l.icon} size={36} />
-                  <div>
-                    <div className="font-semibold text-ink group-hover:text-accent-ink">{d.title}</div>
-                    <div className="mt-1 text-sm text-ink-2">{d.short}</div>
+                  <Icon name={o.icon} size={34} />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-ink group-hover:text-accent-ink">{o.name}</div>
+                    <div className="mt-0.5 text-xs text-ink-2">{o.tagline}</div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {o.features.map((f) => (
+                        <span key={f.key} className="rounded-full border border-line bg-paper px-2 py-0.5 text-[11px] text-ink-2">
+                          {f.doc.title}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </Link>
-            );
-          })}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      ))}
 
       <Card title="How to use it">
         <ol className="list-decimal space-y-1 pl-5 text-sm">
-          <li>Open a lab and play: Open a pack, or Start battle.</li>
+          <li>Pick a source and one of its features: you land on its test page and can play at once.</li>
           <li>
-            Press the cog <Icon name="ph:gear-six" size={14} className="inline text-accent-ink" /> to change items, odds, algorithm, rigs, bots and run sizes.
+            Press the cog <Icon name="ph:gear-six" size={14} className="inline text-accent-ink" /> to change what that source lets you change, plus the research toggles (algorithm, rigs).
           </li>
           <li>Press Run simulation for the statistics; results appear below.</li>
-          <li>Save or export the run.</li>
+          <li>Save or export the run. Runs from different sources sit side by side in the history.</li>
         </ol>
       </Card>
-
-      <section>
-        <h2 className="mb-2 text-lg font-semibold">Hub roadmap</h2>
-        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wide text-ink-3">
-                <th className="px-3 py-2">Wave</th>
-                <th className="px-3 py-2">Source</th>
-                <th className="px-3 py-2">Features</th>
-                <th className="px-3 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {waves.map((w) => (
-                <tr key={w.wave} className="border-t border-line">
-                  <td className="px-3 py-2 font-medium">{w.wave}</td>
-                  <td className="px-3 py-2">{w.source}</td>
-                  <td className="px-3 py-2 text-ink-2">{w.items}</td>
-                  <td className="px-3 py-2">
-                    <Badge tone={w.status === "in" ? "good" : w.status === "building" ? "accent" : "neutral"}>{w.status}</Badge>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-2 text-xs text-ink-3">The plan, the decision scorecard and the sources are in the research folder (document 05). Phase 2 adds Supabase for shared history and Vercel hosting.</p>
-      </section>
+      <p className="text-xs text-ink-3">Sources are kept apart on purpose: the vendor&apos;s features, IcyBox&apos;s, StockX&apos;s and the rest each have their own structure, and the simulator reproduces each as it is. The plan, scorecard and sources are in the research folder (document 05). Phase 2 adds Supabase for shared history and Vercel hosting.</p>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
-import type { LabId } from "@/engine/types";
-import { LAB_DOCS } from "@/lib/labDocs";
+import type { FeatureDoc } from "@/lib/operators";
 import { Icon } from "../Icon";
 import { Badge, Card, Info } from "../ui";
 
@@ -13,9 +12,8 @@ export interface Chip {
   tip?: string;
 }
 
-/** Page frame for a lab: title, the cog (header and floating), summary chips, help on demand, then the stage. */
-export function LabFrame({ lab, chips, onSettings, rigCount, settingsOpen, children }: { lab: LabId; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
-  const doc = LAB_DOCS[lab];
+/** Frame for one operator feature: title, the cog (header and floating), summary chips, help on demand, then the stage. */
+export function LabFrame({ doc, operator, chips, onSettings, rigCount, settingsOpen, children }: { doc: FeatureDoc; operator: string; chips: Chip[]; onSettings: (section?: string) => void; rigCount: number; settingsOpen: boolean; children: ReactNode }) {
   const [help, setHelp] = useState(false);
   const badge = rigCount > 0 ? <span className="cog-badge">{rigCount}</span> : null;
   return (
@@ -23,10 +21,10 @@ export function LabFrame({ lab, chips, onSettings, rigCount, settingsOpen, child
       <header className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
           <h1 className="text-2xl font-semibold">{doc.title}</h1>
-          <Badge tone="accent">{doc.wave}</Badge>
+          <Badge tone="accent">{operator}</Badge>
           <Info size={16}>{doc.what}</Info>
         </div>
-        <button type="button" className={`btn btn-icon rounded-full ${help ? "border-accent text-accent-ink" : ""}`} data-tip="How this lab works" data-tip-end="" onClick={() => setHelp((h) => !h)} aria-label="How this lab works">
+        <button type="button" className={`btn btn-icon rounded-full ${help ? "border-accent text-accent-ink" : ""}`} data-tip="How this feature works" data-tip-end="" onClick={() => setHelp((h) => !h)} aria-label="How this feature works">
           <Icon name="ph:question" size={20} />
         </button>
         <button type="button" className="btn-cog" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
@@ -44,7 +42,7 @@ export function LabFrame({ lab, chips, onSettings, rigCount, settingsOpen, child
       </div>
       {help && (
         <Card
-          title={`How ${doc.title} works`}
+          title={`${operator} · ${doc.title}`}
           actions={
             <Link href="/docs" className="text-xs">
               Full docs

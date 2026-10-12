@@ -6,6 +6,7 @@ import type { BoxDef, BoxModel, BoxTier, PriceLayer } from "@/engine/types";
 import { TICKET_TOTAL } from "@/lib/presets";
 import { money, oneIn, pct, pctSmart } from "@/lib/format";
 import { ItemTile, TierBadge } from "../ItemTile";
+import { Icon } from "../Icon";
 import { Card, Field, NumberInput, Select, Help, Th, Td, Badge, Info, Toggle } from "../ui";
 
 const LAYERS: { value: PriceLayer; label: string }[] = [
@@ -21,10 +22,12 @@ function idsOf(box: BoxDef): string[] {
   return box.items.map((b) => b.itemId);
 }
 
-export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; onChange: (b: BoxDef) => void; compact?: boolean }) {
+export function BoxBuilder({ box, onChange, compact = false, lockModel = false, lockItems = false }: { box: BoxDef; onChange: (b: BoxDef) => void; compact?: boolean; lockModel?: boolean; lockItems?: boolean }) {
   const model: BoxModel = box.model ?? "weighted";
-  const [mode, setMode] = useState<"solver" | "manual">("solver");
-  const [pickerOpen, setPickerOpen] = useState(!compact);
+  const [unlocked, setUnlocked] = useState(false);
+  const locked = lockItems && !unlocked;
+  const [mode, setMode] = useState<"solver" | "manual">(lockItems ? "manual" : "solver");
+  const [pickerOpen, setPickerOpen] = useState(!compact && !lockItems);
   const [filter, setFilter] = useState("");
   const [showCaptured, setShowCaptured] = useState(false);
   const [guaranteeShare, setGuaranteeShare] = useState(box.guarantee?.share ?? 0.4);
@@ -171,11 +174,21 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
           <Select value={box.displayLayer} onChange={(v) => onChange({ ...box, displayLayer: v })} options={LAYERS} />
         </Field>
         <Field label="Draw model" hint="Weighted: fixed odds (every case site). Finite drop: copies drawn without replacement (IcyBox, kuji, lucky bags). Tiered: the proof picks a tier, the operator picks the item inside it (StockX).">
-          <Select<BoxModel> value={model} onChange={switchModel} options={[{ value: "weighted", label: "Weighted odds" }, { value: "pool", label: "Finite drop (pool)" }, { value: "tiered", label: "Tier-first (StockX)" }]} />
+          <Select<BoxModel> value={model} onChange={switchModel} disabled={lockModel} options={[{ value: "weighted", label: "Weighted odds" }, { value: "pool", label: "Finite drop (pool)" }, { value: "tiered", label: "Tier-first (StockX)" }]} />
         </Field>
       </div>
 
-      {model === "weighted" && (
+      {lockItems && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-warn/40 bg-warn-soft px-3 py-2 text-xs text-warn">
+          <Icon name="ph:lock-key" size={14} />
+          {locked ? "Captured table: items and odds as published (reconstructed). " : "Unlocked: you are editing a captured table. "}
+          <button type="button" className="chip" onClick={() => setUnlocked((u) => !u)}>
+            {locked ? "unlock to experiment" : "lock again"}
+          </button>
+        </div>
+      )}
+
+      {model === "weighted" && !locked && (
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <Field label="Odds mode">
             <Select
@@ -209,7 +222,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
           </button>
         </div>
       )}
-      {model !== "weighted" && (
+      {model !== "weighted" && !locked && (
         <div className="mt-3 flex">
           <button type="button" className="ml-auto text-xs text-accent-ink underline" onClick={() => setPickerOpen((o) => !o)}>
             {pickerOpen ? "Hide item picker" : "Pick items"}
@@ -217,7 +230,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
         </div>
       )}
 
-      {pickerOpen && (
+      {pickerOpen && !locked && (
         <div className="mt-3 rounded-lg border border-line bg-paper p-3">
           <div className="mb-2 flex flex-wrap items-center gap-3">
             <input type="text" placeholder="Filter items…" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-xs" />
@@ -319,7 +332,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
         </div>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-paper p-3 text-xs">
+      <div className={`mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-paper p-3 text-xs ${locked ? "hidden" : ""}`}>
         <Toggle checked={!!box.floorMultiple} onChange={(v) => onChange({ ...box, floorMultiple: v ? 1 : undefined })} label="Value floor" hint="StockX: every item worth at least this multiple of the price (before fees). Items below it are listed here; apply removes them." />
         {box.floorMultiple && (
           <>
@@ -373,7 +386,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
                   <Th right>Retail</Th>
                   <Th right>Asking</Th>
                   <Th right>Realized</Th>
-                  {model === "weighted" && mode === "manual" && <Th right>Percent</Th>}
+                  {model === "weighted" && mode === "manual" && !locked && <Th right>Percent</Th>}
                 </tr>
               </thead>
               <tbody>
@@ -391,7 +404,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
                     </Td>
                     {model === "pool" && (
                       <Td right>
-                        <input type="number" className="w-20 text-right" min={0} step={1} value={box.pool?.copies[r.itemId] ?? 0} onChange={(e) => setCopies(r.itemId, Number(e.target.value))} />
+                        <input type="number" className="w-20 text-right" min={0} step={1} value={box.pool?.copies[r.itemId] ?? 0} disabled={locked} onChange={(e) => setCopies(r.itemId, Number(e.target.value))} />
                       </Td>
                     )}
                     <Td right mono>{pctSmart(r.weight / table.T)}</Td>
@@ -399,7 +412,7 @@ export function BoxBuilder({ box, onChange, compact = false }: { box: BoxDef; on
                     <Td right mono>{money(r.item.retail)}</Td>
                     <Td right mono>{money(r.item.asking)}</Td>
                     <Td right mono>{money(r.item.realized)}</Td>
-                    {model === "weighted" && mode === "manual" && (
+                    {model === "weighted" && mode === "manual" && !locked && (
                       <Td right>
                         <input type="number" className="w-24 text-right" step={0.01} min={0} value={percents[r.itemId] ?? 0} onChange={(e) => setPercent(r.itemId, Number(e.target.value))} />
                       </Td>
