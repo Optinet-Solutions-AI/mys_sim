@@ -13,10 +13,10 @@ export interface NearMissSetting {
   showcase: number;
 }
 export interface SpinInfo {
-  /** the top item placed next to the landing tile, when the spin was dressed as a near miss */
+  /** the valuable item placed beside the landing tile, when the spin was dressed as a near miss */
   staged: CatalogItem | null;
 }
-interface Staging {
+export interface Staging {
   item: CatalogItem;
   side: -1 | 1;
 }
@@ -26,7 +26,7 @@ const GAP = 8;
 const STEP = TILE + GAP;
 const LEN = 56;
 const WIN = 48;
-const DURATION = 5200;
+const DURATION = 5500;
 
 /** Sampling weights for the decoration strip. showcase 0 = the real odds; higher flattens them so rare items show up constantly. */
 export function stripWeights(pool: ReelPoolEntry[], showcase: number): number[] {
@@ -34,13 +34,20 @@ export function stripWeights(pool: ReelPoolEntry[], showcase: number): number[] 
   return pool.map((p) => Math.pow(Math.max(1, p.weight), e));
 }
 
-export function topItem(pool: ReelPoolEntry[], exclude?: CatalogItem): CatalogItem | null {
-  let best: CatalogItem | null = null;
-  for (const p of pool) {
-    if (exclude && p.item.id === exclude.id) continue;
-    if (!best || p.item.realized > best.realized) best = p.item;
+/** A tempting neighbour for a near miss: a clear win (at least twice the price), medium values as often as grails. */
+export function pickTempting(pool: ReelPoolEntry[], winner: CatalogItem, price: number): CatalogItem | null {
+  const others = pool.filter((p) => p.item.id !== winner.id);
+  const wins = others.filter((p) => p.item.realized >= 2 * price);
+  const cands = wins.length ? wins : others;
+  if (!cands.length) return null;
+  const w = cands.map((p) => Math.log10(Math.max(10, p.item.realized)));
+  const sum = w.reduce((a, b) => a + b, 0);
+  let u = Math.random() * sum;
+  for (let i = 0; i < cands.length; i++) {
+    u -= w[i];
+    if (u <= 0) return cands[i].item;
   }
-  return best;
+  return cands[cands.length - 1].item;
 }
 
 export function buildStrip(pool: ReelPoolEntry[], winner: CatalogItem, showcase: number, len: number, win: number, staged: Staging | null): CatalogItem[] {
@@ -60,11 +67,17 @@ export function buildStrip(pool: ReelPoolEntry[], winner: CatalogItem, showcase:
   return strip;
 }
 
-export function decideStaging(pool: ReelPoolEntry[], winner: CatalogItem, loss: boolean, nearMiss?: NearMissSetting): Staging | null {
+export function decideStaging(pool: ReelPoolEntry[], winner: CatalogItem, loss: boolean, price: number, nearMiss?: NearMissSetting): Staging | null {
   if (!nearMiss || !loss || Math.random() >= nearMiss.rate) return null;
-  const item = topItem(pool, winner);
+  const item = pickTempting(pool, winner, price);
   if (!item) return null;
   return { item, side: Math.random() < 0.5 ? -1 : 1 };
+}
+
+/** Where the pointer rests inside the landing tile, relative to its centre. A staged near miss stops a few pixels from the neighbour's edge. */
+export function landingOffset(tile: number, staging: Staging | null): number {
+  if (staging) return staging.side * (tile / 2 - tile * (0.1 + Math.random() * 0.14));
+  return (Math.random() - 0.5) * tile * 0.7;
 }
 
 export function Reel({
@@ -74,6 +87,7 @@ export function Reel({
   onDone,
   fast = false,
   loss = false,
+  price = 0,
   nearMiss,
 }: {
   pool: ReelPoolEntry[];
@@ -82,6 +96,7 @@ export function Reel({
   onDone?: (info: SpinInfo) => void;
   fast?: boolean;
   loss?: boolean;
+  price?: number;
   nearMiss?: NearMissSetting;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -98,7 +113,7 @@ export function Reel({
 
   useEffect(() => {
     if (spinId === 0 || !winner || !pool.length) return;
-    const st = decideStaging(pool, winner, loss, nearMiss);
+    const st = decideStaging(pool, winner, loss, price, nearMiss);
     setStaging(st);
     setStrip(buildStrip(pool, winner, showcase, LEN, WIN, st));
     setLanded(false);
@@ -113,20 +128,14 @@ export function Reel({
     if (!el || !wrap) return;
     const width = wrap.clientWidth;
     const center = WIN * STEP + TILE / 2;
-    // where the pointer rests inside the landing tile: near the shared edge for a staged near miss, anywhere otherwise
-    const within = staging ? staging.side * TILE * 0.36 : (Math.random() - 0.5) * TILE * 0.6;
-    const distance = -(center + within - width / 2);
-    // a staged "almost" beyond the tile: the pointer crosses onto the top item, then eases back
-    const overshoot = staging && staging.side > 0 ? TILE * 0.55 : TILE * (0.08 + Math.random() * 0.1);
+    const distance = -(center + landingOffset(TILE, staging) - width / 2);
     let last = -1;
-    const cancel = animateReel({
+    return animateReel({
       el,
       axis: "x",
       distance,
       duration: fast ? 0 : DURATION,
-      pull: TILE * 0.5,
-      crawl: STEP * 1.7,
-      overshoot,
+      tail: 2.4,
       onFrame: (offset) => {
         const idx = tileAt(width / 2 - offset, STEP);
         if (idx !== last) {
@@ -139,7 +148,6 @@ export function Reel({
         onDoneRef.current?.({ staged: staging?.item ?? null });
       },
     });
-    return cancel;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spin]);
 
@@ -150,7 +158,7 @@ export function Reel({
       <div className="pointer-events-none absolute bottom-0 left-1/2 z-10 h-0 w-0 -translate-x-1/2 border-x-[9px] border-b-[10px] border-x-transparent border-b-accent" />
       <div ref={trackRef} className="absolute left-0 top-0 flex h-full items-center will-change-transform" style={{ gap: GAP }}>
         {strip.map((it, i) => {
-          const cls = landed && i === WIN ? "reel-tile-win" : landed && staging && i === WIN + staging.side ? "reel-tile-near" : spin && !landed && i === active ? "reel-tile-active" : "";
+          const cls = landed && i === WIN ? "reel-tile-win" : spin && !landed && i === active ? "reel-tile-active" : "";
           return (
             <div key={i} style={{ width: TILE }} className={`reel-tile flex shrink-0 justify-center ${cls}`}>
               <ItemTile item={it} size={TILE - 12} />

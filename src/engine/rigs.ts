@@ -174,9 +174,9 @@ export const RIGS: RigDoc[] = [
   {
     id: "nearMiss",
     name: "Near-miss reel (presentation)",
-    summary: "Losing spins are shown stopping one tile from a top item, and the reel strip shows rare items far more often than their odds. The draw itself is untouched.",
+    summary: "Losing spins are shown stopping right beside a valuable item, and the reel strip shows rare items far more often than their odds. The draw itself is untouched.",
     mechanism:
-      "After the ticket is drawn, the animation is built around it. With probability `rate`, a losing result gets the box's top item placed next to the landing tile and the reel brakes so the pointer crosses onto it before settling back. `showcase` flattens the sampling of the decoration strip so grails scroll past constantly. Odds, payouts and proofs do not change.",
+      "After the ticket is drawn, the animation is built around it. With probability `rate`, a losing result gets a clear win (a medium or high value item, chosen so medium values appear as often as grails) placed beside the landing tile, and the reel decelerates naturally to a stop a few pixels from its edge: nothing moves after the stop. `showcase` flattens the sampling of the decoration strip so rare items scroll past constantly. Odds, payouts and proofs do not change.",
     source: "Slot-machine near-miss programming (Universal Distributing, Nevada 1989); case-site reels; the vendor demo's emphasis on the opening animation; near-miss research (Reid 1986; Clark et al. 2009).",
     verificationShows: "Passes. RTP, chi-square and every proof are identical with the rig on or off.",
     detection: "Invisible in outcome data. Only an audit of the presentation catches it: record where the pointer stops relative to top items and how often top items appear in the strip, and compare with the table. Regulated RNG games forbid it (Nevada since the 1989 Universal decision; UKGC RTS 7 requires the display to reflect the real odds).",

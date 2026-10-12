@@ -9,6 +9,7 @@ import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
 import { Badge, Card, Info, Stat } from "../ui";
 import { Reel, type SpinInfo } from "../lab/Reel";
+import { CountUp } from "../lab/CountUp";
 
 interface Tally {
   opens: number;
@@ -41,20 +42,26 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const [last, setLast] = useState<LiveOpen | null>(null);
   const [lastStaged, setLastStaged] = useState<CatalogItem | null>(null);
   const [batch, setBatch] = useState<LiveOpen[] | null>(null);
+  const [batchRevealed, setBatchRevealed] = useState(0);
+  const batchPending = useRef<LiveOpen[] | null>(null);
   const [history, setHistory] = useState<LiveOpen[]>([]);
   const [tally, setTally] = useState<Tally>(EMPTY);
   const [copied, setCopied] = useState(false);
 
-  // a settings change starts a new session (new seeds, fresh counters)
-  useEffect(() => {
+  const clearSession = () => {
     setPending(null);
     setLast(null);
     setLastStaged(null);
     setBatch(null);
+    setBatchRevealed(0);
+    batchPending.current = null;
     setHistory([]);
     setTally(EMPTY);
     setSpinning(false);
-  }, [key]);
+  };
+  // a settings change starts a new session (new seeds, fresh counters)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(clearSession, [key]);
   useEffect(() => {
     if (!tags.some((t) => t.tag === tag)) setTag(tags[0].tag);
   }, [tags, tag]);
@@ -79,6 +86,13 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
         best,
       };
     });
+  const finishBatch = (list: LiveOpen[]) => {
+    setLast(list[list.length - 1]);
+    setLastStaged(null);
+    setHistory((h) => [...list.slice().reverse(), ...h].slice(0, 24));
+    account(list);
+    setSpinning(false);
+  };
 
   const openOne = () => {
     if (!live || spinning) return;
@@ -102,20 +116,32 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
     const list: LiveOpen[] = [];
     for (let i = 0; i < n; i++) list.push(live.open(tag));
     setBatch(list);
-    setLast(list[list.length - 1]);
-    setLastStaged(null);
-    setHistory((h) => [...list.slice().reverse(), ...h].slice(0, 24));
-    account(list);
+    const reduce = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (fast || reduce) {
+      setBatchRevealed(n);
+      finishBatch(list);
+    } else {
+      setBatchRevealed(0);
+      batchPending.current = list;
+      setSpinning(true);
+    }
   };
+  // staggered reveal of a batch
+  useEffect(() => {
+    if (!batch || !batchPending.current) return;
+    if (batchRevealed >= batch.length) {
+      const list = batchPending.current;
+      batchPending.current = null;
+      finishBatch(list);
+      return;
+    }
+    const t = setTimeout(() => setBatchRevealed((r) => r + 1), batch.length > 20 ? 26 : 170);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batch, batchRevealed]);
   const reset = () => {
     liveRef.current = null;
-    setPending(null);
-    setLast(null);
-    setLastStaged(null);
-    setBatch(null);
-    setHistory([]);
-    setTally(EMPTY);
-    setSpinning(false);
+    clearSession();
     setSpinId(0);
   };
 
@@ -133,6 +159,10 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const sessionRtp = tally.spent ? tally.returned / tally.spent : 0;
   const proofBadge = (o: LiveOpen) => (o.verified === null ? <Badge tone="warn">no proof</Badge> : o.verified ? <Badge tone="good">proof ok</Badge> : <Badge tone="bad">proof fails</Badge>);
   const oddsOf = (item: CatalogItem) => (table.items.find((r) => r.itemId === item.id)?.weight ?? 0) / table.T;
+  const shown = batch ? batch.slice(0, batchRevealed) : [];
+  const batchBack = shown.reduce((a, o) => a + o.payout, 0);
+  const batchDone = !!batch && batchRevealed >= batch.length;
+  const tileSize = batch && batch.length > 20 ? 32 : 52;
 
   return (
     <div className="space-y-4">
@@ -161,11 +191,11 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
             </label>
           )}
           <label className="flex items-center gap-1 text-xs text-ink-2">
-            <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} /> skip animation
+            <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} disabled={spinning} /> skip animation
           </label>
         </div>
         <div className="mt-3">
-          <Reel pool={pool} winner={pending?.item ?? null} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} nearMiss={nearMiss} />
+          <Reel pool={pool} winner={pending?.item ?? null} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} price={price} nearMiss={nearMiss} />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button type="button" className="btn btn-primary btn-lg" onClick={openOne} disabled={spinning}>
@@ -187,11 +217,15 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
             </div>
             <div>
               <div className="text-ink-3">spent</div>
-              <div className="font-semibold tabular-nums">{money(tally.spent)}</div>
+              <div className="font-semibold tabular-nums">
+                <CountUp value={tally.spent} format={money} />
+              </div>
             </div>
             <div>
               <div className="text-ink-3">back ({layer})</div>
-              <div className="font-semibold tabular-nums">{money(tally.returned)}</div>
+              <div className="font-semibold tabular-nums">
+                <CountUp value={tally.returned} format={money} />
+              </div>
             </div>
             <div>
               <div className="text-ink-3">session RTP</div>
@@ -208,6 +242,43 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           </div>
         </div>
       </Card>
+
+      {batch && (
+        <Card
+          title={`${batch.length} opens`}
+          actions={
+            <span className="text-xs text-ink-2 tabular-nums">
+              {batchDone ? (
+                <>
+                  spent {money(batch.length * price)} · back {money(batchBack)} · best {money(Math.max(...batch.map((o) => o.payout)))}
+                </>
+              ) : (
+                <>
+                  {batchRevealed}/{batch.length} · back <CountUp value={batchBack} format={money} duration={200} />
+                </>
+              )}
+            </span>
+          }
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {batch.map((o, i) =>
+              i < batchRevealed ? (
+                <div key={o.n} className="animate-flip flex flex-col items-center" data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
+                  <ItemTile item={o.item} size={tileSize} />
+                  {batch.length <= 20 && <span className={`mt-0.5 font-mono text-[10px] ${o.payout >= price ? "text-good" : "text-ink-3"}`}>{money(o.payout)}</span>}
+                </div>
+              ) : (
+                <div key={o.n} className="flex flex-col items-center">
+                  <div className="flex items-center justify-center rounded-xl border border-dashed border-line bg-paper" style={{ width: tileSize, height: tileSize }}>
+                    <Icon name="ph:package" size={Math.round(tileSize * 0.5)} className="text-ink-3" />
+                  </div>
+                  {batch.length <= 20 && <span className="mt-0.5 text-[10px] text-ink-3">·</span>}
+                </div>
+              ),
+            )}
+          </div>
+        </Card>
+      )}
 
       {last && !batch && (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -236,7 +307,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
               <div className="mt-3 flex items-start gap-2 rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn animate-rise">
                 <Icon name="ph:warning" size={16} />
                 <span>
-                  <b>Staged near miss.</b> The reel stopped one tile from {lastStaged.brand} {lastStaged.name}, whose odds are {pctSmart(oddsOf(lastStaged))}. The placement came from the near-miss setting, not from the draw.
+                  <b>Staged near miss.</b> The reel stopped beside {lastStaged.brand} {lastStaged.name} ({money(lastStaged[cfg.box.displayLayer])}), whose odds are {pctSmart(oddsOf(lastStaged))}. The neighbour was placed by the near-miss setting, not by the draw.
                 </span>
               </div>
             )}
@@ -293,18 +364,6 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
             )}
           </Card>
         </div>
-      )}
-
-      {batch && (
-        <Card title={`${batch.length} opens`} actions={<span className="text-xs text-ink-2">spent {money(batch.length * price)} · back {money(batch.reduce((a, o) => a + o.payout, 0))} · best {money(Math.max(...batch.map((o) => o.payout)))}</span>}>
-          <div className="flex flex-wrap gap-1.5">
-            {batch.map((o) => (
-              <div key={o.n} className="animate-pop" data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
-                <ItemTile item={o.item} size={40} />
-              </div>
-            ))}
-          </div>
-        </Card>
       )}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">

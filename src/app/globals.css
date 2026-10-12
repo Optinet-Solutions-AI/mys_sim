@@ -246,10 +246,7 @@ table {
 
 /* Reel tiles: the tile under the pointer grows as it ticks past; the landed tile glows; a staged near miss pulses. */
 .reel-tile { transition: transform 0.1s ease, filter 0.1s ease; }
-.reel-tile-active { transform: scale(1.1); }
+.reel-tile-active { transform: scale(1.06); }
 .reel-tile-win { transform: scale(1.16); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 75%, transparent)); }
-@keyframes nearpulse {
-  0%, 100% { transform: scale(1); filter: none; }
-  50% { transform: scale(1.14); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--color-warn) 85%, transparent)); }
-}
-.reel-tile-near { animation: nearpulse 0.7s ease-in-out 3; }
+@keyframes flipIn { from { transform: rotateY(90deg) scale(0.85); opacity: 0; } to { transform: none; opacity: 1; } }
+.animate-flip { animation: flipIn 0.32s ease-out both; }

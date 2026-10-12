@@ -1,5 +1,5 @@
-// Shared reel choreography: a short pull-back, a fast launch, a long brake, a slow tile-by-tile crawl,
-// an optional overshoot and a settle. Driven by requestAnimationFrame so the crawl and ticks are controllable.
+// Shared reel motion: one smooth deceleration from launch to stop, driven by requestAnimationFrame so the
+// final tiles creep past the pointer. No pull-back and no bounce: the reel simply slows down and stops.
 
 export interface ReelMotionOptions {
   el: HTMLElement;
@@ -8,55 +8,19 @@ export interface ReelMotionOptions {
   distance: number;
   duration: number;
   delay?: number;
-  /** anticipation: how far the strip moves backwards before launching (px) */
-  pull?: number;
-  /** how far past the target the strip travels before settling back (px, along the travel direction) */
-  overshoot?: number;
-  /** length of the slow final crawl before the target (px) */
-  crawl?: number;
+  /** deceleration shape: 2 = brisk stop, 2.4 = the last second creeps over about one tile, 3 = very long tail */
+  tail?: number;
   onFrame?: (offset: number) => void;
   onDone?: () => void;
 }
 
-const easeOutSine = (k: number) => Math.sin((k * Math.PI) / 2);
-const easeOutQuart = (k: number) => 1 - Math.pow(1 - k, 4);
-const easeOutCubic = (k: number) => 1 - Math.pow(1 - k, 3);
-const easeInOutSine = (k: number) => -(Math.cos(Math.PI * k) - 1) / 2;
-
-// time shares of the four segments
-const A = 0.07; // pull-back
-const B = 0.6; // launch and brake
-const C = 0.23; // crawl
-// settle = remainder
-
-export function reelPosition(k: number, D: number, pull: number, crawl: number, overshoot: number): number {
-  const sign = D < 0 ? -1 : 1;
-  const mag = Math.abs(D);
-  const crawlLen = Math.min(crawl, mag * 0.3);
-  if (k < A) return -sign * pull * easeOutSine(k / A);
-  if (k < A + B) {
-    const t = (k - A) / B;
-    const from = -sign * pull;
-    const to = sign * (mag - crawlLen);
-    return from + (to - from) * easeOutQuart(t);
-  }
-  if (k < A + B + C) {
-    const t = (k - A - B) / C;
-    const from = sign * (mag - crawlLen);
-    const to = sign * (mag + overshoot);
-    return from + (to - from) * easeOutCubic(t);
-  }
-  const t = (k - A - B - C) / (1 - A - B - C);
-  const from = sign * (mag + overshoot);
-  const to = sign * mag;
-  return from + (to - from) * easeInOutSine(Math.min(1, t));
+export function reelPosition(k: number, D: number, tail = 2.4): number {
+  return D * (1 - Math.pow(1 - Math.min(1, Math.max(0, k)), tail));
 }
 
 export function animateReel(o: ReelMotionOptions): () => void {
   const { el, axis, distance, duration } = o;
-  const pull = o.pull ?? 0;
-  const overshoot = o.overshoot ?? 0;
-  const crawl = o.crawl ?? 0;
+  const tail = o.tail ?? 2.4;
   const set = (v: number) => {
     el.style.transition = "none";
     el.style.transform = axis === "x" ? `translateX(${v}px)` : `translateY(${v}px)`;
@@ -80,7 +44,7 @@ export function animateReel(o: ReelMotionOptions): () => void {
     const t0 = performance.now();
     const step = (now: number) => {
       const k = Math.min(1, (now - t0) / duration);
-      set(reelPosition(k, distance, pull, crawl, overshoot));
+      set(reelPosition(k, distance, tail));
       if (k < 1) raf = requestAnimationFrame(step);
       else finish();
     };
@@ -95,7 +59,7 @@ export function animateReel(o: ReelMotionOptions): () => void {
   };
 }
 
-/** Index of the tile under a pointer at `pointer` (px from the strip start) given tile step size. */
+/** Index of the tile under a pointer at `pointer` (px from the strip start) given the tile step size. */
 export function tileAt(pointer: number, step: number): number {
   return Math.floor(pointer / step);
 }
