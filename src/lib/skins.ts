@@ -212,7 +212,7 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
     settings: ["Incentives: the daily box tiers and expiry, race cadence and prizes, affiliate terms.", "Visitor model: how likely a simulated visitor is to come back, deposit and play; all assumptions.", "Run compares against the same visitors with every incentive switched off, so you see what the incentives buy and cost."],
   },
   "vendor-deals": {
-    player: ["Pick an item you want and choose your chance of winning it, up to 80%. The price goes up with the chance.", "Win and you get the item; lose and the money is gone."],
+    player: ["Pick an item you want and choose your chance of winning it, up to 80%. The price goes up with the chance.", "The chance is a green zone on a wheel. You can drag the zone anywhere around the wheel; a needle spins and slows down, and if it stops inside the zone you win. The needle starts each spin from where it last stopped.", "Moving the zone changes nothing: the roll is read relative to where the zone sits, so the odds are the same wherever you put it.", "Win and you get the item; lose and the money is gone."],
     settings: ["Terms: the item, the chance, the cap and the stated edge, which decides how much more than fair the price is.", "Agents: a bankroll and whether they keep trying.", "Run gives the real win rate, the real edge and how many players go bust."],
   },
   "icybox-drops": {
