@@ -27,28 +27,40 @@ node scripts/extract-icons.mjs   # regenerates src/lib/icons.generated.ts from t
 npx tsc --noEmit                 # type check
 ```
 
-## What is in it (phase 1, wave 1: the vendor's features)
+## What is in it (phase 1)
 
-Every lab follows one pattern: you land on the **test page** and can play at once; the **cog** (Settings)
-holds all configuration in sections (run size and seed, box and items, algorithm, rigs, accounts or population);
-the summary chips under the title open the matching section; **Run simulation** produces the statistics, which
-appear below the test page. Live opens and simulations share the same engine, rigs and verifier.
+The hub is organised **by source**. Each operator has its own page with its own features as tabs; nothing from one
+operator is mixed into another's screens. Every feature is an isolated lab with a fixed structure (draw model,
+economy rules, battle modes), its own presets and only the options that operator actually has. Captured tables
+are locked to the published odds unless you unlock them to experiment. Across all of them the research toggles
+are the same: the commitment scheme, the ticket mapping, the rigs and the detector.
 
-| Route | What it does |
-|---|---|
-| `/` | Hub: the four labs, how to use them, the wave roadmap |
-| `/labs/mystery-box` | Test page: open a pack with a reveal reel, see the item and its proof (verifier result), open ×10 or ×100, session tally, box contents, recent pulls. Settings: box builder with the RTP solver or manual percentages, algorithm, rigs, account mix, run size. Results: realized RTP with standard error at three price layers, chi-square against stated odds, proof verification, detector, bias map, payout histogram, per-item table, sample of opens with proof fields |
-| `/labs/sellback` | Test page: a wallet walkthrough (deposit, open, sell back or ship, withdraw under the chosen rule, auto-play a session) next to the operator's view of the same money. Settings: economy rules, agent population, box, algorithm, rigs. Results: hold, GGR, sell-back and ship rates, ruin, bankroll percentiles |
-| `/labs/battles` | Test page: an arena with human and bot seats, played round by round, winner and pot, session tally against the fair win rate. Settings: mode (normal, crazy, group, terminal, jackpot), players, bots, boxes per round, algorithm, rigs, run size. Results: wager multiplier, realized edge, human win rate against the equal-odds expectation, pot distribution |
-| `/labs/retention` | Test page: the offer as a visitor sees it (daily box, races, affiliate) and the horizon. Settings: visitors and days, incentives, missions, free entry route, spend cap, visitor model, box, algorithm, rigs. Results against a control run on the same seed: retention curves, bonus cost, incremental wager per bonus dollar, LTV, hold after bonuses |
-| `/labs/credits` | Misty's two-stage economy. Test page: open the box, collect credits, watch the draw fill, see what a credit is really worth, force the draw date. Settings: ticket pool, face value, prize, draw rule, free-entry share, spend cap, disclosed EV. Results: nominal return with credits at face against the end-to-end return, real value of a credit, prizes to free entrants, hold |
-| `/labs/upgrader` | Upgrader (Jemlit, Cases.gg) and the vendor's Deals as one two-outcome box. Test page: pick the target, set the stake or the chance, roll on the win-zone bar with a bankroll. Settings: mode, stated edge, chance cap, value layer, agents and ladder policy. Results: win rate against the stated chance, realized edge against the stated edge, ruin |
+Within a feature the pattern is the same everywhere: you land on the **test page** and can play at once; the
+**cog** holds the settings in sections; the summary chips open the matching section; **Run simulation** produces
+the statistics below the test page. Live opens and simulations share the same engine, rigs and verifier.
 
-**Draw models and presets.** The box builder offers three draw models: weighted odds (every case site; RTP solver, manual percentages, guaranteed-tier mix, pity ceiling, value floor, price from EV), finite drop (IcyBox, kuji, lucky bags; copies drawn without replacement, retirement rules, Last One prize) and tier-first (StockX; tier odds, operator-picked item, finite inventory that delists the box). Presets in the Mystery Boxes lab include the reconstructed operator tables (Jemlit Apple eBox, Misty Timepiece Suite and Penthouse, Cases.gg Pack Up, rebuilt to the documented metrics in `src/engine/captured.ts`), IcyBox, StockX, Courtyard, Glass Box lucky bag, kuji, pity, secret item, and the presentation rigs. Sell-back presets reproduce IcyBox (undisclosed buyback estimate, decision window with auto-sell, keep fees), StockX (expiring credit, five-minute window then charged and shipped), Courtyard (FMV cash, seven-day window, guaranteed-value floor), Cases.gg vault and creator packs.
-| `/catalog` | 48 fictional luxury items with retail, asking and realized prices and placeholder icon tiles |
-| `/runs`, `/runs/[id]` | Saved runs (IndexedDB), compare two runs of the same lab, export JSON or a Markdown report |
-| `/verify` | The engine's verifier as a tool: recompute commitment, digest and ticket from seeds; verify a pasted record |
-| `/docs` | Generated from the registry: schemes, mappings, randomness sources, odds models, agent policies, battle modes, rigs, principles |
+| Route | Source | Features |
+|---|---|---|
+| `/operators/vendor` | The B2B vendor from the demo call | Mystery Boxes (90% RTP knob on listed values, no commitment), Sell-back & Cart (credit at displayed value, withdraw only through items), Battles (five modes, bots as the house), Retention (daily boxes with 24-hour expiry, races, affiliates), Deals |
+| `/operators/icybox` | IcyBox | Drops (finite pools, retail values, no fairness scheme; early-retirement rig), Buyback (undisclosed estimate, buyback window then auto-sold, keep fees) |
+| `/operators/stockx` | StockX Mystery Boxes | Tiered box (tier-first draw, floor at price, finite inventory delists), Credit sell-back (75 to 90% of list as expiring credit, five-minute window then charged and shipped) |
+| `/operators/courtyard` | Courtyard | EV-priced pack (price equals expected value, public pull log), FMV buyback (cash at fair market value, seven-day window, guaranteed-value floor) |
+| `/operators/jemlit` | Jemlit | Apple eBox (captured table, Jemlit scheme, 40% guaranteed variant), Cashback credits (0 to 30% haircut, never cash, expire), Upgrader |
+| `/operators/cases` | Cases.gg | Pack Up box (captured table, 10% edge, rotation every 1,000), Upgrader, Coinflip, Battles, Vault, Missions and the free route |
+| `/operators/misty` | Misty | Timepiece Suite and Penthouse (captured tables, Misty scheme), Credits and draws (the two-stage economy with free postal entry) |
+| `/operators/glassbox` | Glass Box (our design) | Glass Box (manifest, beacon, per-open rotation, ledger, realized value), Cash buyback, Lucky bag, Pity ceiling, Group opens, Pooled draw with disclosed EV, Spend cap |
+| `/operators/adjacent` | Adjacent models | Ichiban Kuji (Last One), Pop Mart secret, Fukubukuro, Breaks, Omaze-style draw, Gacha pity |
+| `/operators/presentation` | Presentation layer (research) | Near-miss reel, losses disguised as wins, fabricated live feed, tickets-away message, demo odds, urgency cues |
+| `/` | Hub | The sources and their features |
+| `/catalog` | Catalogue | 48 fictional items plus the items of the reconstructed operator tables, three price layers each |
+| `/runs`, `/runs/[id]` | Run history | Saved runs from every source side by side, compare two of one lab type, export JSON or a Markdown report |
+| `/verify` | Verifier | Recompute commitment, digest and ticket from seeds; verify a pasted record |
+| `/docs` | Docs | Sources and their features, schemes, mappings, randomness sources, odds models, agent policies, battle modes, rigs, principles |
+
+The reconstructed operator tables (Jemlit Apple eBox, Misty Timepiece Suite and Penthouse, Cases.gg Pack Up) are
+rebuilt to the metrics documented in dossier 1 (top-item odds, cheapest-outcome share, expected value) in
+`src/engine/captured.ts`; the item-by-item lists were not kept at capture time, so they are labelled reconstructions
+and their realized values are stated assumptions.
 
 ## Structure
 
