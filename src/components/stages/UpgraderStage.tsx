@@ -182,8 +182,19 @@ export function UpgraderStage({ cfg, seed, onSettings, onChange }: { cfg: Upgrad
             </div>
             {tally.bank < built.price && <span className="text-xs text-warn">Bankroll gone.</span>}
             {last && !spinning && (
-              <div className={`rounded-lg px-3 py-2 text-sm animate-rise ${last.item.id === cfg.targetItemId ? "bg-good-soft font-semibold text-good" : "bg-paper text-ink-2"}`}>
-                {last.item.id === cfg.targetItemId ? `Won the ${target.name}!` : "Lost the stake."} <span className="text-xs font-normal text-ink-3">roll {lastRoll?.toFixed(2)} · ticket {num(last.rec.ticket)}</span>
+              <div className={`rounded-lg px-3 py-2 text-sm animate-rise ${last.item.id === cfg.targetItemId ? "bg-good-soft text-good" : "bg-paper text-ink-2"}`}>
+                {last.item.id === cfg.targetItemId ? (
+                  <>
+                    <b>Won the {target.name}!</b> The needle stopped at <b>{lastRoll?.toFixed(1)}</b> on the 0 to 100 wheel, inside your win zone of 0 to {(built.chance * 100).toFixed(0)}.
+                  </>
+                ) : (
+                  <>
+                    <b>Lost the {money(built.price)} stake.</b> The needle stopped at <b>{lastRoll?.toFixed(1)}</b> on the 0 to 100 wheel, outside your win zone of 0 to {(built.chance * 100).toFixed(0)}.
+                  </>
+                )}{" "}
+                <Info>
+                  The roll is a number from 0 to 100 drawn by the engine. You win when it is below your chance ({pct(built.chance, 1)}), wherever you have dragged the green zone, because the needle is read relative to the zone. Ticket {num(last.rec.ticket)} of 100,000,000 is the same number at full precision; it is what the proof checks.
+                </Info>
                 {displayDisagrees && (
                   <div className="mt-1 flex items-center gap-1 text-xs font-normal text-bad">
                     <Icon name="ph:warning" size={14} /> The needle says one thing and the house says another: a rig is drawing from a hidden table.
