@@ -30,10 +30,10 @@ const EMPTY: Tally = { battles: 0, humanWins: 0, humanSpent: 0, humanWon: 0, pot
 
 // pacing with "fast reveal" off: every seat's reel spins for SPIN_MS, seats start STAGGER_MS apart,
 // then values and totals settle for SETTLE_MS before the next round; the winner is announced after FINAL_MS.
-const SPIN_MS = 2400;
-const STAGGER_MS = 160;
-const SETTLE_MS = 1100;
-const FINAL_MS = 900;
+const SPIN_MS = 3200;
+const STAGGER_MS = 220;
+const SETTLE_MS = 1300;
+const FINAL_MS = 1100;
 
 type Phase = "idle" | "round" | "settle" | "done";
 
@@ -249,7 +249,7 @@ export function BattlesStage({ cfg, seed, onSettings }: { cfg: BattlesConfig; se
                       if (spinning) {
                         return (
                           <div key={`${battleNo}-${r}-${p}`}>
-                            <MiniReel pool={pools[r]} winner={item!} delay={p * STAGGER_MS} duration={SPIN_MS} onDone={() => markRevealed(idx)} />
+                            <MiniReel pool={pools[r]} winner={item!} delay={p * STAGGER_MS} duration={SPIN_MS} loss={pull!.rec.payout < cfg.boxes[r].price} nearMiss={cfg.rigs.nearMiss} onDone={() => markRevealed(idx)} />
                           </div>
                         );
                       }

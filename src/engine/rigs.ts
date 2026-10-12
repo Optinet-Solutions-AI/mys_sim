@@ -171,6 +171,21 @@ export const RIGS: RigDoc[] = [
     params: [{ key: "verifyFraction", label: "Fraction of players who verify", min: 0, max: 1, step: 0.01, defaultValue: 0.01 }],
     labs: ["mystery-box"],
   },
+  {
+    id: "nearMiss",
+    name: "Near-miss reel (presentation)",
+    summary: "Losing spins are shown stopping one tile from a top item, and the reel strip shows rare items far more often than their odds. The draw itself is untouched.",
+    mechanism:
+      "After the ticket is drawn, the animation is built around it. With probability `rate`, a losing result gets the box's top item placed next to the landing tile and the reel brakes so the pointer crosses onto it before settling back. `showcase` flattens the sampling of the decoration strip so grails scroll past constantly. Odds, payouts and proofs do not change.",
+    source: "Slot-machine near-miss programming (Universal Distributing, Nevada 1989); case-site reels; the vendor demo's emphasis on the opening animation; near-miss research (Reid 1986; Clark et al. 2009).",
+    verificationShows: "Passes. RTP, chi-square and every proof are identical with the rig on or off.",
+    detection: "Invisible in outcome data. Only an audit of the presentation catches it: record where the pointer stops relative to top items and how often top items appear in the strip, and compare with the table. Regulated RNG games forbid it (Nevada since the 1989 Universal decision; UKGC RTS 7 requires the display to reflect the real odds).",
+    params: [
+      { key: "rate", label: "Share of losing spins dressed as near misses", min: 0, max: 1, step: 0.05, defaultValue: 0.5 },
+      { key: "showcase", label: "Showcase: 0 = strip matches real odds, 0.9 = grails everywhere", min: 0, max: 0.9, step: 0.05, defaultValue: 0.6 },
+    ],
+    labs: ["mystery-box", "battles"],
+  },
 ];
 
 export const RIG_BY_ID = new Map(RIGS.map((r) => [r.id, r]));

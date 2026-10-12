@@ -98,6 +98,8 @@ export interface RigConfig {
   favouredBots?: { botRtp: number };
   /** fraction of players who ever verify (informs the detector only) */
   selectiveDisclosure?: { verifyFraction: number };
+  /** presentation only: losing spins shown stopping one tile from a top item; strip over-represents rare items */
+  nearMiss?: { rate: number; showcase: number };
 }
 
 export interface AccountMix {

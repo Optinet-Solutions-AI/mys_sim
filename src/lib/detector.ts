@@ -109,6 +109,16 @@ export function detect(cfg: MysteryBoxConfig, r: MysteryBoxResult): Finding[] {
       suggests: [],
     });
   }
+  // 8b. presentation layer: the near-miss reel
+  if (cfg.rigs.nearMiss) {
+    out.push({
+      id: "nearmiss",
+      title: "Near-miss reel active: presentation only",
+      status: "info",
+      detail: `${(cfg.rigs.nearMiss.rate * 100).toFixed(0)}% of losing opens are shown stopping one tile from a top item, and the strip over-represents rare items (showcase ${cfg.rigs.nearMiss.showcase}). Odds, payouts and proofs are untouched, so nothing in these results can show it; only an audit of the reel against the table can. Regulated RNG games forbid engineered near misses (Nevada since the 1989 Universal decision; UKGC RTS 7 requires the display to reflect the real odds).`,
+      suggests: [],
+    });
+  }
   // 9. selective disclosure
   if (cfg.rigs.selectiveDisclosure) {
     const f = cfg.rigs.selectiveDisclosure.verifyFraction;

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MysteryBoxConfig } from "@/engine/types";
+import type { CatalogItem, MysteryBoxConfig } from "@/engine/types";
 import { expectedValue } from "@/engine/table";
 import { LiveOpener, type LiveOpen } from "@/lib/live";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
@@ -8,16 +8,18 @@ import { copyText } from "@/lib/download";
 import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
 import { Badge, Card, Info, Stat } from "../ui";
-import { Reel } from "../lab/Reel";
+import { Reel, type SpinInfo } from "../lab/Reel";
 
 interface Tally {
   opens: number;
   spent: number;
   returned: number;
   displayed: number;
+  losses: number;
+  staged: number;
   best: LiveOpen | null;
 }
-const EMPTY: Tally = { opens: 0, spent: 0, returned: 0, displayed: 0, best: null };
+const EMPTY: Tally = { opens: 0, spent: 0, returned: 0, displayed: 0, losses: 0, staged: 0, best: null };
 
 export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConfig; seed: number; onSettings: (section?: string) => void }) {
   const key = useMemo(() => JSON.stringify([cfg.box, cfg.algo, cfg.rigs, seed]), [cfg.box, cfg.algo, cfg.rigs, seed]);
@@ -37,6 +39,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const [fast, setFast] = useState(false);
   const [pending, setPending] = useState<LiveOpen | null>(null);
   const [last, setLast] = useState<LiveOpen | null>(null);
+  const [lastStaged, setLastStaged] = useState<CatalogItem | null>(null);
   const [batch, setBatch] = useState<LiveOpen[] | null>(null);
   const [history, setHistory] = useState<LiveOpen[]>([]);
   const [tally, setTally] = useState<Tally>(EMPTY);
@@ -46,6 +49,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   useEffect(() => {
     setPending(null);
     setLast(null);
+    setLastStaged(null);
     setBatch(null);
     setHistory([]);
     setTally(EMPTY);
@@ -60,11 +64,20 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
   const table = live?.opener.displayed ?? null;
   const statedRtp = table ? expectedValue(table, layer) / price : 0;
   const pool = useMemo(() => (table ? table.items.map((r) => ({ item: r.item, weight: r.weight })) : []), [table]);
+  const nearMiss = cfg.rigs.nearMiss;
 
-  const account = (opens: LiveOpen[]) =>
+  const account = (opens: LiveOpen[], staged = 0) =>
     setTally((t) => {
       const best = opens.reduce<LiveOpen | null>((b, o) => (!b || o.payout > b.payout ? o : b), t.best);
-      return { opens: t.opens + opens.length, spent: t.spent + opens.length * price, returned: t.returned + opens.reduce((a, o) => a + o.payout, 0), displayed: t.displayed + opens.reduce((a, o) => a + o.display, 0), best };
+      return {
+        opens: t.opens + opens.length,
+        spent: t.spent + opens.length * price,
+        returned: t.returned + opens.reduce((a, o) => a + o.payout, 0),
+        displayed: t.displayed + opens.reduce((a, o) => a + o.display, 0),
+        losses: t.losses + opens.filter((o) => o.payout < price).length,
+        staged: t.staged + staged,
+        best,
+      };
     });
 
   const openOne = () => {
@@ -75,11 +88,12 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
     setSpinning(true);
     setSpinId((s) => s + 1);
   };
-  const reveal = () => {
+  const reveal = (info?: SpinInfo) => {
     if (!pending) return;
     setLast(pending);
+    setLastStaged(info?.staged ?? null);
     setHistory((h) => [pending, ...h].slice(0, 24));
-    account([pending]);
+    account([pending], info?.staged ? 1 : 0);
     setPending(null);
     setSpinning(false);
   };
@@ -89,6 +103,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
     for (let i = 0; i < n; i++) list.push(live.open(tag));
     setBatch(list);
     setLast(list[list.length - 1]);
+    setLastStaged(null);
     setHistory((h) => [...list.slice().reverse(), ...h].slice(0, 24));
     account(list);
   };
@@ -96,6 +111,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
     liveRef.current = null;
     setPending(null);
     setLast(null);
+    setLastStaged(null);
     setBatch(null);
     setHistory([]);
     setTally(EMPTY);
@@ -116,6 +132,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
 
   const sessionRtp = tally.spent ? tally.returned / tally.spent : 0;
   const proofBadge = (o: LiveOpen) => (o.verified === null ? <Badge tone="warn">no proof</Badge> : o.verified ? <Badge tone="good">proof ok</Badge> : <Badge tone="bad">proof fails</Badge>);
+  const oddsOf = (item: CatalogItem) => (table.items.find((r) => r.itemId === item.id)?.weight ?? 0) / table.T;
 
   return (
     <div className="space-y-4">
@@ -148,7 +165,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           </label>
         </div>
         <div className="mt-3">
-          <Reel pool={pool} winner={pending?.item ?? null} spinId={spinId} onDone={reveal} fast={fast} />
+          <Reel pool={pool} winner={pending?.item ?? null} spinId={spinId} onDone={reveal} fast={fast} loss={!!pending && pending.payout < price} nearMiss={nearMiss} />
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button type="button" className="btn btn-primary btn-lg" onClick={openOne} disabled={spinning}>
@@ -160,10 +177,10 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
           <button type="button" className="btn" onClick={() => openMany(100)} disabled={spinning}>
             Open ×100
           </button>
-          <button type="button" className="btn" onClick={reset} disabled={spinning} title="New session: fresh seeds and counters">
-            <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset session
+          <button type="button" className="btn" onClick={reset} disabled={spinning} data-tip="New session: fresh seeds and counters">
+            <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset
           </button>
-          <div className="ml-auto grid grid-cols-4 gap-2 text-right text-xs">
+          <div className={`ml-auto grid gap-2 text-right text-xs ${nearMiss ? "grid-cols-5" : "grid-cols-4"}`}>
             <div>
               <div className="text-ink-3">opens</div>
               <div className="font-semibold tabular-nums">{num(tally.opens)}</div>
@@ -180,6 +197,14 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
               <div className="text-ink-3">session RTP</div>
               <div className={`font-semibold tabular-nums ${tally.opens && sessionRtp < statedRtp - 0.15 ? "text-bad" : ""}`}>{tally.opens ? pct(sessionRtp) : "—"}</div>
             </div>
+            {nearMiss && (
+              <div data-tip="Losing spins shown as near misses by the reel setting; the odds were unchanged" data-tip-end="">
+                <div className="text-warn">near misses</div>
+                <div className="font-semibold tabular-nums text-warn">
+                  {num(tally.staged)}/{num(tally.losses)}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Card>
@@ -197,7 +222,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                   <TierBadge tier={last.item.tier} />
                   <span className="text-xs text-ink-3">
-                    odds {pctSmart((table.items.find((r) => r.itemId === last.item.id)?.weight ?? 0) / table.T)} · {oneIn((table.items.find((r) => r.itemId === last.item.id)?.weight ?? 0) / table.T)}
+                    odds {pctSmart(oddsOf(last.item))} · {oneIn(oddsOf(last.item))}
                   </span>
                 </div>
                 <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
@@ -207,12 +232,20 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
                 </div>
               </div>
             </div>
+            {lastStaged && (
+              <div className="mt-3 flex items-start gap-2 rounded-lg bg-warn-soft px-3 py-2 text-xs text-warn animate-rise">
+                <Icon name="ph:warning" size={16} />
+                <span>
+                  <b>Staged near miss.</b> The reel stopped one tile from {lastStaged.brand} {lastStaged.name}, whose odds are {pctSmart(oddsOf(lastStaged))}. The placement came from the near-miss setting, not from the draw.
+                </span>
+              </div>
+            )}
           </Card>
           <Card
             title={
               <>
                 Proof {proofBadge(last)}
-                <Info>The verifier recomputes the digest from the revealed seeds and looks the ticket up in the displayed table. It proves the dice, not the table, the values or how the seeds were chosen.</Info>
+                <Info>The verifier recomputes the digest from the revealed seeds and looks the ticket up in the displayed table. It proves the dice, not the table, the values, how the seeds were chosen, or what the animation showed.</Info>
               </>
             }
             actions={
@@ -266,7 +299,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
         <Card title={`${batch.length} opens`} actions={<span className="text-xs text-ink-2">spent {money(batch.length * price)} · back {money(batch.reduce((a, o) => a + o.payout, 0))} · best {money(Math.max(...batch.map((o) => o.payout)))}</span>}>
           <div className="flex flex-wrap gap-1.5">
             {batch.map((o) => (
-              <div key={o.n} className="animate-pop" title={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
+              <div key={o.n} className="animate-pop" data-tip={`${o.item.brand} ${o.item.name} · pays ${money(o.payout)} · ${o.reason}`}>
                 <ItemTile item={o.item} size={40} />
               </div>
             ))}
@@ -275,7 +308,14 @@ export function MysteryBoxStage({ cfg, seed, onSettings }: { cfg: MysteryBoxConf
       )}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <Card title="What is in the box" actions={<button type="button" className="chip" onClick={() => onSettings("box")}>edit items and odds</button>}>
+        <Card
+          title="In the box"
+          actions={
+            <button type="button" className="chip" onClick={() => onSettings("box")}>
+              edit items and odds
+            </button>
+          }
+        >
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {table.items.map((r) => {
               const won = last?.item.id === r.itemId;
