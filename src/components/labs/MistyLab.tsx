@@ -64,6 +64,40 @@ export function OddsEditor({ box, weights, onChange, values, bonus }: { box: Mis
               );
             })}
           </tbody>
+          <tfoot>
+            <tr className="border-t-2 border-ink bg-accent-soft font-semibold">
+              <Td>Total: pays back per open</Td>
+              <Td right mono>{m.evMistees.toFixed(2)} Mistees + {money(m.evItems, 2)} in pieces</Td>
+              <Td right mono>{m.total.toFixed(3)}%</Td>
+              <Td right mono>piece {oneIn(m.pItem)}</Td>
+              <Td right mono>{money(m.payFace, 2)}</Td>
+            </tr>
+            <tr className="border-t border-line">
+              <Td>Price of the box</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>{money(box.price, 2)}</Td>
+            </tr>
+            <tr className="border-t border-line font-semibold">
+              <Td>Operator keeps per open (price − pays back)</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>return {pct(m.returnFace)}</Td>
+              <Td right mono>
+                <span className={box.price - m.payFace >= 0 ? "text-good" : "text-bad"}>{money(box.price - m.payFace, 2)}</span>
+              </Td>
+            </tr>
+            <tr className="border-t border-line text-ink-3">
+              <Td>Same in real money (Mistees at {money(values.misteeReal)}, pieces at {pct(values.itemRealized, 0)})</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>return {pct(m.returnReal)}</Td>
+              <Td right mono>
+                pays {money(m.payReal, 2)}, keeps {money(box.price - m.payReal, 2)}
+              </Td>
+            </tr>
+          </tfoot>
         </table>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -290,9 +324,13 @@ export function MistyLab({ variant, operator }: { variant: FeatureDef; operator:
             <Field label="Your seed (client seed)" hint="A word of your choosing that goes into every roll. Misty lets the player set it so the site cannot pick a roll on its own.">
               <input className="w-full max-w-sm rounded-md border border-line bg-paper px-2 py-1 text-sm" value={cfg.clientSeed} onChange={(e) => setCfg({ ...cfg, clientSeed: e.target.value })} />
             </Field>
-            <p className="text-xs text-ink-3">
-              Recipe copied from Misty&apos;s published verifier: digest = HMAC-SHA256 with key &quot;DRAW-{box.slug}-secret-yourSeed-spinNumber&quot; over an empty message; the first 13 hex characters divided by 2^52 give a roll between 0 and 1; the roll is read against the odds table, whose hash is frozen onto the open. Free spins use the same secret and the next spin numbers. A fresh secret is committed for every open.
+            <p className="text-xs text-ink-2">
+              In plain words: the site picks a secret before you pay and cannot change it; your seed goes in too; the two are mixed into one roll between 0 and 100; the roll is read against the odds table, which is stamped onto your open; free spins reuse the same secret; a new secret is chosen for every open.
             </p>
+            <details className="text-xs text-ink-3">
+              <summary className="cursor-pointer">For developers: the exact recipe</summary>
+              Copied from Misty&apos;s published verifier: digest = HMAC-SHA256 with key &quot;DRAW-{box.slug}-secret-yourSeed-spinNumber&quot; over an empty message; the first 13 hex characters divided by 2^52 give a roll between 0 and 1; the odds table is hashed with SHA-256 and that hash is frozen onto the open; free spins use the same secret and the next spin numbers.
+            </details>
           </div>
         </Card>
       ),

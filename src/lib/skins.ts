@@ -281,7 +281,7 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
       "Most spins pay Mistees, Misty's site credit: one to a few of them. A piece drops rarely; on the $10 Timepiece Suite about one spin in 61, and the Rolex once in 25,000.",
       "Some outcomes carry one or two free spins, which pay a few more Mistees from a small second table.",
       "A piece can be shipped or traded in for Mistees. Mistees never become money: they only buy more boxes or products on the site.",
-      "Before you pay you see the fingerprint of a secret. After the spin the secret is revealed, together with your seed, the spin number and the odds table used, so you can recompute the result. The steps are written out under the box.",
+      "Before you pay, the site locks in a secret number for your open. After the spin it shows the secret, so the result can be checked by anyone. Under the box every step is written out in plain words, and the technical details stay folded away unless you open them.",
     ],
     settings: [
       "Box & odds: the live table of the chosen box. Every percentage can be changed; the sum, the chance of a piece and what the box pays back (on screen and really) update as you type.",
