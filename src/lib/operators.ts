@@ -513,7 +513,7 @@ export const OPERATORS: OperatorDef[] = [
           title: "Timepiece Suite",
           short: "The live table: 1 in 61 opens pays an item; the rest pay Mistees.",
           what: "Misty's $10 Timepiece Suite as it stands on the live page (captured 12 October 2026): 17 outcomes, a Rolex at 1 in 25,000, a 1.65% chance of any physical item, Mistees the other 98% of the time, and two Free Spin outcomes with their own small table. The seed is committed before you pay and revealed at the open, and the odds table is frozen onto each open. The 9 October reconstruction and the Penthouse are kept as presets.",
-          configure: ["The table is the live capture (unlock to experiment); Misty's scheme with a seed per open.", "The face value of a Mistee is an assumption ($1); change the credit items to test another rate.", "Research rigs."],
+          configure: ["The table is the live capture (unlock to experiment); Misty's scheme with a seed per open.", "Misty's page data values a Mistee at $1 (100 cents each in the odds-table data, never stated in words); change the credit items to test another rate.", "Research rigs."],
           read: ["Return with Mistees at face against what they cost Misty; proofs; the detector."],
           source: "Live page and terms captured 12 October 2026 (research/captures); dossier 1 §2.1 for the 9 October capture.",
         },

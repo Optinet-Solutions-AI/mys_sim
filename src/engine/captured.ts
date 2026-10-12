@@ -150,10 +150,11 @@ const casesRows: Row[] = [
 ];
 
 // ---- Misty Timepiece Suite, LIVE table captured 12 Oct 2026 (17 outcomes, odds sum 100.16%) ----
-// Mistees are site credit with no cash value, redeemable only for boxes and products (terms). The exchange rate is not
-// published: face is assumed $1 per Mistee; the real cost to Misty is about $0.37 per Mistee if credit is re-spent on
-// boxes (solved from this table with physical items at 70% of listed). Free Spin outcomes are valued at the Mistees they
-// pay plus the 1.68 Mistees a free spin pays on average (its own table: 1 at 70%, 2 at 22%, 5 at 6%, 10 at 2%, 20 at 0.2%).
+// Mistees are site credit with no cash value, redeemable only for boxes and products (terms). The page never states a
+// dollar rate in words, but its odds-table data values every Mistee outcome at 100 cents per Mistee (valueCents, fxRate 1),
+// so face is $1. The real cost to Misty is about $0.37 per Mistee if credit is re-spent on boxes (solved from this table
+// with physical items at 70% of listed). Free Spin outcomes are valued at the Mistees they pay plus 1.68 Mistees per free
+// spin (its own table: 1 at 70%, 2 at 22%, 5 at 6%, 10 at 2%, 20 at 0.2%); the 2% outcome gives two spins (freeSpins: 2).
 const mistyLiveRows: Row[] = [
   { id: "c-misty-live-rolex-ladydatejust", name: "Lady-Datejust 28 mm", brand: "Rolex", category: "watch", listed: 16035, percent: 0.004, icon: "fluent:watch", realizedFactor: 0.7, askingFactor: 0.85 },
   { id: "c-misty-live-lv-sunset-cherry", name: "x Murakami Sunset Cherry bag", brand: "Louis Vuitton", category: "bag", listed: 3600, percent: 0.015, icon: "fluent:handbag", realizedFactor: 0.7, askingFactor: 0.85 },
@@ -168,7 +169,7 @@ const mistyLiveRows: Row[] = [
   { id: "c-misty-live-m5", name: "5 Mistees", brand: "Misty", category: "credit", listed: 5, percent: 6.2, icon: "fluent:ticket", realizedFactor: 0.37 },
   { id: "c-misty-live-m4", name: "4 Mistees", brand: "Misty", category: "credit", listed: 4, percent: 8.2, icon: "fluent:ticket", realizedFactor: 0.37 },
   { id: "c-misty-live-m3", name: "3 Mistees", brand: "Misty", category: "credit", listed: 3, percent: 21.0, icon: "fluent:ticket", realizedFactor: 0.37 },
-  { id: "c-misty-live-fs2", name: "Free Spin +2 (about 3.7 Mistees)", brand: "Misty", category: "credit", listed: 3.68, percent: 2.0, icon: "fluent:sparkles", realizedFactor: 0.37 },
+  { id: "c-misty-live-fs2", name: "2 Free Spins +2 (about 5.4 Mistees)", brand: "Misty", category: "credit", listed: 5.36, percent: 2.0, icon: "fluent:sparkles", realizedFactor: 0.37 },
   { id: "c-misty-live-m2", name: "2 Mistees", brand: "Misty", category: "credit", listed: 2, percent: 31.0, icon: "fluent:ticket", realizedFactor: 0.37 },
   { id: "c-misty-live-fs1", name: "Free Spin +1 (about 2.7 Mistees)", brand: "Misty", category: "credit", listed: 2.68, percent: 9.0, icon: "fluent:sparkles", realizedFactor: 0.37 },
   { id: "c-misty-live-m1", name: "1 Mistee", brand: "Misty", category: "credit", listed: 1, percent: 18.0, icon: "fluent:ticket", realizedFactor: 0.37 },
@@ -192,7 +193,7 @@ export const CAPTURED_BOXES = {
     "Misty Timepiece Suite (live table, 12 Oct 2026) · $10",
     10,
     mistyLive.percents,
-    "Captured from the live page on 12 October 2026, not reconstructed: 17 outcomes, odds sum 100.16%, 1.652% chance of a physical item (1 in 61), Rolex Lady-Datejust at 1 in 25,000, expected value of items $3.77 at the listed minimum retail values, about 2.8 Mistees per open including free spins. Mistees are site credit with no cash value, redeemable only for boxes and products; face is assumed $1 per Mistee (rate not published) and the real cost to Misty about $0.37 per Mistee if re-spent on boxes. Physical items realized at 70% of listed (assumption). Capture saved in research/captures.",
+    "Captured from the live page on 12 October 2026, not reconstructed: 17 outcomes, odds sum 100.16%, 1.652% chance of a physical item (1 in 61), Rolex Lady-Datejust at 1 in 25,000, expected value of items $3.77 at the listed minimum retail values, about 2.8 Mistees per open including free spins. Mistees are site credit with no cash value, redeemable only for boxes and products; the page data values each Mistee at 100 cents (never stated in words), so face is $1, and the real cost to Misty is about $0.37 per Mistee if re-spent on boxes. Physical items realized at 70% of listed (assumption). Capture saved in research/captures.",
   ),
   jemlitApple: box(
     "Jemlit Apple eBox (reconstructed) · $7.50",

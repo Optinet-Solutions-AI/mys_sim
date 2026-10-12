@@ -1,17 +1,9 @@
-Misty: live Timepiece Suite table (12 Oct 2026) as default preset, Mistees economy tab
+Misty: Mistee face value is $1 per the page data; 2% outcome gives two free spins
 
-The live page was captured on 12 October 2026: 17 outcomes, odds sum 100.16%,
-1 in 61 physical item, Rolex at 1 in 25,000, about 2.8 Mistees per open
-including the two Free Spin outcomes. Terms define Mistees as site credit with
-no cash value, redeemable only for boxes and products; no dollar rate is
-published, so credit items carry an assumed $1 face and $0.37 real cost.
-
-- captured.ts: mistyTimepieceLive box and items (live capture, not a reconstruction)
-- operators.ts: live table is the Misty default; 9 Oct reconstruction and Penthouse kept
-  as presets; new Mistees economy tab (sellback lab, credit re-spent on boxes, only
-  items leave); competitions tab relabelled
-- skins.ts: player and settings guides for the three Misty tabs
-- presets.ts: captured-misty-live preset so the smoke script covers it
-  (stated 65.5%, realized 64.3%, cash 35.9%, verify 100/100)
+The odds-table data behind the box page values every Mistee outcome at
+100 cents per Mistee (valueCents, fxRate 1), so the $1 face is Misty's own
+figure rather than an assumption. The 2% Free Spin outcome carries
+freeSpins: 2, so it is worth about 5.4 Mistees, not 3.7. Comments, guides
+and the box note updated; smoke: stated 65.9%, realized 64.6%, cash 36.0%.
 
 Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
