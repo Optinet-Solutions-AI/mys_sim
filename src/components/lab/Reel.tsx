@@ -21,7 +21,7 @@ export interface Staging {
   side: -1 | 1;
 }
 
-const TILE = 84;
+const TILE = 96;
 const GAP = 8;
 const STEP = TILE + GAP;
 const LEN = 56;
@@ -111,6 +111,21 @@ export function Reel({
   const [active, setActive] = useState(-1);
   const [landed, setLanded] = useState(false);
 
+  // a reset (spinId back to 0) returns the reel to its idle marquee
+  useEffect(() => {
+    if (spinId !== 0) return;
+    setSpin(0);
+    setLanded(false);
+    setStaging(null);
+    setStrip(pool.length ? Array.from({ length: LEN }, (_, i) => pool[i % pool.length].item) : []);
+    const el = trackRef.current;
+    if (el) {
+      el.style.transition = "none";
+      el.style.transform = "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spinId]);
+
   useEffect(() => {
     if (spinId === 0 || !winner || !pool.length) return;
     const st = decideStaging(pool, winner, loss, price, nearMiss);
@@ -152,11 +167,15 @@ export function Reel({
   }, [spin]);
 
   return (
-    <div ref={wrapRef} className="reel-mask relative h-[120px] overflow-hidden rounded-xl border border-line bg-paper">
+    <div ref={wrapRef} className="reel-mask relative h-[132px] overflow-hidden rounded-xl border border-line bg-paper">
       <div className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-0.5 -translate-x-1/2 bg-accent/80" />
       <div className="pointer-events-none absolute left-1/2 top-0 z-10 h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[10px] border-x-transparent border-t-accent" />
       <div className="pointer-events-none absolute bottom-0 left-1/2 z-10 h-0 w-0 -translate-x-1/2 border-x-[9px] border-b-[10px] border-x-transparent border-b-accent" />
-      <div ref={trackRef} className="absolute left-0 top-0 flex h-full items-center will-change-transform" style={{ gap: GAP }}>
+      <div
+        ref={trackRef}
+        className={`absolute left-0 top-0 flex h-full items-center will-change-transform ${spin === 0 && pool.length ? "reel-idle" : ""}`}
+        style={{ gap: GAP, "--reel-idle-dist": `-${pool.length * STEP}px`, "--reel-idle-dur": `${Math.max(8, pool.length * 1.4)}s` } as React.CSSProperties}
+      >
         {strip.map((it, i) => {
           const cls = landed && i === WIN ? "reel-tile-win" : spin && !landed && i === active ? "reel-tile-active" : "";
           return (

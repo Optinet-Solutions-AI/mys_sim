@@ -4,7 +4,7 @@ import type { CatalogItem, MysteryBoxConfig } from "@/engine/types";
 import { expectedValue, retargetBox } from "@/engine/table";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import { LiveOpener, type LiveOpen } from "@/lib/live";
-import { MOTIF_BY_FEATURE } from "@/lib/skins";
+import { MOTIF_BY_FEATURE, type Motif } from "@/lib/skins";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { copyText } from "@/lib/download";
 import { Icon } from "../Icon";
@@ -130,6 +130,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
   const [tally, setTally] = useState<Tally>(EMPTY);
   const [demoTally, setDemoTally] = useState({ opens: 0, returned: 0 });
   const [copied, setCopied] = useState(false);
+  const [motifChoice, setMotifChoice] = useState<Motif | "auto">("auto");
 
   const clearSession = () => {
     setPending(null);
@@ -161,8 +162,9 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
   const nearMiss = cfg.rigs.nearMiss;
   const ldw = !!cfg.rigs.ldwCelebration;
   const urgency = cfg.rigs.urgency;
-  // the reveal motif: the feature's own, else the source's; tier ladders need a tiered box, reels suit anything
-  let motif = (featureKey && MOTIF_BY_FEATURE[featureKey]) || skin.motif;
+  // the reveal motif: the player's choice, else the feature's own, else the source's; tier ladders need a tiered box
+  const defaultMotif: Motif = (featureKey && MOTIF_BY_FEATURE[featureKey]) || skin.motif;
+  let motif: Motif = motifChoice === "auto" ? defaultMotif : motifChoice;
   if (motif === "tiers" && cfg.box.model !== "tiered") motif = "cardflip";
   if (cfg.box.model === "tiered" && motif !== "reel") motif = "tiers";
   const T = skin.terms;
@@ -323,6 +325,17 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
               <input type="checkbox" checked={demo} onChange={(e) => setDemo(e.target.checked)} disabled={spinning} /> demo mode
             </label>
           )}
+          <label className="flex items-center gap-1 text-xs text-ink-2" data-tip="How the open is shown. The default is this source's own style; the draw is the same whatever you pick." data-tip-end="">
+            Reveal
+            <select value={motifChoice} onChange={(e) => setMotifChoice(e.target.value as Motif | "auto")} className="w-36" disabled={spinning}>
+              <option value="auto">{skin.id === "vendor" ? "reel (default)" : "source default"}</option>
+              <option value="reel">horizontal reel</option>
+              <option value="cardflip">card flip</option>
+              <option value="packrip">pack rip</option>
+              <option value="ticket">scratch ticket</option>
+              {cfg.box.model === "tiered" && <option value="tiers">tier ladder</option>}
+            </select>
+          </label>
           <label className="flex items-center gap-1 text-xs text-ink-2">
             <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} disabled={spinning} /> skip animation
           </label>

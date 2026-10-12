@@ -296,3 +296,7 @@ table {
 .scratch-foil { background: repeating-linear-gradient(135deg, #c9ccd3 0 8px, #b4b8c1 8px 16px); transition: clip-path 2s cubic-bezier(0.3, 0.7, 0.2, 1); clip-path: inset(0 0 0 0); }
 .scratch-foil.scratched { clip-path: inset(0 0 0 100%); }
 .scratch-foil.gone { display: none; }
+
+/* Idle marquee: the reel keeps scrolling until the first spin. */
+@keyframes reelIdle { from { transform: translateX(0); } to { transform: translateX(var(--reel-idle-dist, -1300px)); } }
+.reel-idle { animation: reelIdle var(--reel-idle-dur, 20s) linear infinite; }
