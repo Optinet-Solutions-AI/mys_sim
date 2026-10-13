@@ -53,7 +53,7 @@ function Legend({ title = "What each column means", items }: { title?: string; i
 }
 
 const TOC = [
-  ["one-sentence", "In one sentence"],
+  ["one-sentence", "In short"],
   ["boxes", "1. The thirteen boxes"],
   ["one-open", "2. One open, step by step"],
   ["little-box", "3. A very simple example"],
@@ -159,9 +159,31 @@ export default function MistyDocsPage() {
       </header>
 
       <section className="space-y-3">
-        <H2 id="one-sentence">In one sentence</H2>
+        <H2 id="one-sentence">In short</H2>
         <Callout>
-          Misty fixes the price of a box first, gives every possible prize a chance so that all the chances add up to 100, and pays out whatever the roll lands on. Each open is its own roll, nothing is remembered between opens, and most opens pay Mistees, a site credit that only buys more boxes.
+          <ul className="list-disc space-y-1 pl-5">
+            <li>
+              <b>Price first.</b> Misty fixes the price of a box, then tunes the odds to fit under it.
+            </li>
+            <li>
+              <b>Every prize has a chance, and the chances add up to 100.</b> That list is the odds table.
+            </li>
+            <li>
+              <b>One open is one roll.</b> The roll lands in one band of the table, and that band is what you get.
+            </li>
+            <li>
+              <b>Nothing is remembered between opens.</b> No pool runs out, no loss makes the next win more likely.
+            </li>
+            <li>
+              <b>Most opens pay Mistees.</b> Site credit that only buys more boxes and never becomes money.
+            </li>
+            <li>
+              <b>The check proves the roll, not the table.</b> A secret locked in before you pay shows the result was not changed; it does not show everyone got the same odds.
+            </li>
+          </ul>
+          <p className="mt-2">
+            <b>Summary:</b> a Misty box is an honest roll against published odds, priced so the box keeps about a third of the money on screen and about two thirds in real terms, because what it pays back is mostly credit that can only be spent on more boxes.
+          </p>
         </Callout>
       </section>
 
