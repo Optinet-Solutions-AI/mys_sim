@@ -558,11 +558,11 @@ export default function MistyDocsPage() {
           </Card>
           <Legend
             items={[
-              ["No Rolex yet", <>(1 − 0.0000405) to the power N. At 10,000: {pct(Math.exp(10000 * Math.log(1 - rolexRow.share)))}.</>],
-              ["At least once", "100% − previous column."],
-              ["Twice or more", <>Poisson, λ = N × chance: 1 − e^−λ(1 + λ). At {num(Math.round(1 / rolexRow.share))}, λ = 1: {pct(1 - Math.exp(-1) * 2)}.</>],
-              ["Expected", "N × chance. An average, not a promise."],
-              ["Rolex budget collected", <>N × {money(rolexRow.costFace, 2)} (its cost per open, section 4) against one Rolex. Crosses at about {num(rolexCross)} opens.</>],
+              ["No Rolex yet", <>One open misses the Rolex 99.996 times in 100. For a run of opens, multiply that miss chance by itself once per open. After 10,000 opens the result is still {pct(Math.exp(10000 * Math.log(1 - rolexRow.share)))}: two runs out of three contain no Rolex at all.</>],
+              ["At least once", "The opposite of the column before: 100% minus it."],
+              ["Twice or more", <>Start from 100%, take away the chance of no Rolex and the chance of exactly one. At {num(Math.round(1 / rolexRow.share))} opens that is 100% − {pct(Math.exp(-1))} − {pct(Math.exp(-1))} = {pct(1 - Math.exp(-1) * 2)}.</>],
+              ["Expected", <>Opens × chance. {num(Math.round(1 / rolexRow.share))} × 0.0000405 = 1. An average over many runs, not a promise for any one run.</>],
+              ["Rolex budget collected", <>Opens × {money(rolexRow.costFace, 2)}, the Rolex&apos;s cost per open from section 4. It reaches the price of one Rolex at about {num(rolexCross)} opens.</>],
             ]}
           />
           <P>
