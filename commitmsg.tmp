@@ -1,0 +1,9 @@
+Builder: guided mode, one step at a time
+
+Nine steps with a short explanation each: name and price, the prizes, the
+credit, the chances (with Fit), what credit is really worth, check the
+maths, open it, run it, done (save, hand to developers, compare with
+Misty). Each step gates Next until it is complete; a summary strip shows
+the box so far. "Everything at once" keeps the previous single-page view.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
