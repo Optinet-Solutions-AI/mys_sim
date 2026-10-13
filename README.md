@@ -78,6 +78,10 @@ The Misty page (`/operators/misty`, tab "Mystery boxes") is a dedicated lab rath
 
 For the team building the main site there is a developer page at `/docs/misty/dev` (`src/app/docs/misty/dev/page.tsx`, sandbox in `src/components/DevSandbox.tsx`) and a downloadable kit. The kit's source is `kit/misty-backend/` (README, `schema.sql`, `openapi.yaml`, `server-reference.ts`); `npx tsx scripts/misty-vectors.ts` regenerates `test-vectors.json` and `python scripts/build-misty-kit.py` assembles `public/downloads/misty-backend-kit.zip` (engine files copied with flattened imports) plus the readable copies under `public/downloads/misty-backend-kit/`. The `kit` and `public` folders are excluded from the app's typecheck.
 
+## Evo Verse and the feature report
+
+The B2B platform from the demo is called Evo Verse in the hub (operator id `vendor`, URL `/operators/vendor`). Its five tabs carry `minimal: true` in `src/lib/operators.ts`, which gives them the Misty page format: no chips under the title, Document and Create Mystery Box buttons, the simulation hidden on the box tab, and an Analysis card after an open (maths, how the result was decided, was it fair, the logic). `src/lib/featureMatrix.ts` is the hand-curated matrix of 20 mechanics across 9 sources; `/docs/features` renders it with three charts (`src/components/FeatureCharts.tsx`, palette validated for colour vision in light and dark), and `npx tsx scripts/feature-report.ts <out.md>` writes the Markdown report (`research/07-feature-comparison.md`) from the same data.
+
 ## Structure
 
 ```
