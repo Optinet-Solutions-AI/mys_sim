@@ -36,6 +36,22 @@ function Ext({ href, children }: { href: string; children: React.ReactNode }) {
   );
 }
 
+function Legend({ title = "What each column means", items }: { title?: string; items: [string, React.ReactNode][] }) {
+  return (
+    <div className="max-w-[78ch] rounded-lg border border-line bg-paper p-3">
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">{title}</div>
+      <dl className="grid gap-x-6 gap-y-2 text-sm leading-6 text-ink-2 md:grid-cols-2">
+        {items.map(([t, d]) => (
+          <div key={t}>
+            <dt className="font-semibold text-ink">{t}</dt>
+            <dd>{d}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 const TOC = [
   ["one-sentence", "In one sentence"],
   ["boxes", "1. The thirteen boxes"],
@@ -44,13 +60,76 @@ const TOC = [
   ["timepiece", "4. The real thing: the Timepiece Suite"],
   ["price", "5. Why the box costs $10"],
   ["mistee", "6. What a Mistee is worth"],
-  ["free-spins", "7. Free spins"],
-  ["proof", "8. What the check proves, and what it does not"],
-  ["back-office", "9. The back office in the simulator"],
-  ["sources", "10. Sources: where every number comes from"],
-  ["critique", "11. Analysis and critique"],
+  ["big-prize", "7. The big prize: early, late or never"],
+  ["free-spins", "8. Free spins"],
+  ["proof", "9. What the check proves, and what it does not"],
+  ["back-office", "10. The back office in the simulator"],
+  ["sources", "11. Sources: where every number comes from"],
+  ["critique", "12. Analysis and critique"],
   ["glossary", "Glossary"],
 ] as const;
+
+const STEPS: { what: string; detail?: string; why: string; example: string }[] = [
+  {
+    what: "You pick a box and see the price.",
+    why: "The price is fixed first. Everything that follows is tuned to fit under it with profit to spare (section 5).",
+    example: "Anna picks the Little Box at $10.",
+  },
+  {
+    what: "Before you pay, the site locks in a secret number for your open and shows you a scrambled copy of it.",
+    detail: "The secret is a long random number only the site knows. The scrambled copy is like a sealed envelope: you can see it is sealed and you can keep it, but you cannot read what is inside. If the site later tried to swap the secret, the seal would no longer match.",
+    why: "It is the site's promise that the result was decided before your money went in. Without it, a site could look at who is paying and pick the result afterwards, and you could never tell.",
+    example: "Anna's screen shows the seal of her secret, a string like 9f3c2a… She cannot read the secret, only the seal.",
+  },
+  {
+    what: "You can type a seed of your own. Any word. It goes into the roll.",
+    detail: "Your word is mixed into the result together with the site's secret. Neither side alone decides the roll.",
+    why: "Even a site that chose its secret cleverly cannot know your word in advance, so it cannot pre-arrange the roll. If you type nothing, the site uses a default word, and then this protection is weaker.",
+    example: "Anna types anna-2026.",
+  },
+  {
+    what: "You pay and tap to spin. The secret, your seed and the spin number are mixed by a fixed recipe into one long number.",
+    detail: "The spin number is 1 for the box itself. The recipe is a standard one-way mixing function: the same three inputs always give the same long number, and nobody can steer the output by choosing inputs cleverly.",
+    why: "This is what makes the result reproducible. Anyone with the same three inputs gets the same long number, which is the basis of the check in step 9.",
+    example: "The recipe turns Anna's secret, anna-2026 and the number 1 into one long number.",
+  },
+  {
+    what: "The long number becomes a roll between 0 and 100.",
+    detail: "Only the first part of the long number is used, and it is scaled onto a line from 0 to 100. Every point on that line is equally likely.",
+    why: "A roll is something you can read against a table. Because every point is equally likely, the method itself favours no outcome; only the table decides.",
+    example: "Anna's roll is 37.2.",
+  },
+  {
+    what: "The roll is read against the odds table.",
+    detail: "Think of the 0 to 100 line cut into bands, one per outcome, each as wide as that outcome's chance. The roll falls in exactly one band. That band is what you get.",
+    why: "This is where the odds live. The band widths are the chances, so the table is the only thing that decides how often each prize comes. Change a width and you change the box; the roll never cared.",
+    example: "Little Box bands: 0 to 1 is the watch, 1 to 5 the perfume, 5 to 100 the 2 Mistees. Anna's 37.2 falls in 5 to 100: she gets 2 Mistees. Ben, opening after her, rolls 0.4 and gets the watch.",
+  },
+  {
+    what: "If the outcome carries free spins, they run now.",
+    detail: "Same secret, same seed, spin numbers 2 and 3, read against a small second table that only pays Mistees.",
+    why: "Free spins add excitement, not value. In the sums they are just more Mistee rows (section 8). Knowing that keeps a bonus from looking like a win.",
+    example: "The Little Box has no free spins. On the Timepiece Suite, 9 opens in 100 carry one free spin and 2 in 100 carry two.",
+  },
+  {
+    what: "You are paid.",
+    detail: "A physical piece can be shipped or traded in for Mistees. Everything else is Mistees, added to your balance.",
+    why: "Notice what can and cannot leave the site. A piece can leave. Mistees never do: they only buy more boxes or products. That difference is where the margin lives (section 6).",
+    example: "Anna's balance shows 2 Mistees. Ben can have the watch shipped, or trade it for 400 Mistees and keep spinning.",
+  },
+  {
+    what: "The secret is revealed. It must match the sealed copy from step 2.",
+    detail: "With the secret in the open, anyone can redo steps 4 to 6 and must get the same roll and the same band. The odds table used for your open is frozen with it, so the check also shows which table your roll was read against.",
+    why: "This is the proof. If the site had changed the secret after you paid, the seal would not match; if it had used a different table, the frozen copy would show it. It does not prove that every player gets the same table (section 9).",
+    example: "Anna's screen now shows the secret. A friend types the secret, anna-2026 and 1 into the recipe and gets 37.2 again, in the band for 2 Mistees.",
+  },
+  {
+    what: "A new secret is locked in for your next open.",
+    detail: "Nothing from this open carries over: no memory, no counter, no pool that got smaller.",
+    why: "Your next open has exactly the same chances as this one, whatever happened. Losing ten times in a row does not make the eleventh any more likely to win.",
+    example: "Anna opens again. The odds are identical; her 2 Mistees changed nothing.",
+  },
+];
 
 export default function MistyDocsPage() {
   const tp = mistyBox("timepiece-suite");
@@ -72,24 +151,11 @@ export default function MistyDocsPage() {
   const wResale = misteeWorth(m, tp.price, V.itemRealized);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-16">
+    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+      <div className="min-w-0 space-y-8">
       <header className="space-y-2">
         <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Misty · mystery boxes</div>
         <h1 className="text-3xl font-semibold">How a Misty box works, in plain words</h1>
-        <P>
-          Written for anyone on the team, no maths background needed. Every number on this page is computed live from the odds tables captured from themistybox.com on {CAPTURED}; section 10 lists where each fact comes from, with links. The{" "}
-          <Link href="/operators/misty" className="text-accent-ink underline underline-offset-2">
-            Misty page of the simulator
-          </Link>{" "}
-          copies the mechanism one to one and lets you change every number in its back office.
-        </P>
-        <nav className="flex flex-wrap gap-1 pt-1 text-xs">
-          {TOC.map(([id, label]) => (
-            <a key={id} href={`#${id}`} className="chip no-underline">
-              {label}
-            </a>
-          ))}
-        </nav>
       </header>
 
       <section className="space-y-3">
@@ -101,7 +167,7 @@ export default function MistyDocsPage() {
 
       <section className="space-y-3">
         <H2 id="boxes">1. The thirteen boxes</H2>
-        <P>These were live on {CAPTURED}. The names and prices are Misty&apos;s own. The other columns are worked out from the exact odds in the page data, with a Mistee counted at {money(V.misteeFace)} (how Misty&apos;s own data counts it) and pieces at their listed value.</P>
+        <P>These were live on {CAPTURED}. The names and prices are Misty&apos;s own. Every other column is worked out from the odds table of that box; the list under the table says how.</P>
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-xs">
@@ -141,52 +207,82 @@ export default function MistyDocsPage() {
             </table>
           </div>
         </Card>
-        <P>
-          Two things stand out. The $10 boxes pay back about two thirds of the price on screen; the $25 and $50 boxes a little over half. <b>The Handbag Suite</b>, the one with a Hermès Kelly and a Chanel Classic Flap at the top, is the stingiest box on the site: on screen it returns {pct(hm.returnFace)} of the price, and a piece drops only {oneIn(hm.pItem)}.
-        </P>
-        <P>&quot;On screen&quot; means Mistees counted at {money(V.misteeFace)} each. &quot;Really&quot; means Mistees at about {money(V.misteeReal)} and pieces at {pct(V.itemRealized, 0)} of listed; section 6 explains why.</P>
+        <Card title="What each column means, how it is computed, and why it is there">
+          <dl className="grid gap-x-6 gap-y-3 text-sm leading-6 text-ink-2 md:grid-cols-2">
+            <div>
+              <dt className="font-semibold text-ink">Box, Price</dt>
+              <dd>Misty&apos;s own name and the price of one open, as printed on the site.</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">A piece drops</dt>
+              <dd>
+                The chance that one open pays a physical item. <b>How:</b> add up the chances of every item row in the box&apos;s odds table, then write it as &quot;1 in&quot; (100 ÷ that sum). Timepiece: the eight item rows add up to {fmtPct(m.pItem * 100)}, so {oneIn(m.pItem)}. <b>Why:</b> it tells you how rare a real prize is; everything else is credit.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">Pieces, value per open</dt>
+              <dd>
+                <b>How:</b> for each item row, listed value × chance; add the rows up. Timepiece: {money(m.evItems, 2)}. <b>Why:</b> it is what the items cost the operator on average every time the box is opened, and the item half of what an open gives back. The full row-by-row sum is in section 4.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">Mistees per open</dt>
+              <dd>
+                <b>How:</b> for each credit row, Mistees × chance; add the rows up; free spins count at the {be.toFixed(2)} Mistees a spin pays on average. Timepiece: {m.evMistees.toFixed(2)}. <b>Why:</b> it is how much credit an open hands back on average, which is most of what a box pays.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">Pays back per open</dt>
+              <dd>
+                <b>How:</b> pieces value per open + Mistees per open × {money(V.misteeFace)}. Timepiece: {money(m.evItems, 2)} + {m.evMistees.toFixed(2)} × {money(V.misteeFace)} = {money(m.payFace, 2)}. The {money(V.misteeFace)} is Misty&apos;s own figure for a Mistee (section 11 shows where it is in their data). <b>Why:</b> it is the total an open returns on average, in Misty&apos;s own accounting, and the number to hold against the price.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">Return on screen</dt>
+              <dd>
+                <b>How:</b> pays back per open ÷ price. Timepiece: {money(m.payFace, 2)} ÷ {money(tp.price)} = {pct(m.returnFace)}. <b>Why:</b> it is the box&apos;s payout percentage as Misty&apos;s numbers imply it (casinos call this RTP). Below 100% means the box keeps the difference: here {money(tp.price - m.payFace, 2)} of every {money(tp.price)}.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-ink">Return really</dt>
+              <dd>
+                <b>How:</b> the same sum with a Mistee counted at what it is really worth, about {money(V.misteeReal)} (section 6 works it out), and pieces at {pct(V.itemRealized, 0)} of their listed value (what they fetch when sold on). Timepiece: {money(m.evItems * V.itemRealized, 2)} + {m.evMistees.toFixed(2)} × {money(V.misteeReal)} = {money(m.payReal, 2)}; ÷ {money(tp.price)} = {pct(m.returnReal)}. <b>Why:</b> it is what an open gives back in money terms. The gap between this column and the one before it is the Mistee valuation.
+              </dd>
+            </div>
+          </dl>
+        </Card>
       </section>
 
       <section className="space-y-3">
-        <H2 id="one-open">2. One open, step by step</H2>
-        <ol className="max-w-[72ch] list-decimal space-y-2 pl-5 text-sm leading-6 text-ink-2">
-          <li>
-            <b>You pick a box and see the price.</b> Say the Timepiece Suite at {money(tp.price)}.
-          </li>
-          <li>
-            <b>Before you pay, the site locks in a secret number for your open.</b> It shows you a scrambled copy of it. The secret cannot be changed later without the copy giving it away.
-          </li>
-          <li>
-            <b>You can type a seed of your own.</b> Any word. It goes into the roll, so the site cannot pick the roll alone.
-          </li>
-          <li>
-            <b>You pay and tap to spin.</b> The secret, your seed and the spin number (1 for the box) are mixed by a fixed recipe into one long number.
-          </li>
-          <li>
-            <b>The long number becomes a roll between 0 and 100.</b> Every point on that line is equally likely.
-          </li>
-          <li>
-            <b>The roll is read against the odds table.</b> Think of the 0 to 100 line cut into bands, one per outcome, each as wide as that outcome&apos;s chance. The roll falls in one band. That band is what you get.
-          </li>
-          <li>
-            <b>If the outcome carries free spins, they run now.</b> Same secret, spin numbers 2 and 3, read against a small second table that only pays Mistees.
-          </li>
-          <li>
-            <b>You are paid.</b> A physical piece can be shipped or traded in for Mistees. Everything else is Mistees, added to your balance.
-          </li>
-          <li>
-            <b>The secret is revealed.</b> It must match the scrambled copy from step 2, and with it anyone can redo steps 4 to 7 and get the same result. The odds table used for your open is frozen with it.
-          </li>
-          <li>
-            <b>A new secret is locked in for your next open.</b> Nothing from this open carries over.
-          </li>
+        <H2 id="one-open">2. One open, step by step, with an example</H2>
+        <P>Every step below says what happens, why it is there, and what it looks like for one player. The example box is the Little Box: it costs $10 and can pay a $400 watch (1% chance), a $50 perfume (4%) or 2 Mistees (95%). Anna opens it.</P>
+        <ol className="max-w-[78ch] list-none space-y-3 pl-0 text-sm leading-6 text-ink-2">
+          {STEPS.map((st, i) => (
+            <li key={i} className="rounded-lg border border-line bg-paper p-3">
+              <div className="flex items-start gap-2">
+                <span className="mt-0.5 rounded-full bg-accent px-2 text-[11px] font-semibold text-white">{i + 1}</span>
+                <div className="min-w-0 space-y-1">
+                  <div className="font-semibold text-ink">{st.what}</div>
+                  {st.detail && <div>{st.detail}</div>}
+                  <div>
+                    <span className="font-semibold text-ink">Why it matters: </span>
+                    {st.why}
+                  </div>
+                  <div className="rounded bg-accent-soft px-2 py-1">
+                    <span className="font-semibold text-ink">Example: </span>
+                    {st.example}
+                  </div>
+                </div>
+              </div>
+            </li>
+          ))}
         </ol>
-        <P>That is the whole mechanism. There is no pool of prizes that runs out, no counter of losses that makes a win more likely, and no target the system steers toward.</P>
+        <P>That is the whole mechanism. There is no pool of prizes that runs out, no counter of losses that makes a win more likely, and no target the system steers toward. A hundred players opening the same box are a hundred separate rolls; the box does not owe anyone a watch.</P>
       </section>
 
       <section className="space-y-3">
-        <H2 id="little-box">3. A very simple example</H2>
-        <P>Imagine a box called the Little Box. It costs $10. Its odds table has three rows:</P>
+        <H2 id="little-box">3. The sums behind the example</H2>
+        <P>The Little Box again, with its three rows. The chances add up to 100, and each row cuts its own band out of the 0 to 100 line.</P>
         <Card>
           <table className="w-full max-w-xl text-xs">
             <thead>
@@ -219,16 +315,15 @@ export default function MistyDocsPage() {
             </tbody>
           </table>
         </Card>
-        <P>The chances add up to 100. Now two players open it.</P>
-        <ul className="max-w-[72ch] list-disc space-y-1 pl-5 text-sm leading-6 text-ink-2">
-          <li>
-            <b>Anna&apos;s roll is 37.2.</b> That falls in the band from 5 to 100. Anna gets 2 Mistees.
-          </li>
-          <li>
-            <b>Ben&apos;s roll is 0.4.</b> That falls in the band from 0 to 1. Ben gets the watch.
-          </li>
-        </ul>
-        <P>Neither roll had anything to do with the other. If a hundred people open the Little Box, the box does not owe anyone a watch. The most likely picture is one watch, four perfumes and ninety-five people with 2 Mistees, but in about one group of three nobody gets the watch at all, and in about one group of four two or more people do.</P>
+        <Legend
+          items={[
+            ["What you can get", "One row per thing the box can pay. A box's odds table is just this list, longer."],
+            ["Worth", <>What the row is worth if it is the one you get. For a piece, its listed value. For Mistees, the number of Mistees × $1, which is the figure Misty's own screens use (section 6 says what a Mistee is really worth).</>],
+            ["Chance", <>How often the row comes up, out of 100 opens. The operator sets these numbers in the back office; the three must add up to 100 (1 + 4 + 95 = 100). Another way to read them: 1% is 1 in 100, 4% is 1 in 25, 95% is 19 opens in 20.</>],
+            ["Band on the 0 to 100 line", <>Where the row sits on the line the roll lands on. <b>How:</b> start at 0 and give each row a stretch as wide as its chance, one after the other: the watch takes 0 to 1 (width 1), the perfume 1 to 5 (1 + 4), the Mistees 5 to 100 (5 + 95). <b>Why:</b> this is how a roll becomes a result. Anna&apos;s 37.2 is between 5 and 100, so it is the Mistee row; Ben&apos;s 0.4 is between 0 and 1, the watch.</>],
+          ]}
+        />
+        <P>If a hundred people open the Little Box, the most likely picture is one watch, four perfumes and ninety-five people with 2 Mistees. But in about one group of three nobody gets the watch at all, and in about one group of four two or more people do. Luck decides each open; only the sums below are fixed.</P>
         <P>
           <b>What the Little Box costs its owner, per open.</b> Take each row&apos;s worth, multiply by its chance, add up.
         </P>
@@ -275,6 +370,16 @@ export default function MistyDocsPage() {
             </tbody>
           </table>
         </Card>
+        <Legend
+          items={[
+            ["Row", "The same three outcomes as above."],
+            ["Worth × chance", <>The row&apos;s worth multiplied by how often it comes up, with the chance written as a fraction: 1% is 0.01, so $400 × 0.01; 4% is 0.04, so $50 × 0.04; 95% is 0.95, so $2 × 0.95.</>],
+            ["Cost per open", <>The result of that multiplication: what the row costs the owner on average every time someone opens the box. The watch costs $4.00 per open even though it only appears once in 100 opens, because when it does appear it costs $400, and $400 ÷ 100 = $4.00.</>],
+            ["Total paid back per open", "The three costs added together. This is what the box gives back per open, on average, in Misty's own accounting."],
+            ["Price", "What the player pays for one open."],
+            ["Owner keeps", <>Price − total paid back. The owner&apos;s margin per open on screen. Divide the total by the price instead and you get the return: $7.90 ÷ $10 = 79%.</>],
+          ]}
+        />
         <P>So the Little Box pays back 79% of its price on screen. Nothing about a single open tells you that: Anna got $2 back and Ben got $400. The 79% only appears when you add up thousands of opens.</P>
         <P>
           <b>The same sum in real money.</b> Mistees only buy more boxes, so they cost the owner far less than $1 (section 6 says about {money(V.misteeReal)}). The watch and the perfume can be bought in for roughly {pct(V.itemRealized, 0)} of their listed price. Redo the table with those numbers and the box pays back about $4.90, which is 49%. The owner keeps about $5.10 of every $10.
@@ -376,6 +481,17 @@ export default function MistyDocsPage() {
             </table>
           </div>
         </Card>
+        <Legend
+          items={[
+            ["Outcome", "One row per thing the box can pay, exactly as the live page lists them: credit rows first, then the pieces from the most common to the rarest."],
+            ["Worth", <>For a credit row: the Mistees it pays × {money(V.misteeFace)}. A row with free spins counts its own Mistees plus {be.toFixed(2)} per spin, the average a free spin pays. For a piece: the listed value shown on the page.</>],
+            ["Chance", "The exact percent from the page data (the page shows it rounded). All the rows add up to 100."],
+            ["1 in", "The same chance written as odds: 100 ÷ chance. 0.004% is 1 in 24,691."],
+            ["= costs Misty per open", <>Worth × chance ÷ 100. The {money(rolex.valueUsd ?? 0)} Rolex at 0.00405% costs {money(rolexRow.costFace, 2)} per open: {money(rolex.valueUsd ?? 0)} × 0.0000405.</>],
+            ["really", <>The same multiplication with a Mistee at {money(V.misteeReal)} instead of {money(V.misteeFace)}, and a piece at {pct(V.itemRealized, 0)} of its listed value. Section 6 explains both numbers.</>],
+            ["The last three rows", <>Total = all the costs added up, the figure to hold against the price. Then the price itself. Then price − total: what Misty keeps per open, with the same figure as a share of the price in brackets.</>],
+          ]}
+        />
         <P>
           Every piece, from a $65 lipstick to a {money(rolex.valueUsd ?? 0)} watch, costs Misty between {money(Math.min(...pieces.map((r) => r.costFace)), 2)} and {money(Math.max(...pieces.map((r) => r.costFace)), 2)} per open, because the dearer the piece, the rarer it is made. The Mistee rows together cost a little less than all the pieces together. A free spin pays {be.toFixed(2)} Mistees on average ({tp.bonus.map((b) => `${fmtMist(b.mistees)} at ${b.weight}%`).join(", ")}); the two free-spin rows are valued with that included.
         </P>
@@ -421,6 +537,14 @@ export default function MistyDocsPage() {
             </tbody>
           </table>
         </Card>
+        <Legend
+          items={[
+            ["Rolex chance", "The only number that changes from row to row. The first row is the live value; the others are what-ifs."],
+            ["Rolex costs per open", <>{money(rolex.valueUsd ?? 0)} × the chance. At 1 in 25,000 that is {money(rolex.valueUsd ?? 0)} ÷ 25,000.</>],
+            ["Whole box pays back per open", <>The live total ({money(m.payFace, 2)}) with the live Rolex cost ({money(rolexRow.costFace, 2)}) taken out and the new Rolex cost put in. Every other row stays as it is.</>],
+            [`At a ${money(tp.price)} price`, "Price − pays back. Positive means the box keeps money per open on average; negative means it loses money on every open."],
+          ]}
+        />
         <P>
           So why $10? Because it is a price people tap without thinking, and tap again. The Rolex is the headline, and its chance is set exactly as rare as a {money(rolex.valueUsd ?? 0)} watch needs to be to live inside a $10 box.
         </P>
@@ -467,14 +591,86 @@ export default function MistyDocsPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="free-spins">7. Free spins</H2>
+        <H2 id="big-prize">7. The big prize: early, late or never</H2>
+        <P>
+          The Rolex has a chance of {fmtPct(rolexRow.percent)} per open, {oneIn(rolexRow.share)}. Small is not zero, and it is not a schedule either. Two questions come up every time: what if 10,000 opens go by and nobody has had it, and what if it drops in the first 100? The table says how likely each is; the list under it says what Misty does about it.
+        </P>
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-xs">
+              <thead>
+                <tr>
+                  <Th>Opens so far</Th>
+                  <Th right>Chance nobody has had the Rolex yet</Th>
+                  <Th right>Chance it has dropped at least once</Th>
+                  <Th right>Chance it has dropped twice or more</Th>
+                  <Th right>Rolexes expected by then</Th>
+                  <Th right>Rolex budget collected</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {[100, 1000, 10000, Math.round(1 / rolexRow.share), 50000, 100000].map((N) => {
+                  const lam = N * rolexRow.share;
+                  const none = Math.exp(N * Math.log(1 - rolexRow.share));
+                  const two = 1 - Math.exp(-lam) * (1 + lam);
+                  return (
+                    <tr key={N} className="border-t border-line">
+                      <Td mono>{num(N)}</Td>
+                      <Td right mono>{pct(none)}</Td>
+                      <Td right mono>{pct(1 - none)}</Td>
+                      <Td right mono>{pct(two)}</Td>
+                      <Td right mono>{lam.toFixed(2)}</Td>
+                      <Td right mono>
+                        {money(N * rolexRow.costFace)} of {money(rolex.valueUsd ?? 0)}
+                      </Td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+        <Legend
+          items={[
+            ["Opens so far", "How many times the box has been opened, by everyone together. The fourth row is the 1-in number itself."],
+            ["Chance nobody has had the Rolex yet", <>Every open misses the Rolex with chance 1 − {fmtPct(rolexRow.percent)}. For N opens in a row, multiply that N times: (1 − 0.0000405) to the power N. At 10,000 opens that is {pct(Math.exp(10000 * Math.log(1 - rolexRow.share)))}: in two stretches out of three, ten thousand opens contain no Rolex at all.</>],
+            ["Chance it has dropped at least once", "100% minus the previous column."],
+            ["Chance it has dropped twice or more", <>Rare events in a long run follow the Poisson rule: with λ = N × chance, the chance of two or more is 1 − e^−λ × (1 + λ). At {num(Math.round(1 / rolexRow.share))} opens, λ = 1 and that is {pct(1 - Math.exp(-1) * 2)}.</>],
+            ["Rolexes expected by then", "N × chance: the average number, not a promise. At 24,691 opens it is exactly 1; the previous columns say how far reality strays from it."],
+            ["Rolex budget collected", <>Each open contributes the Rolex&apos;s cost per open ({money(rolexRow.costFace, 2)}, from section 4) to a notional kitty. The column shows the kitty against the price of one Rolex: it crosses at about {num(Math.round((rolex.valueUsd ?? 0) / rolexRow.costFace))} opens.</>],
+          ]}
+        />
+        <P>
+          <b>What Misty does about it: nothing, and that is the whole design.</b>
+        </P>
+        <ul className="max-w-[78ch] list-disc space-y-2 pl-5 text-sm leading-6 text-ink-2">
+          <li>
+            <b>Nothing is ever &quot;due&quot;.</b> The recipe in step 4 has three inputs, the secret, your seed and the spin number. There is no input for &quot;how many opens since the last Rolex&quot;. After 10,000 dry opens the next one is still {oneIn(rolexRow.share)}. The simulator&apos;s 50,000-open run shows stretches far longer than 25,000 without a Rolex, and the check passes on every one of them.
+          </li>
+          <li>
+            <b>Nothing is ever &quot;gone&quot; either.</b> If the Rolex drops at open 100, open 101 has the same {oneIn(rolexRow.share)}. There is no stock of one Rolex: &quot;the piece that ships is this or better&quot; means Misty buys one when it is won. This is the difference from IcyBox-style drops and kuji boxes, where there is a fixed stock and an early win really does empty the box.
+          </li>
+          <li>
+            <b>The money side.</b> Misty collects about {money(rolexRow.costFace, 2)} of Rolex budget per open. After 100 opens it has {money(100 * rolexRow.costFace)} in the kitty and owes a {money(rolex.valueUsd ?? 0)} watch: a loss on that box, for now. After about {num(Math.round((rolex.valueUsd ?? 0) / rolexRow.costFace))} opens the kitty crosses the cost, and over many boxes and many months the average holds. What covers an early hit in the meantime is the margin on everything else: about {money(tp.price - m.payReal, 2)} of every $10 in real terms, across all thirteen boxes. That is what the margin is for. Whether Misty also insures or reserves for big wins is not public.
+          </li>
+          <li>
+            <b>What the player should read into &quot;1 in 25,000&quot;.</b> Not &quot;by my 25,000th open&quot;. It means about one Rolex per {money(Math.round(1 / rolexRow.share) * tp.price)} taken in, spread over everybody, with no pattern. Your own 500 opens have a {pct(1 - Math.exp(500 * Math.log(1 - rolexRow.share)))} chance of containing it, whatever happened before you.
+          </li>
+          <li>
+            <b>What we cannot see.</b> A site could lower the Rolex&apos;s chance after a big win, or raise it after a long drought to make a story. Every check would still pass, because the check proves the roll against the table that was used, not that the table is the same as yesterday&apos;s. Only a player comparing table hashes across days would notice. We have no evidence Misty does this; the simulator&apos;s back office lets you try it and watch the proofs pass.
+          </li>
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <H2 id="free-spins">8. Free spins</H2>
         <P>
           Two rows of the Timepiece Suite carry free spins: &quot;Free spin + 1 Mistee&quot; at 9% and &quot;2 free spins + 2 Mistees&quot; at 2%. A free spin is a new roll from the same secret, read against a small table that only pays Mistees: {tp.bonus.map((b) => `${fmtMist(b.mistees)} Mistees ${b.weight}% of the time`).join(", ")}. On average a free spin pays {be.toFixed(2)} Mistees, so the 9% row is worth about {fmtMist(Math.round((1 + be) * 100) / 100)} Mistees and the 2% row about {fmtMist(Math.round((2 + 2 * be) * 100) / 100)}. Free spins feel like a bonus; in the sum they are just two more Mistee rows, and they cost Misty {money(credits.filter((c) => c.label.toLowerCase().includes("free")).reduce((s, c) => s + c.costFace, 0), 2)} per open on screen.
         </P>
       </section>
 
       <section className="space-y-3">
-        <H2 id="proof">8. What the check proves, and what it does not</H2>
+        <H2 id="proof">9. What the check proves, and what it does not</H2>
         <P>The locked-in secret, your seed and the reveal are real, and the sum can be rerun by anyone. Together they prove three things:</P>
         <ul className="max-w-[72ch] list-disc space-y-1 pl-5 text-sm leading-6 text-ink-2">
           <li>the secret was fixed before you paid, so the result was not changed after your money went in;</li>
@@ -491,7 +687,7 @@ export default function MistyDocsPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="back-office">9. The back office in the simulator</H2>
+        <H2 id="back-office">10. The back office in the simulator</H2>
         <ul className="max-w-[72ch] list-disc space-y-2 pl-5 text-sm leading-6 text-ink-2">
           <li>
             <b>Box &amp; odds.</b> Pick any of the thirteen boxes. Every outcome has a percentage you can change. As you type, the page shows the new sum, the chance of a piece, what the box pays back per open on screen and really, what each row costs per open, and what the operator keeps against the price.
@@ -515,7 +711,7 @@ export default function MistyDocsPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="sources">10. Sources: where every number comes from</H2>
+        <H2 id="sources">11. Sources: where every number comes from</H2>
         <P>Everything above was taken from Misty&apos;s public pages on {CAPTURED}, saved as files, and parsed by a script. Nothing was guessed. Below, each fact and where it was read.</P>
         <Card>
           <table className="w-full text-xs">
@@ -641,7 +837,7 @@ export default function MistyDocsPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="critique">11. Analysis and critique</H2>
+        <H2 id="critique">12. Analysis and critique</H2>
         <P>
           <b>What Misty does well, and what we can confirm.</b>
         </P>
@@ -745,6 +941,27 @@ export default function MistyDocsPage() {
           <Badge>Version 1.0 · {CAPTURED} capture · sums computed live</Badge>
         </div>
       </section>
+      </div>
+      <aside className="mt-8 lg:mt-0">
+        <div className="rounded-xl border border-line bg-paper p-3 text-xs lg:sticky lg:top-4">
+          <Link href="/operators/misty" className="btn w-full justify-center no-underline">
+            ← Back to the Misty mystery box
+          </Link>
+          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
+          <ol className="space-y-1">
+            {TOC.map(([id, label]) => (
+              <li key={id}>
+                <a href={`#${id}`} className="block rounded px-1 py-0.5 text-ink-2 no-underline hover:bg-accent-soft hover:text-ink">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ol>
+          <Link href="/docs/misty/dev" className="mt-3 block text-accent-ink underline underline-offset-2">
+            For developers: how to build it →
+          </Link>
+        </div>
+      </aside>
     </div>
   );
 }

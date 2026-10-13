@@ -1,0 +1,374 @@
+{
+  "kit": "misty-backend 1.0",
+  "generated": "2026-10-13",
+  "recipe": {
+    "serverHash": "sha256(serverSeedHex)",
+    "key": "DRAW-<slug>-<serverSeed>-<clientSeed>-<nonce>",
+    "digest": "HMAC-SHA256(key, message = '')",
+    "roll": "parseInt(digest.slice(0, 13), 16) / 2^52",
+    "resolve": "position = roll × sum(percent); first band in stored order whose upper edge is above the position",
+    "tableHash": "sha256(canonicalJson({ slug, price, table: [{ id, percent }] })) with sorted keys and no whitespace"
+  },
+  "box": {
+    "slug": "timepiece-suite",
+    "price": 10,
+    "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+    "total": 100.00000000000001,
+    "entries": [
+      {
+        "id": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+        "label": "2 Mistees",
+        "percent": 30.83042011764706,
+        "from": 0,
+        "to": 30.83042011764706
+      },
+      {
+        "id": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+        "label": "3 Mistees",
+        "percent": 20.553613411764704,
+        "from": 30.83042011764706,
+        "to": 51.38403352941177
+      },
+      {
+        "id": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+        "label": "1 Mistees",
+        "percent": 18.498252070588237,
+        "from": 51.38403352941177,
+        "to": 69.8822856
+      },
+      {
+        "id": "d2892691-b234-45d0-a903-19e05e245cb4",
+        "label": "Free Spin + 1 Mistees",
+        "percent": 9,
+        "from": 69.8822856,
+        "to": 78.8822856
+      },
+      {
+        "id": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+        "label": "4 Mistees",
+        "percent": 8.221445364705882,
+        "from": 78.8822856,
+        "to": 87.10373096470589
+      },
+      {
+        "id": "fb06b996-e027-4bbd-9a88-95c3a986a3d3",
+        "label": "5 Mistees",
+        "percent": 6.166084023529412,
+        "from": 87.10373096470589,
+        "to": 93.2698149882353
+      },
+      {
+        "id": "62ed1e2b-7bd7-4427-bdb9-f6e2b1b6c59e",
+        "label": "10 Mistees",
+        "percent": 2.569201676470588,
+        "from": 93.2698149882353,
+        "to": 95.83901666470588
+      },
+      {
+        "id": "09e14bce-7eee-451f-8065-d3dca88faafd",
+        "label": "2 Free Spins + 2 Mistees",
+        "percent": 2,
+        "from": 95.83901666470588,
+        "to": 97.83901666470588
+      },
+      {
+        "id": "72801ec5-767f-48b0-84a4-9a439d5290ff",
+        "label": "Chanel Rouge Coco lip colour, 434 Mademoiselle",
+        "percent": 0.579465,
+        "from": 97.83901666470588,
+        "to": 98.41848166470588
+      },
+      {
+        "id": "034ef938-596c-4e68-b6af-ddcb0acf279c",
+        "label": "Ralph Lauren Romance eau de parfum, 100 ml",
+        "percent": 0.54776,
+        "from": 98.41848166470588,
+        "to": 98.96624166470588
+      },
+      {
+        "id": "916be1e0-fa08-40c8-aa55-bb39539320e8",
+        "label": "30 Mistees",
+        "percent": 0.5138403352941177,
+        "from": 98.96624166470588,
+        "to": 99.480082
+      },
+      {
+        "id": "32d8b50b-74ff-4b21-9201-ee49c39ec0fa",
+        "label": "Tiffany & Co. Rose Gold eau de parfum, 75 ml",
+        "percent": 0.22833,
+        "from": 99.480082,
+        "to": 99.708412
+      },
+      {
+        "id": "f92b5056-8cd3-4a7d-856b-c1fd086a2821",
+        "label": "Louis Vuitton x Murakami Spell on You Cherry",
+        "percent": 0.110719,
+        "from": 99.708412,
+        "to": 99.819131
+      },
+      {
+        "id": "e8def10e-cdf7-49db-b431-530568197162",
+        "label": "Louis Vuitton x Murakami Spell on You Cherry Blossom",
+        "percent": 0.108225,
+        "from": 99.819131,
+        "to": 99.927356
+      },
+      {
+        "id": "e7013300-99ea-465f-8658-32aae28e0e1c",
+        "label": "Louis Vuitton x Murakami Denim Cerise shawl",
+        "percent": 0.053229,
+        "from": 99.927356,
+        "to": 99.980585
+      },
+      {
+        "id": "81034127-be39-4bfe-b791-e11dd8cdc676",
+        "label": "Louis Vuitton x Murakami Sunset Cherry bag",
+        "percent": 0.015365,
+        "from": 99.980585,
+        "to": 99.99595000000001
+      },
+      {
+        "id": "dff0b77f-a875-439a-9f70-30d66bd01cca",
+        "label": "Rolex Lady-Datejust 28 mm, pink dial, Jubilee bracelet, ref. 279174",
+        "percent": 0.00405,
+        "from": 99.99595000000001,
+        "to": 100.00000000000001
+      }
+    ],
+    "bonus": [
+      {
+        "mistees": 1,
+        "weight": 70
+      },
+      {
+        "mistees": 2,
+        "weight": 22
+      },
+      {
+        "mistees": 5,
+        "weight": 6
+      },
+      {
+        "mistees": 10,
+        "weight": 1.8
+      },
+      {
+        "mistees": 20,
+        "weight": 0.2
+      }
+    ]
+  },
+  "vectors": [
+    {
+      "serverSeed": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+      "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+      "clientSeed": "alice",
+      "spins": [
+        {
+          "nonce": 1,
+          "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+          "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+          "roll": 0.7478648656717957,
+          "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+          "outcomeLabel": "Free Spin + 1 Mistees",
+          "bandFrom": 69.8822856,
+          "bandTo": 78.8822856,
+          "bonusIfFreeSpin": 2
+        },
+        {
+          "nonce": 2,
+          "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-2",
+          "digest": "b29a82c3ba7eeb70da2e361d453aba89216455831f247b30f1f49c01be7dc1fe",
+          "roll": 0.6976701476910381,
+          "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+          "outcomeLabel": "1 Mistees",
+          "bandFrom": 51.38403352941177,
+          "bandTo": 69.8822856,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 3,
+          "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-3",
+          "digest": "de004707726bcc13d37a16b381403623c53e4289042cc24944204809999c4f21",
+          "roll": 0.8671917336636588,
+          "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+          "outcomeLabel": "4 Mistees",
+          "bandFrom": 78.8822856,
+          "bandTo": 87.10373096470589,
+          "bonusIfFreeSpin": 2
+        },
+        {
+          "nonce": 4,
+          "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-4",
+          "digest": "d126d439851e7aba3c6fe21e5139c3a7d4e7d0c34bbb7ab1cfcc6b002d847fa9",
+          "roll": 0.816998733561485,
+          "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+          "outcomeLabel": "4 Mistees",
+          "bandFrom": 78.8822856,
+          "bandTo": 87.10373096470589,
+          "bonusIfFreeSpin": 2
+        },
+        {
+          "nonce": 5,
+          "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-5",
+          "digest": "72040af76ed8e63333340b0f3916bf9b6947d7c4cb50c52d8c29937a6f145f41",
+          "roll": 0.44537418881268165,
+          "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "outcomeLabel": "3 Mistees",
+          "bandFrom": 30.83042011764706,
+          "bandTo": 51.38403352941177,
+          "bonusIfFreeSpin": 1
+        }
+      ]
+    },
+    {
+      "serverSeed": "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
+      "serverHash": "8588cdfcd6d2b0d521bcf0bf5e7017c06a3f4a10a172d9af1436205e3af205ad",
+      "clientSeed": "my-lucky-seed",
+      "spins": [
+        {
+          "nonce": 1,
+          "key": "DRAW-timepiece-suite-ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100-my-lucky-seed-1",
+          "digest": "5511c225408ad2faa2bf50a63b5d5121188b50fcf9745612f538e53916bb7ef5",
+          "roll": 0.33230222138858356,
+          "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "outcomeLabel": "3 Mistees",
+          "bandFrom": 30.83042011764706,
+          "bandTo": 51.38403352941177,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 2,
+          "key": "DRAW-timepiece-suite-ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100-my-lucky-seed-2",
+          "digest": "ec4660312615ddf373a2a47a09989f051447f70c6e88149268abe22ad1e0b683",
+          "roll": 0.9229488487236133,
+          "outcomeId": "fb06b996-e027-4bbd-9a88-95c3a986a3d3",
+          "outcomeLabel": "5 Mistees",
+          "bandFrom": 87.10373096470589,
+          "bandTo": 93.2698149882353,
+          "bonusIfFreeSpin": 5
+        },
+        {
+          "nonce": 3,
+          "key": "DRAW-timepiece-suite-ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100-my-lucky-seed-3",
+          "digest": "216b7aca91ca57d7d91f473affb9694eca24bc879103f892261a95c40ee74877",
+          "roll": 0.1305462593607356,
+          "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "outcomeLabel": "2 Mistees",
+          "bandFrom": 0,
+          "bandTo": 30.83042011764706,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 4,
+          "key": "DRAW-timepiece-suite-ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100-my-lucky-seed-4",
+          "digest": "46abf92bc376fbf9a01345dfeb7da7373cdd91930c0954039abe4a92cf65a120",
+          "roll": 0.27606160467572827,
+          "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "outcomeLabel": "2 Mistees",
+          "bandFrom": 0,
+          "bandTo": 30.83042011764706,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 5,
+          "key": "DRAW-timepiece-suite-ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100-my-lucky-seed-5",
+          "digest": "2d63063a52c6bca2b7ce8ddaa79ebc9b65f4ec6ae782eb2ff7c178d3492cd31a",
+          "roll": 0.17729224132451793,
+          "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "outcomeLabel": "2 Mistees",
+          "bandFrom": 0,
+          "bandTo": 30.83042011764706,
+          "bonusIfFreeSpin": 1
+        }
+      ]
+    },
+    {
+      "serverSeed": "0000000000000000000000000000000000000000000000000000000000000000",
+      "serverHash": "60e05bd1b195af2f94112fa7197a5c88289058840ce7c6df9693756bc6250f55",
+      "clientSeed": "",
+      "spins": [
+        {
+          "nonce": 1,
+          "key": "DRAW-timepiece-suite-0000000000000000000000000000000000000000000000000000000000000000--1",
+          "digest": "640ec169785bfb3003f14895f97b0cffd598a0db42fb4bbb3685d328cc0cbc54",
+          "roll": 0.3908501513000002,
+          "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "outcomeLabel": "3 Mistees",
+          "bandFrom": 30.83042011764706,
+          "bandTo": 51.38403352941177,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 2,
+          "key": "DRAW-timepiece-suite-0000000000000000000000000000000000000000000000000000000000000000--2",
+          "digest": "2bb8e5f936430d8fef5ee3316cab4de4ebb391fc21faa7bb682e72d8d72e109f",
+          "roll": 0.17079007467533458,
+          "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "outcomeLabel": "2 Mistees",
+          "bandFrom": 0,
+          "bandTo": 30.83042011764706,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 3,
+          "key": "DRAW-timepiece-suite-0000000000000000000000000000000000000000000000000000000000000000--3",
+          "digest": "c41f135d2c356247de82d43c28acf51ccd62b65fa27eecc45dcf2216d4f3cbc1",
+          "roll": 0.7660991766426455,
+          "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+          "outcomeLabel": "Free Spin + 1 Mistees",
+          "bandFrom": 69.8822856,
+          "bandTo": 78.8822856,
+          "bonusIfFreeSpin": 2
+        },
+        {
+          "nonce": 4,
+          "key": "DRAW-timepiece-suite-0000000000000000000000000000000000000000000000000000000000000000--4",
+          "digest": "57a073294e4f21f4be4c352ebf17b72a33fe7367495f49e9b03ede19e608a73c",
+          "roll": 0.34229202040142725,
+          "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "outcomeLabel": "3 Mistees",
+          "bandFrom": 30.83042011764706,
+          "bandTo": 51.38403352941177,
+          "bonusIfFreeSpin": 1
+        },
+        {
+          "nonce": 5,
+          "key": "DRAW-timepiece-suite-0000000000000000000000000000000000000000000000000000000000000000--5",
+          "digest": "bd99703c0114b8672cf6f34856d28a26f89e68cab87dd75eec0159bd0614b479",
+          "roll": 0.740622534417599,
+          "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+          "outcomeLabel": "Free Spin + 1 Mistees",
+          "bandFrom": 69.8822856,
+          "bandTo": 78.8822856,
+          "bonusIfFreeSpin": 2
+        }
+      ]
+    }
+  ],
+  "fullOpen": {
+    "commitmentShownBeforePayment": "01885fedac27477110066cd0890adc566951d68c1a1e03842212f28c6d46fd6c",
+    "spin": {
+      "idx": 1,
+      "playerId": "guest",
+      "boxSlug": "timepiece-suite",
+      "price": 10,
+      "serverSeed": "df9f7dbf34aeb8740adf78e20e5f540948f2f3509c5edebcd3bf4a9a00d7a3b3",
+      "serverHash": "01885fedac27477110066cd0890adc566951d68c1a1e03842212f28c6d46fd6c",
+      "clientSeed": "alice",
+      "nonce": 1,
+      "digest": "dd9142ee70b3f162235caf43d8b42ffa671e1c461876dd9a642f03519483f79c",
+      "roll": 0.8654977638368135,
+      "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+      "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+      "label": "4 Mistees",
+      "kind": "oroos",
+      "rarity": "uncommon",
+      "mistees": 4,
+      "freeSpins": 0,
+      "bonus": [],
+      "totalMistees": 4,
+      "itemValue": 0
+    }
+  }
+}

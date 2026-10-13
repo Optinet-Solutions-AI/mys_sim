@@ -1,0 +1,442 @@
+openapi: 3.1.0
+info:
+  title: Misty-style mystery box API
+  version: 1.0.0
+  description: >-
+    Backend of a priced mystery box with published odds, a secret committed before payment, a player seed,
+    free spins, site credit and a public verifier. Kit v1.0, 13 October 2026. See README.md for the rules.
+servers:
+  - url: https://api.example.com/v1
+tags:
+  - name: boxes
+  - name: opens
+  - name: credit
+  - name: verify
+  - name: admin
+
+paths:
+  /boxes:
+    get:
+      tags: [boxes]
+      summary: List active boxes with the current odds table and its hash
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Box" }
+
+  /boxes/{slug}:
+    get:
+      tags: [boxes]
+      summary: One box, its ordered odds table, bonus table and hashes
+      parameters: [{ $ref: "#/components/parameters/slug" }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Box" } } } }
+        "404": { description: Unknown box }
+
+  /opens:
+    post:
+      tags: [opens]
+      summary: Create an open and commit to the secret (before payment)
+      description: >-
+        Generates a 32-byte CSPRNG server seed, stores it encrypted, pins the box price and the current table and
+        bonus hashes (or the player's segment table), and returns the hash of the seed. Expires if unpaid.
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [boxSlug]
+              properties:
+                boxSlug: { type: string, example: timepiece-suite }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OpenCommitted" }
+
+  /opens/{openId}/client-seed:
+    put:
+      tags: [opens]
+      summary: Set the player's seed (only while status is created, before payment)
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/openId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clientSeed]
+              properties:
+                clientSeed: { type: string, minLength: 1, maxLength: 64, example: my-lucky-seed }
+      responses:
+        "204": { description: Stored }
+        "409": { description: Open already paid or resolved }
+
+  /opens/{openId}/pay:
+    post:
+      tags: [opens]
+      summary: Pay for the open (card via provider, or site credit); idempotent
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/openId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, idempotencyKey]
+              properties:
+                method: { type: string, enum: [card, credit] }
+                paymentToken: { type: string, description: provider token when method is card }
+                idempotencyKey: { type: string }
+      responses:
+        "200":
+          description: Paid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [paid] }
+                  creditBalance: { type: number }
+        "402": { description: Payment failed or insufficient credit }
+        "409": { description: Already paid, expired or seed missing }
+
+  /opens/{openId}/spin:
+    post:
+      tags: [opens]
+      summary: Resolve the open and reveal the secret (once)
+      description: >-
+        Computes the digest, the roll, the band, any free spins; writes the item award or credit ledger entries in the
+        same transaction; returns the full record including the revealed server seed. A retry returns the stored
+        result, never a new roll.
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/openId" }]
+      responses:
+        "200":
+          description: Resolved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OpenResolved" }
+        "409": { description: Not paid, or already resolved (returns the stored result with 200 instead when idempotent) }
+
+  /opens/{openId}:
+    get:
+      tags: [opens]
+      summary: Read an open; the server seed is present only after reveal
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/openId" }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/OpenCommitted" }
+                  - { $ref: "#/components/schemas/OpenResolved" }
+
+  /awards/{awardId}/trade-in:
+    post:
+      tags: [credit]
+      summary: Trade an awarded item in for credit at the rate stored on the award
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: awardId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Credited
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  credits: { type: number }
+                  creditBalance: { type: number }
+        "409": { description: Already shipped or traded }
+
+  /me/credits:
+    get:
+      tags: [credit]
+      summary: Credit balance and ledger
+      security: [{ bearer: [] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance: { type: number }
+                  ledger:
+                    type: array
+                    items: { $ref: "#/components/schemas/LedgerEntry" }
+
+  /verify:
+    get:
+      tags: [verify]
+      summary: Public, stateless recomputation of an open
+      description: >-
+        Recomputes sha256(serverSeed), the digest, the roll and the outcome against the table identified by tableHash
+        (fetched from /tables/{hash}); bonus spins with the following nonces. Anyone may call it.
+      parameters:
+        - { name: slug, in: query, required: true, schema: { type: string } }
+        - { name: serverSeed, in: query, required: true, schema: { type: string, pattern: "^[0-9a-f]{64}$" } }
+        - { name: clientSeed, in: query, required: true, schema: { type: string } }
+        - { name: nonce, in: query, required: false, schema: { type: integer, default: 1 } }
+        - { name: tableHash, in: query, required: true, schema: { type: string } }
+        - { name: bonusHash, in: query, required: false, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VerifyResult" }
+        "404": { description: Unknown table hash }
+
+  /tables/{tableHash}:
+    get:
+      tags: [verify]
+      summary: The frozen odds table for a hash (public)
+      parameters:
+        - { name: tableHash, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TableSnapshot" } } } }
+        "404": { description: Unknown hash }
+
+  /tables/log:
+    get:
+      tags: [verify]
+      summary: Public append-only log of every table activation (box, hash, segment, time)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    boxSlug: { type: string }
+                    tableHash: { type: string }
+                    bonusHash: { type: string, nullable: true }
+                    segmentId: { type: string, nullable: true }
+                    publishedAt: { type: string, format: date-time }
+
+  /admin/boxes/{slug}/tables:
+    post:
+      tags: [admin]
+      summary: Create a new table version (validated, not yet active)
+      security: [{ adminBearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/slug" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entries]
+              properties:
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, percent]
+                    properties:
+                      id: { type: string, format: uuid }
+                      percent: { type: number, minimum: 0 }
+                note: { type: string }
+      responses:
+        "201":
+          description: Created, with the maths preview
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/TableSnapshot" }
+                  - type: object
+                    properties:
+                      maths: { $ref: "#/components/schemas/TableMaths" }
+        "422": { description: Percents do not sum to 100, missing outcome, negative percent }
+
+  /admin/boxes/{slug}/tables/{tableId}/activate:
+    post:
+      tags: [admin]
+      summary: Make a table version current (publishes its hash to the log)
+      security: [{ adminBearer: [] }]
+      parameters:
+        - { $ref: "#/components/parameters/slug" }
+        - { name: tableId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Activated and published }
+
+  /admin/segments:
+    get:
+      tags: [admin]
+      summary: List segments and their table overrides
+      security: [{ adminBearer: [] }]
+      responses:
+        "200": { description: OK }
+    post:
+      tags: [admin]
+      summary: Create a segment
+      security: [{ adminBearer: [] }]
+      responses:
+        "201": { description: Created }
+
+  /admin/segments/{segmentId}/tables/{slug}:
+    put:
+      tags: [admin]
+      summary: Point a segment at a table version for a box (publishes to the log)
+      security: [{ adminBearer: [] }]
+      parameters:
+        - { name: segmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: "#/components/parameters/slug" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tableId]
+              properties:
+                tableId: { type: string, format: uuid }
+      responses:
+        "204": { description: Set }
+
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+    adminBearer: { type: http, scheme: bearer }
+  parameters:
+    slug: { name: slug, in: path, required: true, schema: { type: string } }
+    openId: { name: openId, in: path, required: true, schema: { type: string, format: uuid } }
+  schemas:
+    Outcome:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        label: { type: string }
+        rarity: { type: string }
+        kind: { type: string, enum: [item, credit, bonus] }
+        credits: { type: number }
+        freeSpins: { type: integer }
+        valueCents: { type: integer, nullable: true }
+        percent: { type: number, description: chance in percent; the box sums to 100 }
+    TableSnapshot:
+      type: object
+      properties:
+        boxSlug: { type: string }
+        version: { type: integer }
+        tableHash: { type: string }
+        priceCents: { type: integer }
+        entries:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              percent: { type: number }
+    BonusEntry:
+      type: object
+      properties:
+        credits: { type: number }
+        percent: { type: number }
+    Box:
+      type: object
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        tagline: { type: string }
+        priceCents: { type: integer }
+        tableHash: { type: string }
+        bonusHash: { type: string }
+        outcomes:
+          type: array
+          items: { $ref: "#/components/schemas/Outcome" }
+        bonus:
+          type: array
+          items: { $ref: "#/components/schemas/BonusEntry" }
+        maths: { $ref: "#/components/schemas/TableMaths" }
+    TableMaths:
+      type: object
+      description: Per-open sums, so the front end can show "pays back per open" honestly
+      properties:
+        pItem: { type: number, description: chance of a physical item, 0..1 }
+        evItemsCents: { type: number }
+        evCredits: { type: number }
+        payFaceCents: { type: number, description: items at listed plus credits at face }
+        returnFace: { type: number }
+    OpenCommitted:
+      type: object
+      properties:
+        openId: { type: string, format: uuid }
+        boxSlug: { type: string }
+        status: { type: string, enum: [created, paid] }
+        priceCents: { type: integer }
+        serverHash: { type: string, description: sha256 of the server seed, shown before payment }
+        tableHash: { type: string }
+        bonusHash: { type: string }
+        nonce: { type: integer, example: 1 }
+        clientSeed: { type: string, nullable: true }
+        expiresAt: { type: string, format: date-time }
+    BonusSpin:
+      type: object
+      properties:
+        nonce: { type: integer }
+        digest: { type: string }
+        roll: { type: number }
+        credits: { type: number }
+    OpenResolved:
+      allOf:
+        - { $ref: "#/components/schemas/OpenCommitted" }
+        - type: object
+          properties:
+            status: { type: string, enum: [resolved] }
+            serverSeed: { type: string, description: revealed after the spin }
+            digest: { type: string }
+            roll: { type: number }
+            outcome: { $ref: "#/components/schemas/Outcome" }
+            bonusSpins:
+              type: array
+              items: { $ref: "#/components/schemas/BonusSpin" }
+            creditsAwarded: { type: number }
+            itemAward:
+              type: object
+              nullable: true
+              properties:
+                awardId: { type: string, format: uuid }
+                valueCents: { type: integer }
+                tradeInCredits: { type: number }
+            verifyUrl: { type: string }
+    VerifyResult:
+      type: object
+      properties:
+        ok: { type: boolean }
+        serverHash: { type: string }
+        digest: { type: string }
+        roll: { type: number }
+        outcomeId: { type: string }
+        bonusSpins:
+          type: array
+          items: { $ref: "#/components/schemas/BonusSpin" }
+        reason: { type: string, nullable: true }
+    LedgerEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        delta: { type: number }
+        reason: { type: string }
+        refType: { type: string, nullable: true }
+        refId: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }

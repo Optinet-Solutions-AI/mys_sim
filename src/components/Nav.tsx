@@ -39,6 +39,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
     items: [
       { href: "/verify", label: "Verifier", icon: "ph:seal-check" },
       { href: "/docs/misty", label: "Misty, explained", icon: "ph:book-open-text" },
+      { href: "/docs/misty/dev", label: "Misty for developers", icon: "ph:file-code" },
       { href: "/docs", label: "Docs", icon: "ph:book-open-text" },
     ],
   },
