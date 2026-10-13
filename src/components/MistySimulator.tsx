@@ -239,10 +239,12 @@ export function MistySimulator() {
   const start = async () => {
     setSaved(false);
     const snap = JSON.parse(JSON.stringify(cfg)) as MistyConfig;
+    const runSeed = Math.floor(Math.random() * 1e9); // a fresh run every time
+    setSeed(runSeed);
     setLastCfg(snap);
-    setLastSeed(seed);
+    setLastSeed(runSeed);
     try {
-      await sim.run({ lab: "misty", config: snap, sizes: { opens }, seed });
+      await sim.run({ lab: "misty", config: snap, sizes: { opens }, seed: runSeed });
     } catch {
       /* shown below */
     }
@@ -265,15 +267,12 @@ export function MistySimulator() {
       </header>
 
       <Card title="Run">
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-3">
           <Field label="Box">
             <Select<string> value={slug} onChange={setSlug} options={MISTY_BOXES.filter((b) => b.price > 0).map((b) => ({ value: b.slug, label: `${b.name} · ${money(b.price)}` }))} />
           </Field>
           <Field label="Opens" hint="How many boxes to open. 200,000 takes a few seconds; 1,000,000 about ten times longer.">
             <NumberInput value={opens} min={1000} max={5000000} step={10000} onChange={(v) => setOpens(Math.max(1000, Math.min(5000000, Math.floor(v))))} />
-          </Field>
-          <Field label="Seed" hint="Same seed, same results.">
-            <NumberInput value={seed} min={0} step={1} onChange={(v) => setSeed(Math.floor(v))} />
           </Field>
           <div className="flex items-end">
             <Toggle checked={proof} onChange={setProof} label="With the proof" hint="On: every open is made with a committed secret, as on Misty, and a sample is re-checked. Off: plain random, about five times faster." />
@@ -318,7 +317,7 @@ export function MistySimulator() {
       {r && lastCfg && (
         <>
           <Card
-            title={`Report · ${r.boxName} · ${num(r.opens)} opens · seed ${lastSeed}`}
+            title={`Report · ${r.boxName} · ${num(r.opens)} opens · run ${lastSeed}`}
             actions={
               <span className="flex gap-2">
                 <Button kind="ghost" onClick={() => downloadText(`misty-sim-${r.boxSlug}-${lastSeed}.md`, reportMarkdown(buildRun("misty", name, lastCfg, { opens: r.opens }, lastSeed, r)), "text/markdown")}>
