@@ -1,0 +1,14 @@
+Build your own box: a demo that designs, prices, opens and runs a box with the Misty mechanism
+
+- /build: name, price, credit unit, outcomes (piece / credit / credit + free
+  spins) with worth, free spins and chance; live cost per row, total against
+  the price, what you keep, return on screen and really; Fit button that
+  scales the piece odds to a target return; free-spin table; open the box
+  with commitment, result, bands and check; run thousands of opens with the
+  Misty runner and results; save or load the design as JSON; starters
+- engine: MistyConfig.customBox carried through opener, verifier and runner;
+  boxOf helper; fitItemOdds solver; MistyBox.creditName
+- BoxMaths exported from the Misty stage; nav entry; links from the Misty
+  page banner and both docs pages; README
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

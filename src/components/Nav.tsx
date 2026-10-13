@@ -22,6 +22,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
     label: "Hub",
     items: [
       { href: "/", label: "Overview", icon: "ph:house" },
+      { href: "/build", label: "Build your own box", icon: "ph:cube" },
       { href: "/catalog", label: "Catalogue", icon: "ph:handbag" },
       { href: "/runs", label: "Run history", icon: "ph:clock-counter-clockwise" },
     ],

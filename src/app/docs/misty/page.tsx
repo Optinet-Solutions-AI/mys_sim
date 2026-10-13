@@ -982,6 +982,9 @@ export default function MistyDocsPage() {
           <Link href="/docs/misty/dev" className="mt-3 block text-accent-ink underline underline-offset-2">
             For developers: how to build it →
           </Link>
+          <Link href="/build" className="mt-1 block text-accent-ink underline underline-offset-2">
+            Build your own box →
+          </Link>
         </div>
       </aside>
     </div>

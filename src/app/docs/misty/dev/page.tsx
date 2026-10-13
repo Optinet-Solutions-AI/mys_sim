@@ -453,6 +453,9 @@ export default function MistyDevPage() {
           <Link href="/docs/misty" className="mt-3 block text-accent-ink underline underline-offset-2">
             The mechanism in plain words →
           </Link>
+          <Link href="/build" className="mt-1 block text-accent-ink underline underline-offset-2">
+            Build your own box →
+          </Link>
         </div>
       </aside>
     </div>

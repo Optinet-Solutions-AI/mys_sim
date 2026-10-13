@@ -244,9 +244,14 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-accent-soft px-3 py-2 text-sm">
         <Icon name="ph:book-open-text" size={16} />
         <span>How a Misty box works, in plain words: the logic, the table, the maths, the sources and a critique.</span>
-        <Link href="/docs/misty" className="btn ml-auto no-underline">
-          Read the explanation
-        </Link>
+        <span className="ml-auto flex gap-2">
+          <Link href="/docs/misty" className="btn no-underline">
+            Read the explanation
+          </Link>
+          <Link href="/build" className="btn no-underline">
+            Build your own box
+          </Link>
+        </span>
       </div>
       {/* the boxes, as the site lists them */}
       <div className="flex gap-2 overflow-x-auto pb-1">
@@ -561,7 +566,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
 }
 
 /** Worth × chance for every row, the subtotals and the return, on screen and really. */
-function BoxMaths({ box, m, cfg, lastId }: { box: MistyBox; m: MistyMath; cfg: MistyConfig; lastId?: string }) {
+export function BoxMaths({ box, m, cfg, lastId }: { box: MistyBox; m: MistyMath; cfg: MistyConfig; lastId?: string }) {
   const rows = [...m.perOutcome].sort((a, b) => (a.kind === "item" ? 1 : 0) - (b.kind === "item" ? 1 : 0) || b.share - a.share);
   const pieces = rows.filter((r) => r.kind === "item");
   const credits = rows.filter((r) => r.kind !== "item");

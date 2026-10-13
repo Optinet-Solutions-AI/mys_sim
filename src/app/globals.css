@@ -440,3 +440,14 @@ table {
   vertical-align: bottom;
 }
 @media (min-width: 1280px) { .misty-name { max-width: 24ch; } }
+
+/* rarity colours as variables, so builder rows can colour an icon chip from the rarity name */
+:root {
+  --misty-c-common: #5b6472;
+  --misty-c-uncommon: #2f7d4f;
+  --misty-c-rare: #1e5aa8;
+  --misty-c-epic: #0f6b6b;
+  --misty-c-legendary: #5b2a86;
+  --misty-c-grail: #8a6d1f;
+  --misty-c-bonus: #b4236b;
+}
