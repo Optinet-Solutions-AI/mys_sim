@@ -54,7 +54,7 @@ function Legend({ title = "What each column means", items }: { title?: string; i
 
 const TOC = [
   ["one-sentence", "In short"],
-  ["boxes", "1. The thirteen boxes"],
+  ["boxes", "1. Box content"],
   ["one-open", "2. One open, step by step"],
   ["little-box", "3. A very simple example"],
   ["timepiece", "4. The real thing: the Timepiece Suite"],
@@ -188,7 +188,7 @@ export default function MistyDocsPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="boxes">1. The thirteen boxes</H2>
+        <H2 id="boxes">1. Box content</H2>
         <P>These were live on {CAPTURED}. The names and prices are Misty&apos;s own. Every other column is worked out from the odds table of that box; the list under the table says how.</P>
         <Card>
           <div className="overflow-x-auto">
