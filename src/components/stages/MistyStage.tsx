@@ -384,8 +384,14 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
             </button>
           }
         >
-          <div className="max-h-[460px] overflow-auto">
-            <table className="w-full min-w-[440px] text-xs">
+          <div>
+            <table className="w-full table-fixed text-xs">
+              <colgroup>
+                <col />
+                <col style={{ width: "5.5rem" }} />
+                <col style={{ width: "4.5rem" }} />
+                <col style={{ width: "4rem" }} />
+              </colgroup>
               <thead>
                 <tr>
                   <Th>Outcome</Th>
@@ -404,8 +410,8 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
                           <span className="misty-row-icon" style={{ background: RARITY_HEX[e.outcome.rarity] ?? "#5b6472" }}>
                             <Icon name={iconFor(e.outcome)} size={14} />
                           </span>
-                          <HoverTip tip={`${e.outcome.label} · ${e.outcome.kind === "item" ? money(e.outcome.valueUsd ?? 0) : `${e.outcome.mistees} Mistees${e.outcome.freeSpins ? ` + ${e.outcome.freeSpins} free spin${e.outcome.freeSpins > 1 ? "s" : ""}` : ""}`} · odds ${pctSmart(e.percent / table.total)} · 1 in ${e.percent > 0 ? num(Math.round(table.total / e.percent)) : "∞"}`}>
-                            <span className="misty-name">{e.outcome.label}</span>
+                          <HoverTip className="min-w-0 flex-1" tip={`${e.outcome.label} · ${e.outcome.kind === "item" ? money(e.outcome.valueUsd ?? 0) : `${e.outcome.mistees} Mistees${e.outcome.freeSpins ? ` + ${e.outcome.freeSpins} free spin${e.outcome.freeSpins > 1 ? "s" : ""}` : ""}`} · odds ${pctSmart(e.percent / table.total)} · 1 in ${e.percent > 0 ? num(Math.round(table.total / e.percent)) : "∞"}`}>
+                            <span className="block truncate">{e.outcome.label}</span>
                           </HoverTip>
                         </span>
                       </Td>
