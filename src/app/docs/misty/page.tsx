@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MISTY_BOXES, bonusEv, mistyBox, mistyMath, type MistyMath } from "@/engine/labs/misty";
 import { money, num, oneIn, pct } from "@/lib/format";
 import { Badge, Card, Td, Th } from "@/components/ui";
+import { CollapsibleTable } from "@/components/CollapsibleTable";
 
 export const metadata = { title: "Misty, explained · Simulator" };
 
@@ -156,39 +157,15 @@ export default function MistyDocsPage() {
           <H2 id="boxes">1. Box content</H2>
           <P>Live on {CAPTURED}. Names and prices are Misty&apos;s. The other columns come from each box&apos;s odds table.</P>
           <Card>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-xs">
-                <thead>
-                  <tr>
-                    <Th>Box</Th>
-                    <Th right>Price</Th>
-                    <Th right>A piece drops</Th>
-                    <Th right>Pieces, value per open</Th>
-                    <Th right>Mistees per open</Th>
-                    <Th right>Pays back per open</Th>
-                    <Th right>Return on screen</Th>
-                    <Th right>Return really</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MISTY_BOXES.map((b) => {
-                    const bm = mistyMath(b, undefined, b.bonus, V);
-                    return (
-                      <tr key={b.slug} className="border-t border-line">
-                        <Td>{b.name}</Td>
-                        <Td right mono>{b.price > 0 ? money(b.price) : "free"}</Td>
-                        <Td right mono>{bm.pItem > 0 ? oneIn(bm.pItem) : "never"}</Td>
-                        <Td right mono>{money(bm.evItems, 2)}</Td>
-                        <Td right mono>{bm.evMistees.toFixed(2)}</Td>
-                        <Td right mono>{money(bm.payFace, 2)}</Td>
-                        <Td right mono>{b.price > 0 ? pct(bm.returnFace) : "–"}</Td>
-                        <Td right mono>{b.price > 0 ? pct(bm.returnReal) : "–"}</Td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <CollapsibleTable
+              head={["Box", "Price", "A piece drops", "Pieces, value per open", "Mistees per open", "Pays back per open", "Return on screen", "Return really"]}
+              rows={MISTY_BOXES.map((b) => {
+                const bm = mistyMath(b, undefined, b.bonus, V);
+                return [b.name, b.price > 0 ? money(b.price) : "free", bm.pItem > 0 ? oneIn(bm.pItem) : "never", money(bm.evItems, 2), bm.evMistees.toFixed(2), money(bm.payFace, 2), b.price > 0 ? pct(bm.returnFace) : "–", b.price > 0 ? pct(bm.returnReal) : "–"];
+              })}
+              initial={3}
+              noun="boxes"
+            />
           </Card>
           <Legend
             items={[
