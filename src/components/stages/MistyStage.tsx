@@ -392,10 +392,11 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
           }
         >
           <div className="max-h-[460px] overflow-auto">
-            <table className="w-full text-xs">
+            <table className="w-full min-w-[440px] text-xs">
               <thead>
                 <tr>
                   <Th>Outcome</Th>
+                  <Th right>Price</Th>
                   <Th right>Odds</Th>
                   <Th right>1 in</Th>
                 </tr>
@@ -410,12 +411,12 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
                           <span className="misty-row-icon" style={{ background: RARITY_HEX[e.outcome.rarity] ?? "#5b6472" }}>
                             <Icon name={iconFor(e.outcome)} size={14} />
                           </span>
-                          <span className="truncate" title={e.outcome.label}>
+                          <span className="misty-name" title={e.outcome.label}>
                             {e.outcome.label}
-                            {e.outcome.kind === "item" && <span className="text-ink-3"> · {money(e.outcome.valueUsd ?? 0)}+</span>}
                           </span>
                         </span>
                       </Td>
+                      <Td right mono>{e.outcome.kind === "item" ? `${money(e.outcome.valueUsd ?? 0)}+` : e.outcome.kind === "bonus" ? `${e.outcome.mistees} M + spins` : `${e.outcome.mistees} Mistees`}</Td>
                       <Td right mono>{pctSmart(e.percent / table.total)}</Td>
                       <Td right mono>{e.percent > 0 ? num(Math.round(table.total / e.percent)) : "never"}</Td>
                     </tr>
@@ -561,7 +562,7 @@ function BoxMaths({ box, m, cfg, lastId }: { box: MistyBox; m: MistyMath; cfg: M
   return (
     <div className="space-y-3 text-sm">
       <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+        <table className="w-full min-w-[640px] text-xs">
           <thead>
             <tr>
               <Th>Outcome</Th>
@@ -663,7 +664,7 @@ function MathRow({ r, box, cfg, hi }: { r: MistyMath["perOutcome"][number]; box:
           <span className="misty-row-icon" style={{ background: RARITY_HEX[o.rarity] ?? "#5b6472" }}>
             <Icon name={iconFor(o)} size={14} />
           </span>
-          <span className="truncate" title={o.label}>
+          <span className="misty-name" title={o.label}>
             {o.label}
           </span>
         </span>
@@ -786,7 +787,7 @@ function Narration({ spin, box, cfg, table, om, rank, playerName, ratio, traded 
       <details className="rounded-lg border border-line bg-paper p-3 text-xs" open>
         <summary className="cursor-pointer font-semibold">The bands on the 0 to 100 line (the roll was {roll.toFixed(3)})</summary>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[520px]">
             <thead>
               <tr>
                 <Th>From</Th>

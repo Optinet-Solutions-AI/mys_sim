@@ -1,0 +1,8 @@
+Misty: cut long outcome names with an ellipsis, add a Price column, scroll the tables sideways
+
+The What you can pull table now has Outcome, Price, Odds and 1 in columns;
+names are clipped at about 20 characters with the full name in the tooltip,
+and the table scrolls horizontally on narrow screens instead of squeezing
+the number columns. Same clipping in the maths table and the bands list.
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
