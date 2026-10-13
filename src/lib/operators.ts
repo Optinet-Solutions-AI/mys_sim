@@ -501,7 +501,7 @@ export const OPERATORS: OperatorDef[] = [
     id: "misty",
     name: "Misty",
     kind: "operator",
-    tagline: "Boxes that pay Mistees (site credit) beside prize competitions with a free postal route",
+    tagline: "",
     description: "Luxury boxes with exact published odds and a seed committed before you pay, revealed at the open, with the odds table frozen onto each open. One open in 61 pays a physical item; the rest pay Mistees, which the terms define as site credit with no cash value, redeemable only for boxes and products. Beside the boxes run skill-question prize competitions with a fixed pool of entry numbers, a guaranteed draw date and a free postal route at equal odds. The published numbers are true; the valuation of a Mistee is the trick. Live table captured 12 October 2026; the 9 October reconstruction is kept as a second preset.",
     icon: "fluent:admission-tickets",
     sources: "Dossier 1 §2.1",

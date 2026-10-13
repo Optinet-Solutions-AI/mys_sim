@@ -455,3 +455,10 @@ table {
 
 /* fixed-position variant used by the Info component: never clipped by cards, tables or the viewport top */
 .info-pop-fixed { position: fixed; bottom: auto; opacity: 1; visibility: visible; transition: none; }
+
+/* accordions used by the analysis section: folded by default */
+details.acc { border: 1px solid var(--color-line); border-radius: 0.6rem; background: var(--color-paper); padding: 0.5rem 0.75rem; }
+details.acc > summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; font-weight: 600; }
+details.acc > summary::-webkit-details-marker { display: none; }
+details.acc > summary::before { content: "▸"; color: var(--color-ink-3); font-size: 0.8rem; }
+details.acc[open] > summary::before { content: "▾"; }

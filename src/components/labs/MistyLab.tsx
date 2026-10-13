@@ -19,6 +19,8 @@ import { Badge, Button, Card, Field, Info, NumberInput, Select, Td, Th, Toggle }
 import { Icon } from "../Icon";
 
 const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
+/** The simulation (open thousands of boxes) is hidden on the Misty page for now; the code stays. */
+const SHOW_SIM = false;
 
 const RARITY_TONE: Record<string, "neutral" | "good" | "warn" | "bad" | "accent"> = { common: "neutral", uncommon: "good", rare: "accent", epic: "accent", legendary: "warn", grail: "bad", bonus: "warn" };
 
@@ -356,7 +358,7 @@ export function MistyLab({ variant, operator }: { variant: FeatureDef; operator:
         </Card>
       ),
     },
-  ];
+  ].filter((sec) => SHOW_SIM || sec.id !== "run");
 
   return (
     <>
@@ -373,10 +375,11 @@ export function MistyLab({ variant, operator }: { variant: FeatureDef; operator:
           { label: `item ${oneIn(m.pItem)} · pays ${pct(m.returnFace)} at face, ${pct(m.returnReal)} really${edited ? " · odds edited" : ""}`, section: "box", tone: edited ? "bad" : undefined },
           { label: ownOdds ? `${cfg.players.length} players · ${ownOdds} with own odds` : `${cfg.players.length} players · same odds`, section: "players", tone: ownOdds ? "bad" : undefined },
           { label: cfg.provablyFair ? "secret committed per open" : "no proof", section: "algo", tone: cfg.provablyFair ? undefined : "bad" },
-          { label: `${num(cfg.run.opens)} opens · seed ${seed}`, section: "run", tone: "accent" },
+          ...(SHOW_SIM ? [{ label: `${num(cfg.run.opens)} opens · seed ${seed}`, section: "run", tone: "accent" as const }] : []),
         ]}
       >
         <MistyStage cfg={cfg} seed={seed} onChange={setCfg} onSettings={openSettings} />
+        {SHOW_SIM && (
         <SimulateBar
           label={`Open ${num(cfg.run.opens)} boxes`}
           hint="Counts per outcome against the stated odds, return at face and in real money, per-player returns, and a recomputation of the proofs."
@@ -388,7 +391,8 @@ export function MistyLab({ variant, operator }: { variant: FeatureDef; operator:
           onCancel={sim.cancel}
           onSettings={() => openSettings("run")}
         />
-        {result && lastCfg && (
+        )}
+        {SHOW_SIM && result && lastCfg && (
           <ResultsSection title="Simulation results" meta={`${num(result.opens)} opens · ${result.boxName} · seed ${lastSeed}`} stale={stale} saved={saved} onSave={save} onReport={report}>
             <MistyResults r={result} />
           </ResultsSection>

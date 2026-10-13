@@ -62,7 +62,7 @@ export function OperatorHub({ id }: { id: string }) {
                   </div>
                 </Info>
               </div>
-              <div className="text-xs text-ink-2">{op.tagline}</div>
+              {op.tagline && <div className="text-xs text-ink-2">{op.tagline}</div>}
             </div>
           </header>
           <nav className="flex flex-wrap gap-1 border-b border-line">

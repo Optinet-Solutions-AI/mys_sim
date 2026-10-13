@@ -1,7 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import type { FeatureDoc } from "@/lib/operators";
-import { GUIDES, GUIDE_BY_LAB, SETTINGS_PLAIN } from "@/lib/skins";
+import {GUIDES, GUIDE_BY_LAB} from "@/lib/skins";
 import type { LabId } from "@/engine/types";
 import { Icon } from "../Icon";
 import { Badge, Info } from "../ui";
@@ -27,11 +27,8 @@ export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, ri
           <Badge tone="accent">{operator}</Badge>
           <Info size={16}>{doc.what}</Info>
         </div>
-        <button type="button" className="btn rounded-full" data-tip="How this works for a player, in plain words" data-tip-end="" onClick={() => setGuide("player")}>
-          <Icon name="ph:user" size={18} /> <span className="hidden sm:inline">Player view</span>
-        </button>
-        <button type="button" className="btn rounded-full" data-tip="What the settings and the algorithm mean, in plain words" data-tip-end="" onClick={() => setGuide("settings")}>
-          <Icon name="ph:question" size={18} /> <span className="hidden sm:inline">Settings explained</span>
+        <button type="button" className="btn rounded-full" data-tip="How the game works, in plain words" data-tip-end="" onClick={() => setGuide("player")}>
+          <Icon name="ph:user" size={18} /> <span className="hidden sm:inline">Game Mechanics</span>
         </button>
         <button type="button" className="btn-cog" data-tip="Settings" data-tip-end="" onClick={() => onSettings()} aria-label="Settings">
           <Icon name="ph:gear-six" size={26} className="text-white" />
@@ -47,8 +44,7 @@ export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, ri
         ))}
       </div>
       {children}
-      <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: how it works for a player`} icon="ph:user" bullets={g.player} extra={[{ title: "Source", text: doc.source }]} />
-      <GuideModal open={guide === "settings"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: the settings, explained`} icon="ph:gear-six" bullets={g.settings} extra={SETTINGS_PLAIN} />
+      <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: game mechanics`} icon="ph:user" bullets={g.player} extra={[{ title: "Source", text: doc.source }]} />
     </div>
   );
 }

@@ -1,0 +1,14 @@
+Misty page trimmed: fewer controls, Analysis accordions after the open, simulation hidden
+
+- operator tagline removed; Player view renamed Game Mechanics; Settings
+  explained button removed
+- Document and Create Mystery Box buttons in one box, no sentence
+- carousel titled Select a Mystery Box; box header keeps name and price only
+  (box opening is the reveal; the player is chosen in the back office)
+- odds table titled Box Content and Odds, pays-back badges and M key gone
+- secret-locked line removed (kept in the developer page); Back at face -> RTP
+- maths table, step-by-step narration, fairness check and logic list moved
+  into an Analysis card shown only after an open, each a folded accordion
+- simulation bar, results and run settings hidden behind SHOW_SIM
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

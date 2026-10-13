@@ -6,7 +6,7 @@ import { MISTY_BOXES, MistyOpener, buildTable, itemOddsRatio, lookup, mistyBox, 
 import { makeRng } from "@/engine/rng";
 import { mistyConfigFor } from "@/lib/mistyPresets";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
-import { Badge, Button, Card, Info, Select, Td, Th } from "../ui";
+import { Badge, Button, Card, Info, Td, Th } from "../ui";
 import { Icon } from "../Icon";
 import { ItemTile } from "../ItemTile";
 import { CountUp } from "../lab/CountUp";
@@ -130,7 +130,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
   const m = useMemo(() => mistyMath(box, pw.weights, cfg.bonus, cfg), [box, pw.weights, cfg]);
   const ratio = itemOddsRatio(box, cfg.weights, player?.weights);
 
-  const [reveal, setReveal] = useState<"box" | "strip">("box");
+  const [reveal] = useState<"box" | "strip">("box"); // the spin strip stays in the code; the box opening is the reveal
   const [tally, setTally] = useState<Tally>(ZERO);
   const [last, setLast] = useState<MistySpin | null>(null);
   const [pending, setPending] = useState<MistySpin | null>(null);
@@ -142,7 +142,6 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
   const [fast, setFast] = useState(false);
   const [verify, setVerify] = useState<{ ok: boolean; reason?: string } | null>(null);
   const [showProof, setShowProof] = useState(false);
-  const [showMath, setShowMath] = useState(true);
   const [traded, setTraded] = useState(false);
   const [history, setHistory] = useState<MistySpin[]>([]);
   const rafRef = useRef(0);
@@ -241,19 +240,17 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-accent-soft px-3 py-2 text-sm">
-        <Icon name="ph:book-open-text" size={16} />
-        <span>How a Misty box works, in plain words: the logic, the table, the maths, the sources and a critique.</span>
-        <span className="ml-auto flex gap-2">
-          <Link href="/docs/misty" className="btn no-underline">
-            Read the explanation
-          </Link>
-          <Link href="/build" className="btn no-underline">
-            Build your own box
-          </Link>
-        </span>
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm">
+        <Link href="/docs/misty" className="btn no-underline">
+          <Icon name="ph:book-open-text" size={16} /> Document
+        </Link>
+        <Link href="/build" className="btn no-underline">
+          <Icon name="ph:cube" size={16} /> Create Mystery Box
+        </Link>
       </div>
       {/* the boxes, as the site lists them */}
+      <div>
+      <h2 className="mb-2 text-sm font-semibold text-ink-2">Select a Mystery Box</h2>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {MISTY_BOXES.map((b) => {
           const bm = mistyMath(b, undefined, b.bonus, cfg);
@@ -275,26 +272,15 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
           );
         })}
       </div>
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-semibold">{box.name}</h2>
             <Badge tone="accent">{box.price > 0 ? money(box.price) : "free"}</Badge>
-            <Badge>a piece {oneIn(m.pItem)}</Badge>
-            <span className="ml-auto flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-ink-3">Reveal</span>
-              <span className="w-36">
-                <Select<"box" | "strip"> value={reveal} onChange={(v) => !busy && setReveal(v)} options={[{ value: "box", label: "Open the box" }, { value: "strip", label: "Spin strip (Misty's)" }]} />
-              </span>
-              <span className="text-ink-3">Playing as</span>
-              <span className="w-44">
-                <Select<string> value={player?.id ?? ""} onChange={(v) => onChange({ ...cfg, activePlayerId: v })} options={cfg.players.map((p) => ({ value: p.id, label: p.name }))} />
-              </span>
-              {player?.weights && <Badge tone={ratio > 1 ? "good" : "bad"}>own odds ×{ratio.toFixed(2)}</Badge>}
-            </span>
+            {player?.weights && <Badge tone={ratio > 1 ? "good" : "bad"}>own odds ×{ratio.toFixed(2)}</Badge>}
           </div>
-          <p className="mb-3 text-xs text-ink-3">{box.tagline}</p>
 
           {reveal === "box" ? (
             <div className="rounded-xl border border-line bg-paper">
@@ -318,14 +304,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
             <label className="flex items-center gap-1 text-xs text-ink-3">
               <input type="checkbox" checked={fast} onChange={(e) => setFast(e.target.checked)} /> fast reveal
             </label>
-            {cfg.provablyFair ? (
-              <span className="ml-auto flex items-center gap-1 text-xs text-ink-3">
-                <Icon name="ph:lock-key" size={14} /> secret locked in for the next open
-                <Info>Before you pay, the site has already chosen the secret number that will decide your open. After the open it shows you that secret, so the result could not have been changed after your money went in.</Info>
-              </span>
-            ) : (
-              <Badge tone="bad">no proof: plain random</Badge>
-            )}
+            {!cfg.provablyFair && <Badge tone="bad">no proof: plain random</Badge>}
           </div>
 
           {last && lastOutcome && lastMath && phase !== "spinning" && (
@@ -387,15 +366,15 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
             <Mini label="Paid" value={money(tally.spent)} />
             <Mini label="Mistees" value={<CountUp value={tally.mistees} format={(n) => fmtMist(Math.round(n * 100) / 100)} />} sub={`${money(tally.mistees * cfg.misteeFace)} on screen`} />
             <Mini label="Pieces" value={num(tally.items)} sub={money(tally.itemValue)} />
-            <Mini label="Back at face" value={tally.spent > 0 ? pct(faceBack / tally.spent) : "–"} sub={tally.spent > 0 ? `really ${pct((tally.itemValue * cfg.itemRealized + tally.mistees * cfg.misteeReal) / tally.spent)}` : undefined} />
+            <Mini label="RTP" value={tally.spent > 0 ? pct(faceBack / tally.spent) : "–"} sub={tally.spent > 0 ? `really ${pct((tally.itemValue * cfg.itemRealized + tally.mistees * cfg.misteeReal) / tally.spent)}` : undefined} />
           </div>
         </Card>
 
         <Card
           title={
             <span className="flex items-center gap-1">
-              What you can pull
-              <Info>The live odds table, exactly as the page shows it. Tap the cog to change any percentage, or to give this player a table of their own.</Info>
+              Box Content and Odds
+              <Info>The live odds table, exactly as the page shows it. Tap the cog to change any percentage, or to give a player a table of their own.</Info>
             </span>
           }
           actions={
@@ -437,127 +416,114 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
               </tbody>
             </table>
           </div>
-          <div className="mt-1 text-[10px] text-ink-3">M = Mistees, site credit worth {money(cfg.misteeFace)} each on screen.</div>
-          <div className="mt-2 flex flex-wrap gap-1 text-[11px]">
-            <Badge>pays back {money(m.payFace, 2)} per open on screen = {pct(m.returnFace)}</Badge>
-            <Badge tone="warn">really about {money(m.payReal, 2)} = {pct(m.returnReal)}</Badge>
-          </div>
         </Card>
       </div>
 
-      {/* the maths of the box */}
-      <Card
-        title={
-          <span className="flex items-center gap-1">
-            The maths of this box: how {money(box.price)} becomes {money(m.payFace, 2)} back
-            <Info>Every row costs the operator its worth multiplied by its chance. Add the rows up and you have what the box pays back per open on average. Nothing about one open shows this; it only appears across thousands of opens.</Info>
-          </span>
-        }
-        actions={
-          <button type="button" className="chip" onClick={() => setShowMath((s) => !s)}>
-            {showMath ? "hide" : "show"}
-          </button>
-        }
-      >
-        {showMath && <BoxMaths box={box} m={m} cfg={cfg} lastId={last?.outcomeId} />}
-      </Card>
-
-      {/* the logic, narrated */}
-      <Card title="How this result was decided, step by step">
-        {last && lastOutcome && lastMath ? (
-          <Narration spin={last} box={box} cfg={cfg} table={table} om={lastMath} rank={rankOfLast} playerName={player?.name ?? "the player"} ratio={ratio} traded={traded} />
-        ) : (
-          <p className="text-sm text-ink-2">Open the box once and every step of the decision is written out here, with the sums.</p>
-        )}
-      </Card>
-
-      {/* the proof, folded */}
-      <Card
-        title={
-          <span className="flex items-center gap-1">
-            Was it fair? The check
-            <Info>{box.fairness || "Every open is resolved from a secret committed before you pay, a seed you can set, and a spin number. The secret is revealed at the open and the odds table is frozen onto it."}</Info>
-          </span>
-        }
-        actions={
-          <span className="flex gap-2">
-            {last && cfg.provablyFair && (
-              <Button kind="ghost" onClick={() => setVerify(verifyMistySpin(last, cfg))}>
-                Check this open
-              </Button>
-            )}
-            <button type="button" className="chip" onClick={() => setShowProof((s) => !s)}>
-              {showProof ? "hide details" : "technical details"}
-            </button>
-          </span>
-        }
-      >
-        {!last ? (
-          <p className="text-sm text-ink-2">Before you pay, the site locks in a secret number. After the open it shows the secret, and anyone can redo the sum and get the same result. Open the box once and the check appears here.</p>
-        ) : !cfg.provablyFair ? (
-          <p className="text-sm text-ink-2">The proof is switched off in the back office: this open came from a plain random number, nothing was locked in beforehand, and there is nothing to check. Turn it on under the cog, &quot;The proof&quot;.</p>
-        ) : (
-          <div className="space-y-2 text-sm text-ink-2">
-            <p>
-              <b>What this proves:</b> the secret that decided this open was locked in before {player?.name ?? "the player"} paid, and the roll of {(last.roll * 100).toFixed(3)} really comes from that secret plus the seed. So the result was not changed after the money went in, and it was read against the table that was frozen onto the open.
-            </p>
-            <p>
-              <b>What it does not prove:</b> that every player gets the same table, or that a Mistee is worth a dollar.
-            </p>
-            {verify && <Badge tone={verify.ok ? "good" : "bad"}>{verify.ok ? "Checked: the secret matches, the roll matches, the result matches" : `Does not match: ${verify.reason}`}</Badge>}
-            {showProof && (
-              <div className="mt-2 grid gap-x-6 gap-y-1 rounded-lg border border-line bg-paper p-3 text-xs sm:grid-cols-2">
-                <Row k="Scrambled copy of the secret, shown before payment" v={last.serverHash} />
-                <Row k="Secret, revealed after the open" v={last.serverSeed} />
-                <Row k="Player's seed" v={last.clientSeed} />
-                <Row k="Spin number" v={String(last.nonce)} />
-                <Row k="Secret + seed + spin number, mixed (HMAC-SHA256)" v={last.digest} />
-                <Row k="Roll: first 13 characters ÷ 2^52" v={`${(last.roll * 100).toFixed(4)} on a 0 to 100 line`} />
-                <Row k="Odds table frozen onto this open (SHA-256)" v={last.tableHash} />
-                <Row k="Band the roll fell in" v={band ? `${band.from.toFixed(3)} to ${band.to.toFixed(3)} = ${band.outcome.label}` : ""} />
-                {last.bonus.map((b, i) => (
-                  <Row key={b.nonce} k={`Free spin ${i + 1}: spin number ${b.nonce}, roll`} v={`${(b.roll * 100).toFixed(2)} → ${fmtMist(b.mistees)} Mistees`} />
-                ))}
+      {/* analysis, only after an open, every part folded */}
+      {last && lastOutcome && lastMath && phase !== "spinning" && (
+        <Card title="Analysis">
+          <div className="space-y-2">
+            <details className="acc">
+              <summary>
+                The maths of this box: how {money(box.price)} becomes {money(m.payFace, 2)} back
+                <Info>Every row costs the operator its worth multiplied by its chance. Add the rows up and you have what the box pays back per open on average.</Info>
+              </summary>
+              <div className="pt-3">
+                <BoxMaths box={box} m={m} cfg={cfg} lastId={last.outcomeId} />
               </div>
+            </details>
+
+            <details className="acc">
+              <summary>How this result was decided, step by step</summary>
+              <div className="pt-3">
+                <Narration spin={last} box={box} cfg={cfg} table={table} om={lastMath} rank={rankOfLast} playerName={player?.name ?? "the player"} ratio={ratio} traded={traded} />
+              </div>
+            </details>
+
+            <details className="acc">
+              <summary>
+                Was it fair? The check
+                <Info>{box.fairness || "Every open is resolved from a secret committed before you pay, a seed you can set, and a spin number. The secret is revealed at the open and the odds table is frozen onto it."}</Info>
+              </summary>
+              <div className="space-y-2 pt-3 text-sm text-ink-2">
+                {!cfg.provablyFair ? (
+                  <p>The proof is switched off in the back office: this open came from a plain random number, nothing was locked in beforehand, and there is nothing to check. Turn it on under the cog, &quot;The proof&quot;.</p>
+                ) : (
+                  <>
+                    <p>
+                      <b>What this proves:</b> the secret that decided this open was locked in before {player?.name ?? "the player"} paid, and the roll of {(last.roll * 100).toFixed(3)} really comes from that secret plus the seed. So the result was not changed after the money went in, and it was read against the table that was frozen onto the open.
+                    </p>
+                    <p>
+                      <b>What it does not prove:</b> that every player gets the same table, or that a Mistee is worth a dollar.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button kind="ghost" onClick={() => setVerify(verifyMistySpin(last, cfg))}>
+                        Check this open
+                      </Button>
+                      <button type="button" className="chip" onClick={() => setShowProof((v) => !v)}>
+                        {showProof ? "hide details" : "technical details"}
+                      </button>
+                      {verify && <Badge tone={verify.ok ? "good" : "bad"}>{verify.ok ? "Checked: the secret matches, the roll matches, the result matches" : `Does not match: ${verify.reason}`}</Badge>}
+                    </div>
+                    {showProof && (
+                      <div className="mt-2 grid gap-x-6 gap-y-1 rounded-lg border border-line bg-paper p-3 text-xs sm:grid-cols-2">
+                        <Row k="Scrambled copy of the secret, shown before payment" v={last.serverHash} />
+                        <Row k="Secret, revealed after the open" v={last.serverSeed} />
+                        <Row k="Player's seed" v={last.clientSeed} />
+                        <Row k="Spin number" v={String(last.nonce)} />
+                        <Row k="Secret + seed + spin number, mixed (HMAC-SHA256)" v={last.digest} />
+                        <Row k="Roll: first 13 characters ÷ 2^52" v={`${(last.roll * 100).toFixed(4)} on a 0 to 100 line`} />
+                        <Row k="Odds table frozen onto this open (SHA-256)" v={last.tableHash} />
+                        <Row k="Band the roll fell in" v={band ? `${band.from.toFixed(3)} to ${band.to.toFixed(3)} = ${band.outcome.label}` : ""} />
+                        {last.bonus.map((b, i) => (
+                          <Row key={b.nonce} k={`Free spin ${i + 1}: spin number ${b.nonce}, roll`} v={`${(b.roll * 100).toFixed(2)} → ${fmtMist(b.mistees)} Mistees`} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </details>
+
+            <details className="acc">
+              <summary>The logic behind every Misty box</summary>
+              <ol className="list-decimal space-y-2 pl-5 pt-3 text-sm text-ink-2">
+                <li>
+                  <b>The price is fixed first.</b> {box.name} costs {box.price > 0 ? money(box.price) : "nothing"}. Everything else is tuned to fit that price.
+                </li>
+                <li>
+                  <b>Every outcome has a chance, and the chances add up to 100.</b> This box has {box.outcomes.length} outcomes. A piece drops {oneIn(m.pItem)}; the rest of the time the box pays Mistees.
+                </li>
+                <li>
+                  <b>Each outcome costs the operator its worth times its chance.</b> Add those up and {box.name} pays back about {money(m.payFace, 2)} per open with Mistees counted at {money(cfg.misteeFace)} each, which is {pct(m.returnFace)} of the price. Counting Mistees at what they really cost ({money(cfg.misteeReal)}) and pieces at resale, it is about {money(m.payReal, 2)}, or {pct(m.returnReal)}.
+                </li>
+                <li>
+                  <b>The rare piece is the adjustable part.</b> Make the top piece twice as likely and its cost per open doubles; that is how a {money(box.outcomes.reduce((s, o) => Math.max(s, o.valueUsd ?? 0), 0))} piece fits inside a {box.price > 0 ? money(box.price) : "free"} box.
+                </li>
+                <li>
+                  <b>Every open is its own roll.</b> Nothing is remembered between opens, no pool runs out, nobody&apos;s result changes anybody else&apos;s. A hundred players opening this box are a hundred independent rolls.
+                </li>
+                <li>
+                  <b>Mistees are credit, not money.</b> They can only buy more boxes or products on the site. On screen one Mistee is {money(cfg.misteeFace)}; spent on boxes it is worth about {money(cfg.misteeReal)}.
+                </li>
+                <li>
+                  <b>The check covers the roll, not the table.</b> The secret locked in before payment proves the result was not changed afterwards, and the frozen table proves the roll was read against that table. It does not prove every player was given the same table. The back office here can give {player?.name ?? "a player"} their own odds, and every check still passes.
+                </li>
+              </ol>
+            </details>
+
+            {history.length > 1 && (
+              <details className="acc">
+                <summary>Last opens</summary>
+                <div className="flex flex-wrap gap-2 pt-3 text-xs">
+                  {history.map((h) => (
+                    <span key={h.idx} className="chip" title={`open ${h.idx} · roll ${(h.roll * 100).toFixed(3)}`}>
+                      #{h.idx} {h.kind === "item" ? h.label.split(",")[0] : `${fmtMist(h.totalMistees)} Mistees`}
+                    </span>
+                  ))}
+                </div>
+              </details>
             )}
-          </div>
-        )}
-      </Card>
-
-      <Card title="The logic behind every Misty box">
-        <ol className="list-decimal space-y-2 pl-5 text-sm text-ink-2">
-          <li>
-            <b>The price is fixed first.</b> {box.name} costs {box.price > 0 ? money(box.price) : "nothing"}. Everything else is tuned to fit that price.
-          </li>
-          <li>
-            <b>Every outcome has a chance, and the chances add up to 100.</b> This box has {box.outcomes.length} outcomes. A piece drops {oneIn(m.pItem)}; the rest of the time the box pays Mistees.
-          </li>
-          <li>
-            <b>Each outcome costs the operator its worth times its chance.</b> Add those up (the table above) and {box.name} pays back about {money(m.payFace, 2)} per open with Mistees counted at {money(cfg.misteeFace)} each, which is {pct(m.returnFace)} of the price. Counting Mistees at what they really cost ({money(cfg.misteeReal)}) and pieces at resale, it is about {money(m.payReal, 2)}, or {pct(m.returnReal)}.
-          </li>
-          <li>
-            <b>The rare piece is the adjustable part.</b> Make the top piece twice as likely and its cost per open doubles; that is how a {money(box.outcomes.reduce((s, o) => Math.max(s, o.valueUsd ?? 0), 0))} piece fits inside a {box.price > 0 ? money(box.price) : "free"} box.
-          </li>
-          <li>
-            <b>Every open is its own roll.</b> Nothing is remembered between opens, no pool runs out, nobody&apos;s result changes anybody else&apos;s. A hundred players opening this box are a hundred independent rolls.
-          </li>
-          <li>
-            <b>Mistees are credit, not money.</b> They can only buy more boxes or products on the site. On screen one Mistee is {money(cfg.misteeFace)}; spent on boxes it is worth about {money(cfg.misteeReal)}.
-          </li>
-          <li>
-            <b>The check covers the roll, not the table.</b> The secret locked in before payment proves the result was not changed afterwards, and the frozen table proves the roll was read against that table. It does not prove every player was given the same table. The back office here can give {player?.name ?? "a player"} their own odds, and every check still passes.
-          </li>
-        </ol>
-      </Card>
-
-      {history.length > 1 && (
-        <Card title="Last opens">
-          <div className="flex flex-wrap gap-2 text-xs">
-            {history.map((h) => (
-              <span key={h.idx} className="chip" title={`open ${h.idx} · roll ${(h.roll * 100).toFixed(3)}`}>
-                #{h.idx} {h.kind === "item" ? h.label.split(",")[0] : `${fmtMist(h.totalMistees)} Mistees`}
-              </span>
-            ))}
           </div>
         </Card>
       )}
