@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Icon } from "./Icon";
+import { Info } from "./InfoPop";
 
 export function Card({ title, children, className = "", actions }: { title?: ReactNode; children: ReactNode; className?: string; actions?: ReactNode }) {
   return (
@@ -15,17 +16,7 @@ export function Card({ title, children, className = "", actions }: { title?: Rea
   );
 }
 
-/** An info icon whose explanation appears on hover or focus. Pages stay minimal; the words are one hover away. */
-export function Info({ children, align = "left", size = 14, className = "" }: { children: ReactNode; align?: "left" | "right" | "center"; size?: number; className?: string }) {
-  return (
-    <span className={`info ${className}`} tabIndex={0} aria-label="More information">
-      <Icon name="ph:info" size={size} className="text-ink-3" />
-      <span className={`info-pop ${align === "right" ? "info-pop-right" : align === "center" ? "info-pop-center" : ""}`} role="tooltip">
-        {children}
-      </span>
-    </span>
-  );
-}
+export { Info };
 
 export function Button({
   children,

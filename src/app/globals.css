@@ -138,7 +138,7 @@ table {
 [data-tip]::after {
   content: attr(data-tip);
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 70;
@@ -162,6 +162,7 @@ table {
 [data-tip]:hover::after, [data-tip]:focus-visible::after { opacity: 1; visibility: visible; }
 [data-tip-end]::after { left: auto; right: 0; transform: none; }
 [data-tip-below]::after { bottom: auto; top: calc(100% + 8px); }
+[data-tip-above]::after { top: auto; bottom: calc(100% + 8px); }
 
 /* Info popovers: an icon whose explanation appears on hover or focus. */
 .info { position: relative; display: inline-flex; align-items: center; cursor: help; outline: none; vertical-align: middle; }
@@ -451,3 +452,6 @@ table {
   --misty-c-grail: #8a6d1f;
   --misty-c-bonus: #b4236b;
 }
+
+/* fixed-position variant used by the Info component: never clipped by cards, tables or the viewport top */
+.info-pop-fixed { position: fixed; bottom: auto; opacity: 1; visibility: visible; transition: none; }
