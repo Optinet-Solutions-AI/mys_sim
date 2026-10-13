@@ -29,7 +29,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
   },
   {
     label: "Operators",
-    items: OPERATORS.filter((o) => o.kind === "operator").map((o) => ({ href: `/operators/${o.id}`, label: o.name.replace(" Mystery Boxes", "").replace(" platform", ""), icon: NAV_ICON[o.id] ?? "ph:package" })),
+    items: [...OPERATORS.filter((o) => o.kind === "operator")].sort((a, b) => (a.id === "misty" ? -1 : b.id === "misty" ? 1 : 0)).map((o) => ({ href: `/operators/${o.id}`, label: o.name.replace(" Mystery Boxes", "").replace(" platform", ""), icon: NAV_ICON[o.id] ?? "ph:package" })),
   },
   {
     label: "Ours and others",
