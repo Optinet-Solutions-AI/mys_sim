@@ -1,0 +1,135 @@
+{
+  "source": "https://www.themistybox.com/mystery/timepiece-suite",
+  "captured": "2026-10-12",
+  "price_usd": 10,
+  "value_note": "Values shown on the page as 'minimum retail value' with a plus sign; the hover detail gives $16,035 for the Rolex.",
+  "fairness": "Every open is resolved from a server seed committed before payment (hash shown), a client seed the player can set, and a nonce; the seed is revealed the moment the box opens and the odds table is frozen onto the open.",
+  "mistees": "Terms (last updated 21 July 2026): site credit with no cash value; every box pays them; never expire; redeemable only for boxes and products on the site; cannot be withdrawn, transferred or exchanged for money. No dollar rate is stated in words, but the page data values each Mistee outcome at 100 cents per Mistee (valueCents, fxRate 1): Misty's face value is $1. Physical items carry the string 'Trade it in for {n} Mistees instead.'",
+  "free_spin_table_mistees": {
+    "1": 70,
+    "2": 22,
+    "5": 6,
+    "10": 2,
+    "20": 0.2
+  },
+  "outcomes": [
+    {
+      "tier": "Grail",
+      "odds_percent": 0.004,
+      "name": "Rolex Lady-Datejust 28 mm",
+      "value_usd": 16035
+    },
+    {
+      "tier": "Grail",
+      "odds_percent": 0.015,
+      "name": "Louis Vuitton x Murakami Sunset Cherry bag",
+      "value_usd": 3600
+    },
+    {
+      "tier": "Legendary",
+      "odds_percent": 0.053,
+      "name": "Louis Vuitton x Murakami Denim Cerise shawl",
+      "value_usd": 920
+    },
+    {
+      "tier": "Legendary",
+      "odds_percent": 0.11,
+      "name": "Louis Vuitton x Murakami Spell on You Cherry Blossom",
+      "value_usd": 420
+    },
+    {
+      "tier": "Legendary",
+      "odds_percent": 0.11,
+      "name": "Louis Vuitton x Murakami Spell on You Cherry",
+      "value_usd": 410
+    },
+    {
+      "tier": "Epic",
+      "odds_percent": 0.23,
+      "name": "Tiffany & Co. Rose Gold eau de parfum",
+      "value_usd": 185
+    },
+    {
+      "tier": "Epic",
+      "odds_percent": 0.55,
+      "name": "Ralph Lauren Romance eau de parfum",
+      "value_usd": 70
+    },
+    {
+      "tier": "Epic",
+      "odds_percent": 0.58,
+      "name": "Chanel Rouge Coco lip colour",
+      "value_usd": 65
+    },
+    {
+      "tier": "Legendary",
+      "odds_percent": 0.51,
+      "name": "30 Mistees",
+      "mistees": 30
+    },
+    {
+      "tier": "Epic",
+      "odds_percent": 2.6,
+      "name": "10 Mistees",
+      "mistees": 10
+    },
+    {
+      "tier": "Rare",
+      "odds_percent": 6.2,
+      "name": "5 Mistees",
+      "mistees": 5
+    },
+    {
+      "tier": "Uncommon",
+      "odds_percent": 8.2,
+      "name": "4 Mistees",
+      "mistees": 4
+    },
+    {
+      "tier": "Uncommon",
+      "odds_percent": 21.0,
+      "name": "3 Mistees",
+      "mistees": 3
+    },
+    {
+      "tier": "Free Spin",
+      "odds_percent": 2.0,
+      "name": "2 Free Spins + 2 Mistees",
+      "mistees": 2,
+      "free_spin": true,
+      "free_spins": 2
+    },
+    {
+      "tier": "Common",
+      "odds_percent": 31.0,
+      "name": "2 Mistees",
+      "mistees": 2
+    },
+    {
+      "tier": "Free Spin",
+      "odds_percent": 9.0,
+      "name": "Free Spin + 1 Mistee",
+      "mistees": 1,
+      "free_spin": true,
+      "free_spins": 1
+    },
+    {
+      "tier": "Common",
+      "odds_percent": 18.0,
+      "name": "1 Mistee",
+      "mistees": 1
+    }
+  ],
+  "derived": {
+    "odds_sum_percent": 100.162,
+    "p_physical_percent": 1.652,
+    "one_in_for_any_item": 60.5,
+    "ev_items_at_listed_usd": 3.77,
+    "expected_mistees_per_open_incl_free_spins": 2.83,
+    "mistee_face_value_usd": 1.0,
+    "mistee_real_value_usd_if_respent_on_boxes": {
+      "items_at_listed": 0.52,
+      "items_at_70pct_resale": 0.37
+    }
+  }
+}

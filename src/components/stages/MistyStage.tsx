@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type { CatalogItem, MistyBox, MistyConfig, MistyOutcome, MistySpin } from "@/engine/types";
 import { MISTY_BOXES, MistyOpener, buildTable, itemOddsRatio, lookup, mistyBox, mistyMath, playerWeights, verifyMistySpin, type MistyMath, type MistyTable } from "@/engine/labs/misty";
 import { makeRng } from "@/engine/rng";
@@ -240,6 +241,13 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
 
   return (
     <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-accent-soft px-3 py-2 text-sm">
+        <Icon name="ph:book-open-text" size={16} />
+        <span>How a Misty box works, in plain words: the logic, the table, the maths, the sources and a critique.</span>
+        <Link href="/docs/misty" className="btn ml-auto no-underline">
+          Read the explanation
+        </Link>
+      </div>
       {/* the boxes, as the site lists them */}
       <div className="flex gap-2 overflow-x-auto pb-1">
         {MISTY_BOXES.map((b) => {

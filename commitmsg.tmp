@@ -1,0 +1,14 @@
+Misty focus: only the Mystery boxes tab; new /docs/misty explanation page with live sums, sources and critique
+
+- operators: Research view, Mistees economy and Competitions moved under
+  hiddenFeatures (kept in the code, not shown as tabs)
+- new page /docs/misty: the whole mechanism in plain words with every sum
+  computed from the captured tables (thirteen boxes, one open step by step,
+  the Little Box example, the Timepiece table with worth x chance per row
+  and totals against the price, the Rolex knob, the Mistee loop value,
+  free spins, what the check proves), a sources table with links to the
+  live pages and the saved captures, what was not done, and a critique
+- captures served from public/captures; nav entry "Misty, explained";
+  banner on the Misty page; README
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

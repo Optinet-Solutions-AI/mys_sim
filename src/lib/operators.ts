@@ -69,6 +69,8 @@ export interface OperatorDef {
   id: string;
   name: string;
   kind: "operator" | "ours" | "adjacent" | "research";
+  /** features kept in the code but not shown as tabs for now */
+  hiddenFeatures?: FeatureDef[];
   tagline: string;
   description: string;
   icon: string;
@@ -525,6 +527,8 @@ export const OPERATORS: OperatorDef[] = [
           { id: "parisian", name: "The Parisian Suite · $50", config: mistyConfigFor("parisian-suite") },
         ],
       },
+    ],
+    hiddenFeatures: [
       {
         key: "misty-boxes-generic",
         lab: "mystery-box",
