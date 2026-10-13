@@ -63,3 +63,39 @@ export function Info({ children, size = 14, className = "" }: { children: ReactN
     </span>
   );
 }
+
+/** Wraps any element; on hover or focus a fixed-position tooltip with the given text appears below it, never clipped. */
+export function HoverTip({ tip, children, className = "" }: { tip: string; children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const pop = useRef<HTMLSpanElement>(null);
+  const [open, setOpen] = useState(false);
+  const [style, setStyle] = useState<CSSProperties>({ position: "fixed", top: -9999, left: 0 });
+  useLayoutEffect(() => {
+    if (!open || !ref.current || !pop.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const p = pop.current.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const fitsBelow = r.bottom + 6 + p.height <= vh;
+    const top = fitsBelow ? r.bottom + 6 : Math.max(8, r.top - 6 - p.height);
+    let left = r.left;
+    if (left + p.width > vw - 8) left = Math.max(8, vw - 8 - p.width);
+    setStyle({ position: "fixed", top, left, maxWidth: Math.min(360, vw - 16) });
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true);
+    return () => window.removeEventListener("scroll", close, true);
+  }, [open]);
+  return (
+    <span ref={ref} className={`inline-flex min-w-0 items-center ${className}`} tabIndex={0} onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)} onFocus={() => setOpen(true)} onBlur={() => setOpen(false)}>
+      {children}
+      {open && (
+        <span ref={pop} className="info-pop info-pop-fixed" role="tooltip" style={style}>
+          {tip}
+        </span>
+      )}
+    </span>
+  );
+}

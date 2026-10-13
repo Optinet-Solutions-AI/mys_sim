@@ -7,6 +7,7 @@ import { makeRng } from "@/engine/rng";
 import { mistyConfigFor } from "@/lib/mistyPresets";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { Badge, Button, Card, Info, Td, Th } from "../ui";
+import { HoverTip } from "../InfoPop";
 import { Icon } from "../Icon";
 import { ItemTile } from "../ItemTile";
 import { CountUp } from "../lab/CountUp";
@@ -403,12 +404,12 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
                           <span className="misty-row-icon" style={{ background: RARITY_HEX[e.outcome.rarity] ?? "#5b6472" }}>
                             <Icon name={iconFor(e.outcome)} size={14} />
                           </span>
-                          <span className="misty-name" title={e.outcome.label}>
-                            {e.outcome.label}
-                          </span>
+                          <HoverTip tip={`${e.outcome.label} · ${e.outcome.kind === "item" ? money(e.outcome.valueUsd ?? 0) : `${e.outcome.mistees} Mistees${e.outcome.freeSpins ? ` + ${e.outcome.freeSpins} free spin${e.outcome.freeSpins > 1 ? "s" : ""}` : ""}`} · odds ${pctSmart(e.percent / table.total)} · 1 in ${e.percent > 0 ? num(Math.round(table.total / e.percent)) : "∞"}`}>
+                            <span className="misty-name">{e.outcome.label}</span>
+                          </HoverTip>
                         </span>
                       </Td>
-                      <Td right mono>{e.outcome.kind === "item" ? `${money(e.outcome.valueUsd ?? 0)}+` : e.outcome.kind === "bonus" ? `${e.outcome.mistees} M + spins` : `${e.outcome.mistees} M`}</Td>
+                      <Td right mono>{e.outcome.kind === "item" ? money(e.outcome.valueUsd ?? 0) : e.outcome.kind === "bonus" ? `${e.outcome.mistees} M + spins` : `${e.outcome.mistees} M`}</Td>
                       <Td right mono>{pctSmart(e.percent / table.total)}</Td>
                       <Td right mono>{e.percent > 0 ? num(Math.round(table.total / e.percent)) : "never"}</Td>
                     </tr>
