@@ -157,7 +157,7 @@ Rules the API must enforce: client seed only before `paid`; spin only once and o
 - Odds edits create a new table version; nothing is edited in place. Store who, when, why.
 - Validation: every outcome present, percents ≥ 0, sum = 100 ± 1e-6, every item outcome has a value, free-spin
   outcomes have `freeSpins ≥ 1`.
-- Show the per-open maths on save: Σ(value × percent) on screen and real, against the price (the simulator's
+- Show the per-open maths on save: value × percent for every row, added up, on screen and real, against the price (the simulator's
   "The maths of this box" table is the reference).
 - Publish every activated table hash with its activation time to a public, append-only log (`table_publication_log`,
   exposed at `GET /v1/tables/log`). A player can then check that the hash on their open was the public one at that

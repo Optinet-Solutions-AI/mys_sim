@@ -194,8 +194,8 @@ export default function MistyDocsPage() {
             items={[
               ["Box, Price", "Misty's name and the price of one open."],
               ["A piece drops", <>Sum of the item rows&apos; chances, written as 1 in (100 ÷ sum). Timepiece: {fmtPct(m.pItem * 100)} = {oneIn(m.pItem)}. Purpose: how rare a real prize is.</>],
-              ["Pieces, value per open", <>Σ listed value × chance over the item rows. Timepiece: {money(m.evItems, 2)}. Purpose: what the items cost the operator per open.</>],
-              ["Mistees per open", <>Σ Mistees × chance over the credit rows; free spins at {be.toFixed(2)} Mistees each. Timepiece: {m.evMistees.toFixed(2)}.</>],
+              ["Pieces, value per open", <>For each item row, listed value × chance; add the rows up. Timepiece: {money(m.evItems, 2)}. Purpose: what the items cost the operator per open.</>],
+              ["Mistees per open", <>For each credit row, Mistees × chance; add the rows up; free spins count as {be.toFixed(2)} Mistees each. Timepiece: {m.evMistees.toFixed(2)}.</>],
               ["Pays back per open", <>Pieces + Mistees × {money(V.misteeFace)}. Timepiece: {money(m.evItems, 2)} + {m.evMistees.toFixed(2)} × {money(V.misteeFace)} = {money(m.payFace, 2)}. {money(V.misteeFace)} is Misty&apos;s own figure (section 11).</>],
               ["Return on screen", <>Pays back ÷ price. Timepiece: {money(m.payFace, 2)} ÷ {money(tp.price)} = {pct(m.returnFace)} (the RTP). The box keeps the rest: {money(tp.price - m.payFace, 2)} of {money(tp.price)}.</>],
               ["Return really", <>Same sum with a Mistee at {money(V.misteeReal)} (section 6) and pieces at {pct(V.itemRealized, 0)} of listed. Timepiece: {money(m.evItems * V.itemRealized, 2)} + {m.evMistees.toFixed(2)} × {money(V.misteeReal)} = {money(m.payReal, 2)}; ÷ {money(tp.price)} = {pct(m.returnReal)}. The gap to the previous column is the Mistee valuation.</>],

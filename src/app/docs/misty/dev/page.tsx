@@ -349,7 +349,7 @@ export default function MistyDevPage() {
           <li>Odds edits create a new version; nothing is edited in place. Store who, when, why.</li>
           <li>Validation on save: every outcome present, percents ≥ 0, sum = 100 ± 1e-6, item outcomes have a value, free-spin outcomes have free spins ≥ 1.</li>
           <li>
-            Show the per-open maths on save, exactly as the simulator&apos;s &quot;The maths of this box&quot; table: Σ(value × percent) on screen and in real money against the price. The function is <code>mistyMath</code> in the kit.
+            Show the per-open maths on save, exactly as the simulator&apos;s &quot;The maths of this box&quot; table: value × percent for every row, added up, on screen and in real money, against the price. The function is <code>mistyMath</code> in the kit.
           </li>
           <li>Publish every activated table hash with its activation time to the public log. A player can then check that the hash on their open was the public one at that moment. This is the cheapest honest answer to &quot;did everyone get the same odds&quot;.</li>
           <li>Segments (per-player tables) are the one thing the proof cannot reveal. Either do not build them, or publish their hashes too. Product decision, section 11.</li>

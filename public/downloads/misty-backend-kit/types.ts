@@ -29,6 +29,8 @@ export interface MistyBox {
   outcomes: MistyOutcome[];
   bonus: MistyBonusEntry[];
   fairness: string;
+  /** what the credit unit is called (Mistees on Misty); builder boxes may rename it */
+  creditName?: string;
 }
 /** A player (or player segment) in the back office: a share of the opens and, optionally, their own odds. */
 export interface MistyPlayer {
@@ -56,6 +58,8 @@ export interface MistyConfig {
   /** who is spinning in live play */
   activePlayerId: string;
   run: { opens: number; verifySample: number };
+  /** a box designed in the builder instead of one of the live boxes; boxSlug must equal customBox.slug */
+  customBox?: MistyBox;
 }
 export interface MistyBonusSpin {
   nonce: number;

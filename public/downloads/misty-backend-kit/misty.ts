@@ -39,6 +39,11 @@ export function mistyBox(slug: string): MistyBox {
   return b;
 }
 
+/** The box a config refers to: a builder box carried in the config, or one of the live boxes. */
+export function boxOf(cfg: Pick<MistyConfig, "boxSlug" | "customBox">): MistyBox {
+  return cfg.customBox && cfg.customBox.slug === cfg.boxSlug ? cfg.customBox : mistyBox(cfg.boxSlug);
+}
+
 /** The page's own odds, percent per outcome id. */
 export function liveWeights(box: MistyBox): Record<string, number> {
   return Object.fromEntries(box.outcomes.map((o) => [o.id, o.weight]));
@@ -186,6 +191,23 @@ export function scaleItemOdds(box: MistyBox, base: Record<string, number>, m: nu
   return out;
 }
 
+/** Scale the piece odds until the box pays back the target share of its price on screen (binary search on the multiplier). */
+export function fitItemOdds(box: MistyBox, base: Record<string, number>, targetReturn: number, v: MistyValues): Record<string, number> {
+  const ret = (m: number) => mistyMath(box, scaleItemOdds(box, base, m), box.bonus, v).returnFace;
+  const increasing = ret(2) >= ret(0.5);
+  let lo = 0;
+  let hi = 1;
+  const below = (m: number) => (increasing ? ret(m) < targetReturn : ret(m) > targetReturn);
+  let guard = 0;
+  while (below(hi) && hi < 1e6 && guard++ < 40) hi *= 2;
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    if (below(mid)) lo = mid;
+    else hi = mid;
+  }
+  return scaleItemOdds(box, base, hi);
+}
+
 /** Ratio of a player's item odds to the box's item odds (1 = same). */
 export function itemOddsRatio(box: MistyBox, base: Record<string, number>, player?: Record<string, number>): number {
   if (!player) return 1;
@@ -220,7 +242,7 @@ export class MistyOpener {
     readonly cfg: MistyConfig,
     seedLabel: string | number,
   ) {
-    this.box = mistyBox(cfg.boxSlug);
+    this.box = boxOf(cfg);
     this.rng = makeRng("sfc32", `misty:${cfg.boxSlug}:${seedLabel}`);
     this.nextSeed = this.rng.hex(32);
     this.bonus = buildBonus(cfg.bonus);
@@ -290,7 +312,7 @@ export class MistyOpener {
 /** Recompute an open from what the player was shown: seed against its hash, digest, roll, band, free spins. */
 export function verifyMistySpin(spin: MistySpin, cfg: MistyConfig): { ok: boolean; reason?: string } {
   if (!cfg.provablyFair || !spin.serverHash) return { ok: false, reason: "no commitment: nothing to check" };
-  const box = mistyBox(spin.boxSlug);
+  const box = cfg.customBox && cfg.customBox.slug === spin.boxSlug ? cfg.customBox : mistyBox(spin.boxSlug);
   if (sha256Hex(spin.serverSeed) !== spin.serverHash) return { ok: false, reason: "seed does not match the hash shown before payment" };
   const table = buildTable(box, playerWeights(cfg, spin.playerId).weights);
   if (table.hash !== spin.tableHash) return { ok: false, reason: "odds table differs from the one frozen onto the open" };
@@ -307,7 +329,7 @@ export function verifyMistySpin(spin: MistySpin, cfg: MistyConfig): { ok: boolea
 
 export function runMisty(cfg: MistyConfig, seed: number, onProgress?: Progress): MistyResult {
   const t0 = Date.now();
-  const box = mistyBox(cfg.boxSlug);
+  const box = boxOf(cfg);
   const opener = new MistyOpener(cfg, seed);
   const pick = makeRng("sfc32", `misty-players:${seed}`);
   const players: MistyPlayer[] = cfg.players.length ? cfg.players : [{ id: "guest", name: "Guest", share: 1 }];
