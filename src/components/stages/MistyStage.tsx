@@ -416,7 +416,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
                           </span>
                         </span>
                       </Td>
-                      <Td right mono>{e.outcome.kind === "item" ? `${money(e.outcome.valueUsd ?? 0)}+` : e.outcome.kind === "bonus" ? `${e.outcome.mistees} M + spins` : `${e.outcome.mistees} Mistees`}</Td>
+                      <Td right mono>{e.outcome.kind === "item" ? `${money(e.outcome.valueUsd ?? 0)}+` : e.outcome.kind === "bonus" ? `${e.outcome.mistees} M + spins` : `${e.outcome.mistees} M`}</Td>
                       <Td right mono>{pctSmart(e.percent / table.total)}</Td>
                       <Td right mono>{e.percent > 0 ? num(Math.round(table.total / e.percent)) : "never"}</Td>
                     </tr>
@@ -424,6 +424,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
               </tbody>
             </table>
           </div>
+          <div className="mt-1 text-[10px] text-ink-3">M = Mistees, site credit worth {money(cfg.misteeFace)} each on screen.</div>
           <div className="mt-2 flex flex-wrap gap-1 text-[11px]">
             <Badge>pays back {money(m.payFace, 2)} per open on screen = {pct(m.returnFace)}</Badge>
             <Badge tone="warn">really about {money(m.payReal, 2)} = {pct(m.returnReal)}</Badge>
