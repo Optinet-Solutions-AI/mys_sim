@@ -3,6 +3,8 @@ import { buildTable, liveWeights, mistyBox, mistyDigest, rollOf, lookup } from "
 import { sha256Hex } from "@/engine/hash";
 import { Badge, Card, Td, Th } from "@/components/ui";
 import { DevSandbox } from "@/components/DevSandbox";
+import { CopyBlock } from "@/components/CopyBlock";
+import { FRONTEND_PROMPT } from "@/lib/frontendPrompt";
 
 export const metadata = { title: "Misty for developers · Simulator" };
 
@@ -42,6 +44,7 @@ const TOC = [
   ["conformance", "9. Conformance and test vectors"],
   ["plan", "10. Implementation plan"],
   ["decisions", "11. Decisions for the main site"],
+  ["frontend-prompt", "12. Prompt for the front end"],
   ["sandbox", "API sandbox"],
 ] as const;
 
@@ -428,6 +431,17 @@ export default function MistyDevPage() {
         <div className="pt-1">
           <Badge>Kit v1.0 · 13 October 2026</Badge>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <H2 id="frontend-prompt">12. Prompt for the front end</H2>
+        <P>Paste this into a Claude session opened in the front-end repository. It carries the mechanic, the API calls in order, the hard rules, the screens, the copy rules and the questions to ask, with links back to this kit.</P>
+        <CopyBlock text={FRONTEND_PROMPT} filename="misty-frontend-prompt.txt" />
+        <ul className="max-w-[78ch] list-disc space-y-1 pl-5 text-sm leading-6 text-ink-2">
+          <li>The links point at this site. If the other session cannot open them, attach the kit zip from section 2.</li>
+          <li>The prompt forbids computing outcomes in the browser and forbids near-miss effects. Keep both lines if you edit it.</li>
+          <li>It is also in the kit as FRONTEND_PROMPT.md.</li>
+        </ul>
       </section>
 
       <section className="space-y-3">

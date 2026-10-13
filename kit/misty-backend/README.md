@@ -34,6 +34,7 @@ Out of scope here: competitions/raffles, payments provider integration, shipping
 | `server-reference.ts` | A minimal production flow: create open (commit), set client seed, pay, spin (resolve + reveal), verify. Uses `crypto.randomBytes` for the server seed. Storage is an interface you implement. |
 | `schema.sql` | Postgres DDL: boxes, versioned table snapshots, segments, opens, bonus spins, item awards, credit ledger, publication log. |
 | `openapi.yaml` | The HTTP API: player endpoints, public verify, admin (back office). |
+| `FRONTEND_PROMPT.md` | A ready prompt to paste into a Claude session in the front-end repo: mechanic, API order, hard rules, screens, copy rules, questions. |
 | `test-vectors.json` | Known inputs and the exact outputs your implementation must reproduce. |
 | `misty-boxes-2026-10-12.json` | The raw capture the generated data came from, with the page strings. |
 
