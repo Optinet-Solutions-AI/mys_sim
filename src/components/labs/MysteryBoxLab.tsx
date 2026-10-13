@@ -132,14 +132,15 @@ export function MysteryBoxLab({ variant, operator }: { variant: FeatureDef; oper
         rigCount={rigs.length}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
+        chips={variant.minimal ? [] : [
           { label: `${money(cfg.box.price)} box · ${cfg.box.items.length} items · ${cfg.box.model === "pool" ? "finite drop" : cfg.box.model === "tiered" ? "tier-first" : `RTP on ${cfg.box.valueLayer}`}`, section: "box" },
           { label: algoLabel(cfg.algo), section: "algo" },
           rigs.length ? { label: `Rigs: ${rigs.join(", ")}`, section: "rigs", tone: "bad" } : { label: "No rigs", section: "rigs" },
           { label: `${num(sizes.opens)} opens · seed ${seed}`, section: "run", tone: "accent" },
         ]}
       >
-        <MysteryBoxStage cfg={cfg} seed={seed} onSettings={openSettings} featureKey={variant.key} />
+        <MysteryBoxStage cfg={cfg} seed={seed} onSettings={openSettings} featureKey={variant.key} minimal={variant.minimal} />
+        {!variant.minimal && (
         <SimulateBar
           label={`Run ${num(sizes.opens)} opens`}
           hint="Stated vs observed odds, realized return with its error bar, proof checks and the detector, computed in a background worker."
@@ -151,7 +152,8 @@ export function MysteryBoxLab({ variant, operator }: { variant: FeatureDef; oper
           onCancel={sim.cancel}
           onSettings={() => openSettings("run")}
         />
-        {result && lastCfg && (
+        )}
+        {!variant.minimal && result && lastCfg && (
           <ResultsSection title="Simulation results" meta={`${num(result.opens)} opens · seed ${lastSeed} · ${lastCfg.box.name} · ${algoLabel(lastCfg.algo)}`} stale={stale} saved={saved} onSave={save} onReport={report}>
             <MysteryBoxResults cfg={lastCfg} r={result} />
           </ResultsSection>

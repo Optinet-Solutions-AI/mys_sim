@@ -9,7 +9,9 @@ import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { copyText } from "@/lib/download";
 import { Icon } from "../Icon";
 import { ItemTile, TierBadge } from "../ItemTile";
-import { Badge, Card, Info, Stat } from "../ui";
+import Link from "next/link";
+import { Badge, Card, Info, Stat, Td, Th } from "../ui";
+import { activeRigNames } from "@/lib/live";
 import { Reel, type ReelPoolEntry, type SpinInfo } from "../lab/Reel";
 import { BoxOpen, CardFlip, PackRip, TicketScratch, TierLadder } from "../lab/motifs";
 import { CountUp } from "../lab/CountUp";
@@ -116,7 +118,7 @@ function Viewers({ base }: { base: number }) {
   return <>{num(n)}</>;
 }
 
-export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: MysteryBoxConfig; seed: number; onSettings: (section?: string) => void; featureKey?: string }) {
+export function MysteryBoxStage({ cfg, seed, onSettings, featureKey, minimal = false }: { cfg: MysteryBoxConfig; seed: number; onSettings: (section?: string) => void; featureKey?: string; minimal?: boolean }) {
   const skin = useSkin();
   const key = useMemo(() => JSON.stringify([cfg.box, cfg.algo, cfg.rigs, seed]), [cfg.box, cfg.algo, cfg.rigs, seed]);
   const liveRef = useRef<{ key: string; live: LiveOpener | null; demo: LiveOpener | null; error: string | null } | null>(null);
@@ -324,6 +326,16 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
 
   return (
     <div className="space-y-4">
+      {minimal && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm">
+          <Link href="/docs/features#per-source" className="btn no-underline">
+            <Icon name="ph:book-open-text" size={16} /> Document
+          </Link>
+          <Link href="/build" className="btn no-underline">
+            <Icon name="ph:cube" size={16} /> Create Mystery Box
+          </Link>
+        </div>
+      )}
       {cfg.rigs.fakeLiveFeed && <LiveFeed pool={pool} price={price} perMinute={cfg.rigs.fakeLiveFeed.grailsPerMinute} />}
       <Card>
         <div className="flex flex-wrap items-center gap-3">
@@ -495,7 +507,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
       </Card>
 
       {last && !batch && (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className={`grid gap-4 ${minimal ? "" : "lg:grid-cols-2"}`}>
           <Card
             title={
               <>
@@ -554,6 +566,7 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
               </div>
             )}
           </Card>
+          {!minimal && (
           <Card
             title={
               <>
@@ -606,14 +619,84 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
               </dl>
             )}
           </Card>
+          )}
         </div>
+      )}
+
+      {minimal && last && !batch && (
+        <Card title="Analysis">
+          <div className="space-y-2">
+            <details className="acc">
+              <summary>
+                The maths of this box: how {money(price)} becomes {money(expectedValue(table, cfg.box.displayLayer), 2)} back
+                <Info>Every row costs the operator its worth multiplied by its chance. Add the rows up and you have what the box pays back per open on average.</Info>
+              </summary>
+              <div className="pt-3">
+                <GenericMaths cfg={cfg} table={table} price={price} lastId={last.item.id} />
+              </div>
+            </details>
+            <details className="acc">
+              <summary>How this result was decided, step by step</summary>
+              <div className="pt-3">
+                <GenericNarration cfg={cfg} table={table} price={price} last={last} />
+              </div>
+            </details>
+            <details className="acc">
+              <summary>
+                Was it fair? The check
+                <Info>The verifier recomputes the digest from the revealed seeds and looks the ticket up in the table. It proves the dice, not the table, the values or how the seeds were chosen.</Info>
+              </summary>
+              <div className="space-y-2 pt-3 text-sm text-ink-2">
+                {cfg.algo.scheme === "none" ? (
+                  <p>
+                    <b>Nothing to check.</b> No secret was locked in before the open: the site drew a number and showed a result. That is how the demo platform works out of the box; a commitment scheme can be switched on under the cog, &quot;Algorithm&quot;.
+                  </p>
+                ) : (
+                  <>
+                    <p>
+                      <b>What this proves:</b> the secret behind this open was fixed before the open and the ticket really comes from that secret plus the seed, so the result was not changed afterwards.
+                    </p>
+                    <p>
+                      <b>What it does not prove:</b> that every player gets the same table, that the values shown are real, or how the seeds were chosen.
+                    </p>
+                  </>
+                )}
+                <ProofBody cfg={cfg} table={table} last={last} />
+              </div>
+            </details>
+            <details className="acc">
+              <summary>The logic behind this box</summary>
+              <ol className="list-decimal space-y-2 pl-5 pt-3 text-sm text-ink-2">
+                <li>
+                  <b>The price is fixed first.</b> {cfg.box.name.split(" · ")[0]} costs {money(price)}. The operator types a target payout and the software sets the odds to fit under the price.
+                </li>
+                <li>
+                  <b>Every item has a chance, and the chances add up to 100.</b> {table.items.length} items share {num(table.T)} tickets; an item&apos;s chance is its tickets divided by the total.
+                </li>
+                <li>
+                  <b>Each item costs the operator its worth times its chance.</b> Added up, this box pays back {money(expectedValue(table, cfg.box.displayLayer), 2)} per open at the values shown ({pct(expectedValue(table, cfg.box.displayLayer) / price)}) and about {money(expectedValue(table, "realized"), 2)} in cash terms ({pct(expectedValue(table, "realized") / price)}).
+                </li>
+                <li>
+                  <b>Every open is its own roll.</b> {cfg.box.model === "pool" ? "This box is a finite drop: copies run out as they are won." : "Nothing is remembered between opens; no pool runs out; nobody&apos;s result changes anybody else&apos;s."}
+                </li>
+                <li>
+                  <b>Sell-back is credit, not money.</b> An item sold back becomes balance at the shown value; balance leaves the site only as a shipped item.
+                </li>
+                <li>
+                  <b>The check covers the dice, not the table.</b> {cfg.algo.scheme === "none" ? "Here nothing is committed, so there is no check at all." : "A committed secret proves the result was not changed after the open; it does not prove every player was given the same table."}
+                  {activeRigNames(cfg.rigs).length ? ` Research rigs active on this page: ${activeRigNames(cfg.rigs).join(", ")}.` : ""}
+                </li>
+              </ol>
+            </details>
+          </div>
+        </Card>
       )}
 
       <OperatorPanel skin={skin} cfg={cfg} live={live} last={last && !lastDemo ? last : null} history={history} spent={tally.spent} />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <Card
-          title={`In the ${T.unit}`}
+          title="Box Content and Odds"
           actions={
             <button type="button" className="chip" onClick={() => onSettings("box")}>
               edit items and odds
@@ -667,5 +750,184 @@ export function MysteryBoxStage({ cfg, seed, onSettings, featureKey }: { cfg: My
         </Card>
       </div>
     </div>
+  );
+}
+
+
+type StageTable = { T: number; items: { itemId: string; weight: number; item: CatalogItem }[] };
+
+/** Worth × chance for every item, the total, the price and what the operator keeps, at the shown values and in cash. */
+function GenericMaths({ cfg, table, price, lastId }: { cfg: MysteryBoxConfig; table: StageTable; price: number; lastId?: string }) {
+  const rows = [...table.items].map((r) => ({ r, share: r.weight / table.T, shown: r.item[cfg.box.displayLayer], cash: r.item.realized })).sort((a, b) => b.share - a.share);
+  const payShown = rows.reduce((s, x) => s + x.share * x.shown, 0);
+  const payCash = rows.reduce((s, x) => s + x.share * x.cash, 0);
+  return (
+    <div className="space-y-3 text-sm">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-xs">
+          <thead>
+            <tr>
+              <Th>Item</Th>
+              <Th right>Worth (shown)</Th>
+              <Th right>×</Th>
+              <Th right>Chance</Th>
+              <Th right>1 in</Th>
+              <Th right>= costs per open</Th>
+              <Th right>in cash</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(({ r, share, shown, cash }) => (
+              <tr key={r.itemId} className={`border-t border-line ${r.itemId === lastId ? "bg-accent-soft" : ""}`}>
+                <Td>
+                  <span className="flex items-center gap-2">
+                    <ItemTile item={r.item} size={22} />
+                    <span className="misty-name" title={`${r.item.brand} ${r.item.name}`}>
+                      {r.item.name}
+                    </span>
+                  </span>
+                </Td>
+                <Td right mono>{money(shown)}</Td>
+                <Td right>×</Td>
+                <Td right mono>{pctSmart(share)}</Td>
+                <Td right mono>{share > 0 ? num(Math.round(1 / share)) : "never"}</Td>
+                <Td right mono>{money(share * shown, 2)}</Td>
+                <Td right mono>{money(share * cash, 2)}</Td>
+              </tr>
+            ))}
+            <tr className="border-t-2 border-ink bg-accent-soft font-semibold">
+              <Td>Total: pays back per open</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>100%</Td>
+              <Td right> </Td>
+              <Td right mono>{money(payShown, 2)}</Td>
+              <Td right mono>{money(payCash, 2)}</Td>
+            </tr>
+            <tr className="border-t border-line">
+              <Td>Price of the box</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>{money(price, 2)}</Td>
+              <Td right mono>{money(price, 2)}</Td>
+            </tr>
+            <tr className="border-t border-line font-semibold">
+              <Td>Operator keeps per open (price − pays back)</Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right> </Td>
+              <Td right mono>
+                <span className={price - payShown >= 0 ? "text-good" : "text-bad"}>{money(price - payShown, 2)}</span> <span className="text-ink-3">({pct(price > 0 ? (price - payShown) / price : 0)})</span>
+              </Td>
+              <Td right mono>
+                <span className={price - payCash >= 0 ? "text-good" : "text-bad"}>{money(price - payCash, 2)}</span> <span className="text-ink-3">({pct(price > 0 ? (price - payCash) / price : 0)})</span>
+              </Td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-ink-3">
+        Shown = the value the page displays ({cfg.box.displayLayer}); cash = what the item fetches when sold on. Return = pays back ÷ price: {pct(payShown / price)} at shown values, {pct(payCash / price)} in cash.
+      </p>
+    </div>
+  );
+}
+
+/** Every step of one open in plain words, with the ticket and the band it fell in. */
+function GenericNarration({ cfg, table, price, last }: { cfg: MysteryBoxConfig; table: StageTable; price: number; last: LiveOpen }) {
+  const T = last.rec.poolT ?? table.T;
+  const roll = (last.rec.ticket / T) * 100;
+  let acc = 0;
+  let band: { from: number; to: number } | null = null;
+  for (const r of table.items) {
+    const from = acc;
+    acc += r.weight;
+    if (r.itemId === last.item.id && !band) band = { from: (from / table.T) * 100, to: (acc / table.T) * 100 };
+  }
+  const none = cfg.algo.scheme === "none";
+  const steps: React.ReactNode[] = [
+    <>
+      You paid <b>{money(price)}</b> for <b>{cfg.box.name.split(" · ")[0]}</b>.
+    </>,
+    none ? (
+      <>No secret was locked in before the open. The site drew a random number on its own, so there is nothing to check afterwards.</>
+    ) : (
+      <>
+        Before the open the site locked in a secret number and showed a scrambled copy of it. Your seed was <code>{last.rec.clientSeed}</code>, and this was spin number <b>{last.rec.nonce}</b> under that secret.
+      </>
+    ),
+    <>
+      The result is ticket <b>{num(last.rec.ticket)}</b> of {num(T)}: that is <b>{roll.toFixed(3)}</b> on a line from 0 to 100. Every ticket is equally likely.
+    </>,
+    <>
+      The odds table cuts that line into {table.items.length} bands, one per item, each as wide as its chance.{band ? <> The ticket falls in the band from <b>{band.from.toFixed(3)}</b> to <b>{band.to.toFixed(3)}</b>, which belongs to <b>{last.item.name}</b>.</> : null}
+      {cfg.box.model === "pool" ? " (Finite drop: the bands are the copies left at the moment of the open.)" : ""}
+    </>,
+    <>
+      <b>How often this happens:</b> {last.item.name} has a chance of {pctSmart(oddsShare(table, last.item.id))}, about {oneIn(oddsShare(table, last.item.id))}.
+    </>,
+    <>
+      <b>What it is worth:</b> shown as {money(last.display)}; pays {money(last.payout)} into balance ({cfg.box.valueLayer}); about {money(last.item.realized)} in cash. This open in cash terms:{" "}
+      <b className={last.item.realized >= price ? "text-good" : "text-bad"}>
+        {last.item.realized >= price ? "+" : "−"}
+        {money(Math.abs(last.item.realized - price))}
+      </b>
+      .
+    </>,
+    none ? null : <>The secret is now revealed. The verifier recomputed the open: {last.reason}. A new secret is used for the next open according to the scheme&apos;s rotation rule.</>,
+  ];
+  return (
+    <ol className="list-decimal space-y-2 pl-5 text-sm text-ink-2">
+      {steps.filter(Boolean).map((st, i) => (
+        <li key={i}>{st}</li>
+      ))}
+    </ol>
+  );
+}
+
+function oddsShare(table: StageTable, itemId: string): number {
+  const w = table.items.filter((r) => r.itemId === itemId).reduce((s, r) => s + r.weight, 0);
+  return table.T > 0 ? w / table.T : 0;
+}
+
+/** The proof record as the player sees it: hashes, seeds, ticket, verifier verdict. */
+function ProofBody({ cfg, table, last }: { cfg: MysteryBoxConfig; table: StageTable; last: LiveOpen }) {
+  return (
+    <>
+            {cfg.algo.scheme === "none" ? (
+              <p className="flex items-center gap-1 text-sm text-ink-2">
+                No commitment published. <Info>The player gets a result and nothing to check it against.</Info>
+              </p>
+            ) : (
+              <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 font-mono text-[11px]">
+                <dt className="text-ink-3">server hash</dt>
+                <dd className="truncate">{last.rec.serverHash}</dd>
+                <dt className="text-ink-3">client seed</dt>
+                <dd className="truncate">{last.rec.clientSeed}</dd>
+                <dt className="text-ink-3">nonce</dt>
+                <dd>{last.rec.nonce}</dd>
+                {last.rec.beaconRound !== undefined && (
+                  <>
+                    <dt className="text-ink-3">beacon</dt>
+                    <dd className="truncate">
+                      round {last.rec.beaconRound} · {last.rec.beaconValue}
+                    </dd>
+                  </>
+                )}
+                <dt className="text-ink-3">digest</dt>
+                <dd className="truncate">{last.rec.digest}</dd>
+                <dt className="text-ink-3">ticket</dt>
+                <dd>
+                  {num(last.rec.ticket)} of {num(last.rec.poolT ?? table.T)}
+                  {last.rec.tierId && <span className="text-ink-3"> · tier {last.rec.tierId}</span>}
+                </dd>
+                <dt className="text-ink-3">verifier</dt>
+                <dd className={last.verified ? "text-good" : "text-bad"}>{last.reason}</dd>
+              </dl>
+            )}
+    </>
   );
 }

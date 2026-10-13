@@ -370,13 +370,7 @@ export function MistyLab({ variant, operator }: { variant: FeatureDef; operator:
         rigCount={ownOdds}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
-          { label: `${box.name} · ${box.price > 0 ? money(box.price) : "free"}`, section: "box" },
-          { label: `item ${oneIn(m.pItem)} · pays ${pct(m.returnFace)} at face, ${pct(m.returnReal)} really${edited ? " · odds edited" : ""}`, section: "box", tone: edited ? "bad" : undefined },
-          { label: ownOdds ? `${cfg.players.length} players · ${ownOdds} with own odds` : `${cfg.players.length} players · same odds`, section: "players", tone: ownOdds ? "bad" : undefined },
-          { label: cfg.provablyFair ? "secret committed per open" : "no proof", section: "algo", tone: cfg.provablyFair ? undefined : "bad" },
-          ...(SHOW_SIM ? [{ label: `${num(cfg.run.opens)} opens · seed ${seed}`, section: "run", tone: "accent" as const }] : []),
-        ]}
+        chips={[]}
       >
         <MistyStage cfg={cfg} seed={seed} onChange={setCfg} onSettings={openSettings} />
         {SHOW_SIM && (

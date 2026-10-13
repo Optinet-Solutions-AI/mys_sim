@@ -154,7 +154,7 @@ export function UpgraderLab({ variant, operator }: { variant: FeatureDef; operat
         rigCount={rigs.length}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
+        chips={variant.minimal ? [] : [
           { label: upg ? `Upgrader · stake ${money(cfg.stake)}` : `Deals · chance ${pct(Math.min(cfg.maxChance, cfg.chance), 0)} (cap ${pct(cfg.maxChance, 0)})`, section: "terms" },
           { label: `stated edge ${pct(cfg.edge)} · value at ${cfg.valueLayer}`, section: "terms" },
           { label: algoLabel(cfg.algo), section: "algo" },

@@ -737,6 +737,9 @@ export function BuildBox() {
           <h1 className="text-2xl font-semibold">Build your own mystery box</h1>
         </div>
         <span className="ml-auto flex items-center gap-2 text-xs">
+          <Link href="/operators/misty" className="btn no-underline">
+            ← Back to Misty
+          </Link>
           <button type="button" className={`chip ${mode === "guided" ? "chip-accent" : ""}`} onClick={() => setMode("guided")}>
             step by step
           </button>

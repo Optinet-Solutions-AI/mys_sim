@@ -63,6 +63,8 @@ export interface FeatureDef {
   sellbackOptions?: string[];
   /** retention: extra cards shown (missions, freeEntry, spendCap) */
   retentionExtras?: string[];
+  /** Misty-style page: no chips under the title, simulation hidden, analysis folded after the open */
+  minimal?: boolean;
 }
 
 export interface OperatorDef {
@@ -99,15 +101,16 @@ const FUKUBUKURO_BOX = { ...LUCKY_BAG, name: "Fukubukuro lucky bag · $170 · 10
 export const OPERATORS: OperatorDef[] = [
   {
     id: "vendor",
-    name: "Vendor platform",
+    name: "Evo Verse",
     kind: "operator",
-    tagline: "The B2B mystery-box software from the demo call",
+    tagline: "",
     description: "What the vendor sells: boxes with a 90% return knob on listed values and no commitment, sell-back into balance with withdrawal only through items, battles against bots, a retention system of daily boxes, races and affiliates, and Deals.",
     icon: "fluent:briefcase",
     sources: "Dossier 2 §3.5; vendor-feature-inventory.md",
     features: [
       {
         key: "vendor-boxes",
+        minimal: true,
         lab: "mystery-box",
         lockModel: true,
         rigIds: GENERIC_RIGS,
@@ -129,6 +132,7 @@ export const OPERATORS: OperatorDef[] = [
       },
       {
         key: "vendor-sellback",
+        minimal: true,
         lab: "sellback",
         sellbackOptions: [],
         sections: ["economy", "population", "box", "algo", "rigs"],
@@ -146,6 +150,7 @@ export const OPERATORS: OperatorDef[] = [
       },
       {
         key: "vendor-battles",
+        minimal: true,
         lab: "battles",
         modes: VENDOR_MODES,
         rigIds: BATTLE_RIGS,
@@ -161,6 +166,7 @@ export const OPERATORS: OperatorDef[] = [
       },
       {
         key: "vendor-retention",
+        minimal: true,
         lab: "retention",
         retentionExtras: [],
         rigIds: GENERIC_RIGS,
@@ -176,6 +182,7 @@ export const OPERATORS: OperatorDef[] = [
       },
       {
         key: "vendor-deals",
+        minimal: true,
         lab: "upgrader",
         lockMode: true,
         rigIds: GENERIC_RIGS,

@@ -182,7 +182,7 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
         rigCount={rigs.length}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
+        chips={variant.minimal ? [] : [
           { label: coin ? `Coinflip · edge ${Math.round((cfg.coinflipEdge ?? 0) * 100)}% · stake ${money(cfg.boxes[0]?.price ?? 0)}` : `${mode.name} · ${cfg.players} players · ${bots} bot${bots === 1 ? "" : "s"}`, section: "battle" },
           ...(coin ? [] : [{ label: `${cfg.boxes.length} round${cfg.boxes.length === 1 ? "" : "s"} · entry ${money(cfg.boxes.reduce((a, b) => a + b.price, 0))}`, section: "boxes" }]),
           { label: algoLabel(cfg.algo), section: "algo" },

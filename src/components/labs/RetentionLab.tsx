@@ -204,7 +204,7 @@ export function RetentionLab({ variant, operator }: { variant: FeatureDef; opera
         rigCount={rigs.length}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
+        chips={variant.minimal ? [] : [
           { label: on.length ? `On: ${on.join(", ")}` : "No incentives on", section: "incentives" },
           { label: `Visitor model: ${Math.round(V.baseVisit * 100)}% base visit · ${Math.round(V.churnHazard * 100)}% churn after a loss`, section: "visitor" },
           { label: `${money(cfg.box.price)} box`, section: "box" },

@@ -264,7 +264,7 @@ export function SellbackLab({ variant, operator }: { variant: FeatureDef; operat
         rigCount={rigs.length}
         onSettings={openSettings}
         settingsOpen={settings.open}
-        chips={[
+        chips={variant.minimal ? [] : [
           { label: cfg.sellback.mode === "vendor" ? `Sell-back: credit at displayed value${cfg.sellback.haircut ? ` minus ${pct(cfg.sellback.haircut, 0)}` : ""}` : `Sell-back: cash at ${cfg.sellback.layer}${cfg.sellback.haircut ? ` minus ${pct(cfg.sellback.haircut, 0)}` : ""}`, section: "economy" },
           { label: cfg.withdrawal.mode === "cash" ? "Withdraw: cash" : `Withdraw: only through items ≥ ${money(cfg.withdrawal.minWithdraw)}`, section: "economy" },
           ...(optionIds.length ? [{ label: options.length ? `Options: ${options.join(", ")}` : "No options on", section: "options", tone: options.length ? ("accent" as const) : ("neutral" as const) }] : []),

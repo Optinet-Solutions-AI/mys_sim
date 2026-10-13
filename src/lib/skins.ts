@@ -70,7 +70,7 @@ export const SKINS: Record<string, Skin> = {
     motif: "boxopen",
     terms: { ...base, unit: "box", openCta: "Open box · {price}", openedTitle: "You got", wonTitle: "You won!" },
     panel: "vendor",
-    tagline: "White-label case site, as demoed",
+    tagline: "Evo Verse: white-label case site, as demoed",
   },
   icybox: {
     id: "icybox",
