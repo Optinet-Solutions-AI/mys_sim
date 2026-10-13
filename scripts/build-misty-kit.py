@@ -45,14 +45,7 @@ for name in ("README.md", "schema.sql", "openapi.yaml", "server-reference.ts", "
     files[name] = read(os.path.join(KIT, name))
 files["misty-boxes-2026-10-12.json"] = read(os.path.join(ROOT, "public", "captures", "misty-boxes-2026-10-12.json"))
 _fp = read(os.path.join(ROOT, "src", "lib", "frontendPrompt.ts"))
-files["FRONTEND_PROMPT.md"] = "# Prompt for the front-end session
-
-Paste everything below into a Claude session opened in the front-end repository.
-
----
-
-" + _fp[_fp.index("`") + 1 : _fp.rindex("`")] + "
-"
+files["FRONTEND_PROMPT.md"] = "# Prompt for the front-end session\n\nPaste everything below into a Claude session opened in the front-end repository.\n\n---\n\n" + _fp[_fp.index("`") + 1 : _fp.rindex("`")] + "\n"
 files["package.json"] = '{\n  "name": "misty-backend-kit",\n  "version": "1.0.0",\n  "private": true,\n  "type": "module",\n  "dependencies": { "@noble/hashes": "^2.4.0" },\n  "devDependencies": { "typescript": "^5.6.0", "tsx": "^4.19.0" }\n}\n'
 
 # rng.ts and metrics.ts import from ./types: make sure the names they need exist

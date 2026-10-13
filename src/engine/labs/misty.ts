@@ -348,6 +348,12 @@ export function runMisty(cfg: MistyConfig, seed: number, onProgress?: Progress):
   let itemValue = 0;
   let mistees = 0;
   let freeSpins = 0;
+  let cumFace = 0;
+  let cumReal = 0;
+  let dry = 0;
+  let longestDry = 0;
+  const curveStep = Math.max(1, Math.floor(N / 200));
+  const curve: { n: number; face: number; real: number }[] = [];
   for (let i = 0; i < N; i++) {
     let r = pick.next() * shareTotal;
     let p = players[players.length - 1];
@@ -373,6 +379,11 @@ export function runMisty(cfg: MistyConfig, seed: number, onProgress?: Progress):
     ps.mistees += s.totalMistees;
     freeSpins += s.freeSpins;
     if (sample.length < cfg.run.verifySample) sample.push(s);
+    cumFace += s.itemValue + s.totalMistees * cfg.misteeFace;
+    cumReal += s.itemValue * cfg.itemRealized + s.totalMistees * cfg.misteeReal;
+    if (s.kind === "item") dry = 0;
+    else if (++dry > longestDry) longestDry = dry;
+    if ((i + 1) % curveStep === 0 || i === N - 1) curve.push({ n: i + 1, face: cumFace / ((i + 1) * box.price || 1), real: cumReal / ((i + 1) * box.price || 1) });
     if (onProgress && (i & 1023) === 0) onProgress(i, N);
   }
   const base = mistyMath(box, cfg.weights, cfg.bonus, cfg);
@@ -429,6 +440,8 @@ export function runMisty(cfg: MistyConfig, seed: number, onProgress?: Progress):
     perPlayer,
     verifier,
     sample,
+    curve,
+    longestDry,
     elapsedMs: Date.now() - t0,
   };
 }

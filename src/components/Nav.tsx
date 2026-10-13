@@ -23,6 +23,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
     items: [
       { href: "/", label: "Overview", icon: "ph:house" },
       { href: "/build", label: "Build your own box", icon: "ph:cube" },
+      { href: "/simulate", label: "Simulator", icon: "ph:chart-bar" },
       { href: "/catalog", label: "Catalogue", icon: "ph:handbag" },
       { href: "/runs", label: "Run history", icon: "ph:clock-counter-clockwise" },
     ],

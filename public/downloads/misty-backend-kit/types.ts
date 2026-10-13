@@ -136,6 +136,10 @@ export interface MistyResult {
   perPlayer: MistyPlayerStat[];
   verifier: Verifier;
   sample: MistySpin[];
+  /** running return after n opens, about 200 points */
+  curve?: { n: number; face: number; real: number }[];
+  /** longest run of opens in a row without a physical item */
+  longestDry?: number;
   elapsedMs: number;
 }
 

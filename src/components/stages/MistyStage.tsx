@@ -248,6 +248,9 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
         <Link href="/build" className="btn no-underline">
           <Icon name="ph:cube" size={16} /> Create Mystery Box
         </Link>
+        <Link href={`/simulate?box=${cfg.boxSlug}`} className="btn no-underline">
+          <Icon name="ph:chart-bar" size={16} /> Simulator
+        </Link>
       </div>
       {/* the boxes, as the site lists them */}
       <div>
