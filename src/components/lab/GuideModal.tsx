@@ -38,7 +38,6 @@ export function GuideModal({ open, onClose, title, icon, bullets, extra }: { ope
           </ul>
           {extra && extra.length > 0 && (
             <div className="mt-5 border-t border-line pt-4">
-              <h3 className="mb-2 text-sm font-semibold">The words, in plain language</h3>
               <dl className="grid gap-2 md:grid-cols-2">
                 {extra.map((e) => (
                   <div key={e.title} className="rounded-lg border border-line bg-paper p-3 text-xs">

@@ -44,7 +44,7 @@ export function LabFrame({ doc, operator, featureKey, lab, chips, onSettings, ri
         ))}
       </div>
       {children}
-      <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: game mechanics`} icon="ph:user" bullets={g.player} extra={[{ title: "Source", text: doc.source }]} />
+      <GuideModal open={guide === "player"} onClose={() => setGuide(null)} title={`${operator} · ${doc.title}: game mechanics`} icon="ph:user" bullets={g.player} />
     </div>
   );
 }
