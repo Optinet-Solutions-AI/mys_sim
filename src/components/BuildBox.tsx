@@ -204,11 +204,11 @@ export function BuildBox() {
         <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Demo</div>
         <h1 className="text-2xl font-semibold">Build your own mystery box</h1>
         <p className="max-w-[78ch] text-sm text-ink-2">
-          Design a box the way Misty&apos;s back office would: a price, a list of things it can pay, a chance for each. The maths updates as you type, you can open the box with the same secret-and-seed mechanism, and you can run it thousands of times. Start from an example or from nothing. The{" "}
+          Set a price, add outcomes, set chances. Maths, open and run follow.{" "}
           <Link href="/docs/misty" className="text-accent-ink underline underline-offset-2">
-            explanation page
-          </Link>{" "}
-          says what every number means.
+            What the numbers mean
+          </Link>
+          .
         </p>
         <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
           <span className="text-ink-3">Start from</span>
@@ -233,21 +233,21 @@ export function BuildBox() {
       </header>
 
       {/* ---------- design ---------- */}
-      <Card title="1. Design the box">
+      <Card title="1. Design">
         <div className="grid gap-3 md:grid-cols-5">
           <Field label="Box name">
             <input className="w-full rounded-md border border-line bg-paper px-2 py-1 text-sm" value={box.name} onChange={(e) => setBox({ ...box, name: e.target.value })} />
           </Field>
-          <Field label="Price ($)" hint="What one open costs. Fixed first; the odds are tuned to fit under it.">
+          <Field label="Price ($)" hint="Cost of one open.">
             <NumberInput value={box.price} min={0} step={1} onChange={(v) => setBox({ ...box, price: Math.max(0, v) })} />
           </Field>
-          <Field label="Credit unit name" hint="Misty calls it Mistees. Credit is what most opens pay; it only buys more boxes.">
+          <Field label="Credit unit name" hint="Misty: Mistees.">
             <input className="w-full rounded-md border border-line bg-paper px-2 py-1 text-sm" value={box.creditName ?? ""} onChange={(e) => setBox({ ...box, creditName: e.target.value })} />
           </Field>
-          <Field label={`One ${unit.replace(/s$/, "")} on screen ($)`} hint="What the screen counts a credit as. Misty's data uses $1.">
+          <Field label={`One ${unit.replace(/s$/, "")} on screen ($)`} hint="Face value per credit. Misty: $1.">
             <NumberInput value={values.misteeFace} min={0} step={0.1} onChange={(v) => setValues({ ...values, misteeFace: Math.max(0, v) })} />
           </Field>
-          <Field label={`One ${unit.replace(/s$/, "")} really ($)`} hint="What a credit costs the operator when it can only be spent on more boxes (about 37 cents on Misty's Timepiece table). Pieces at resale are set below.">
+          <Field label={`One ${unit.replace(/s$/, "")} really ($)`} hint="Cost to you per credit. Misty: about $0.37.">
             <NumberInput value={values.misteeReal} min={0} step={0.01} onChange={(v) => setValues({ ...values, misteeReal: Math.max(0, v) })} />
           </Field>
         </div>
@@ -349,10 +349,10 @@ export function BuildBox() {
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
           <Button kind="ghost" onClick={() => addOutcome("item")}>
-            + a piece
+            + piece
           </Button>
           <Button kind="ghost" onClick={() => addOutcome("oroos")}>
-            + a credit row
+            + credit
           </Button>
           <Button kind="ghost" onClick={() => addOutcome("bonus")}>
             + free spins
@@ -365,23 +365,23 @@ export function BuildBox() {
             </Button>
           )}
           <span className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-ink-3">Fit the pieces so the box pays back</span>
+            <span className="text-xs text-ink-3">Fit piece odds to</span>
             <span className="w-20">
               <NumberInput value={target} min={1} max={300} step={1} onChange={(v) => setTarget(Math.max(1, v))} />
             </span>
-            <span className="text-xs text-ink-3">% on screen</span>
-            <Button kind="ghost" onClick={fit} title="Scales every piece's chance up or down and takes the difference out of the credit rows">
+            <span className="text-xs text-ink-3">% return</span>
+            <Button kind="ghost" onClick={fit} title="Scales piece odds; credit rows absorb the difference">
               Fit
             </Button>
-            <Info>Multiplies the chance of every piece by one factor, found by search, and takes the difference out of the credit rows so the total stays 100. This is the knob an operator turns to make a box fit its price (section 5 of the explanation).</Info>
+            <Info>Scales every piece chance by one factor; credit rows absorb the difference; total stays 100.</Info>
           </span>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-[2fr_1fr]">
           <div>
             <div className="mb-1 flex items-center gap-1 text-xs font-medium text-ink-2">
-              What a free spin pays ({unit})
-              <Info>Rows marked &quot;+ free spins&quot; roll again on this small table, once per free spin, with the same secret.</Info>
+              Free-spin table ({unit})
+              <Info>Rows with free spins roll again on this table.</Info>
             </div>
             <div className="flex flex-wrap items-end gap-2">
               {box.bonus.map((b, i) => (
@@ -404,14 +404,14 @@ export function BuildBox() {
               <Button kind="ghost" onClick={() => setBox({ ...box, bonus: [...box.bonus, { mistees: 1, weight: 10 }] })}>
                 + row
               </Button>
-              <span className="text-xs text-ink-3">a free spin pays {m.bonusEv.toFixed(2)} on average</span>
+              <span className="text-xs text-ink-3">average {m.bonusEv.toFixed(2)} per spin</span>
             </div>
           </div>
           <div className="space-y-2">
-            <Field label="Pieces at resale (share of listed)" hint="What a piece fetches when sold on, or costs you to buy in. 0.7 means 70%.">
+            <Field label="Pieces at resale (share of listed)" hint="0.7 = 70% of listed.">
               <NumberInput value={values.itemRealized} min={0} max={1.5} step={0.05} onChange={(v) => setValues({ ...values, itemRealized: Math.max(0, v) })} />
             </Field>
-            <Toggle checked={provablyFair} onChange={setProvablyFair} label="Lock in a secret before each open (Misty's way)" hint="On: the secret is committed, your seed goes in, the secret is revealed after. Off: plain random, nothing to check." />
+            <Toggle checked={provablyFair} onChange={setProvablyFair} label="Commit a secret before each open" hint="On: secret, seed, reveal. Off: plain random." />
             <Field label="Your seed">
               <input className="w-full rounded-md border border-line bg-paper px-2 py-1 text-sm" value={clientSeed} onChange={(e) => setClientSeed(e.target.value)} />
             </Field>
@@ -419,7 +419,7 @@ export function BuildBox() {
         </div>
         {problems.length > 0 && (
           <div className="mt-3 rounded-md border border-warn bg-warn-soft px-3 py-2 text-xs text-ink">
-            Before you can open or run this box: {problems.join("; ")}.
+            Fix first: {problems.join("; ")}.
           </div>
         )}
       </Card>
@@ -428,8 +428,8 @@ export function BuildBox() {
       <Card
         title={
           <span className="flex items-center gap-1">
-            2. The maths: how {money(box.price)} becomes {money(m.payFace, 2)} back
-            <Info>Every row costs you its worth multiplied by its chance. Add the rows and you have what the box pays back per open on average. On screen counts credit at its face value; really counts it at what it costs you and pieces at resale.</Info>
+            2. Maths: {money(box.price)} in, {money(m.payFace, 2)} back per open
+            <Info>Worth × chance per row, summed. On screen: credit at face. Really: credit at cost, pieces at resale.</Info>
           </span>
         }
       >
@@ -437,7 +437,7 @@ export function BuildBox() {
       </Card>
 
       {/* ---------- play ---------- */}
-      <Card title="3. Open it">
+      <Card title="3. Open">
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" className="btn btn-primary text-base" disabled={problems.length > 0} onClick={spin}>
             Open the box · {money(box.price)}
@@ -471,20 +471,20 @@ export function BuildBox() {
               )}
               <div className="grid gap-x-4 gap-y-1 text-xs sm:grid-cols-2">
                 <div>
-                  <span className="text-ink-3">The roll: </span>
-                  {(last.roll * 100).toFixed(3)} on 0 to 100, in the band {band ? `${band.from.toFixed(3)} to ${band.to.toFixed(3)}` : ""} for {last.label}.
+                  <span className="text-ink-3">Roll: </span>
+                  {(last.roll * 100).toFixed(3)} → band {band ? `${band.from.toFixed(3)}–${band.to.toFixed(3)}` : ""} = {last.label}
                 </div>
                 <div>
-                  <span className="text-ink-3">How often: </span>
-                  {fmtPct(lastMath.share * 100)} of opens, about {oneIn(lastMath.share)}.
+                  <span className="text-ink-3">Odds: </span>
+                  {fmtPct(lastMath.share * 100)} · {oneIn(lastMath.share)}
                 </div>
                 <div>
-                  <span className="text-ink-3">Worth on screen: </span>
+                  <span className="text-ink-3">On screen: </span>
                   {money(lastFace)}
                 </div>
                 <div>
-                  <span className="text-ink-3">Worth really: </span>
-                  about {money(lastReal)} · this open{" "}
+                  <span className="text-ink-3">Really: </span>
+                  {money(lastReal)} · net{" "}
                   <b className={lastReal >= last.price ? "text-good" : "text-bad"}>
                     {lastReal >= last.price ? "+" : "−"}
                     {money(Math.abs(lastReal - last.price))}
@@ -499,7 +499,7 @@ export function BuildBox() {
                   <button type="button" className="chip" onClick={() => setShowProof((s) => !s)}>
                     {showProof ? "hide details" : "technical details"}
                   </button>
-                  {verify && <Badge tone={verify.ok ? "good" : "bad"}>{verify.ok ? "Checked: secret, roll and result all match" : `Does not match: ${verify.reason}`}</Badge>}
+                  {verify && <Badge tone={verify.ok ? "good" : "bad"}>{verify.ok ? "Checked: matches" : `Mismatch: ${verify.reason}`}</Badge>}
                 </div>
               )}
               {showProof && provablyFair && (
@@ -524,7 +524,7 @@ export function BuildBox() {
           </div>
         )}
         <details className="mt-3 text-xs">
-          <summary className="cursor-pointer text-ink-2">The bands on the 0 to 100 line{last ? ` (the roll was ${(last.roll * 100).toFixed(3)})` : ""}</summary>
+          <summary className="cursor-pointer text-ink-2">Bands on 0 to 100{last ? ` (roll ${(last.roll * 100).toFixed(3)})` : ""}</summary>
           <table className="mt-2 w-full max-w-2xl">
             <thead>
               <tr>
@@ -551,16 +551,16 @@ export function BuildBox() {
       </Card>
 
       {/* ---------- simulate ---------- */}
-      <Card title="4. Run it many times">
+      <Card title="4. Run">
         <div className="mb-2 grid gap-3 sm:grid-cols-3">
-          <Field label="Opens" hint="How many times the simulated players open this box.">
+          <Field label="Opens" hint="Number of simulated opens.">
             <NumberInput value={opens} min={100} max={2000000} step={1000} onChange={(v) => setOpens(Math.max(100, Math.floor(v)))} />
           </Field>
-          <Field label="Seed" hint="Same settings and seed, same results.">
+          <Field label="Seed" hint="Same seed, same results.">
             <NumberInput value={seed} min={0} step={1} onChange={(v) => setSeed(Math.floor(v))} />
           </Field>
         </div>
-        <SimulateBar label={`Open ${num(opens)} boxes`} hint="Counts per outcome against the chances you set, return on screen and really against the maths, proofs recomputed." status={sim.status} progress={sim.progress} elapsed={sim.elapsed} error={sim.error} onRun={start} onCancel={sim.cancel} onSettings={() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" })} />
+        <SimulateBar label={`Open ${num(opens)} boxes`} hint="Counts vs chances, returns vs maths, proofs." status={sim.status} progress={sim.progress} elapsed={sim.elapsed} error={sim.error} onRun={start} onCancel={sim.cancel} onSettings={() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" })} />
         {result && lastCfg && (
           <div className="mt-3">
             <ResultsSection title="Simulation results" meta={`${num(result.opens)} opens · ${result.boxName} · seed ${lastSeed}`} stale={stale} saved={saved} onSave={save} onReport={report}>
