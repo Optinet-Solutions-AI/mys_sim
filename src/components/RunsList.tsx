@@ -47,7 +47,7 @@ export function RunsList() {
           <p className="text-sm text-ink-3">No saved runs yet. Run a lab and click &ldquo;Save run to history&rdquo;.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <div className="tbl"><table className="w-full text-sm">
               <thead>
                 <tr>
                   <Th>Compare</Th>
@@ -101,7 +101,7 @@ export function RunsList() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </Card>

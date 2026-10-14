@@ -9,7 +9,7 @@ export function CollapsibleTable({ head, rows, initial = 3, minWidth = 720, noun
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full text-xs" style={{ minWidth }}>
+        <div className="tbl"><table className="w-full text-xs" style={{ minWidth }}>
           <thead>
             <tr>
               {head.map((h, i) => (
@@ -30,7 +30,7 @@ export function CollapsibleTable({ head, rows, initial = 3, minWidth = 720, noun
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
       {rows.length > initial && (
         <button type="button" className="chip mt-2" onClick={() => setOpen((o) => !o)}>

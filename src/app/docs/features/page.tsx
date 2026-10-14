@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DocsToc } from "@/components/DocsToc";
 import { EXTERNAL, FAMILIES, MECHANICS, SOURCES, adoption, presence, sourceProfile, spread, type Presence, type Spread } from "@/lib/featureMatrix";
 import { AdoptionChart, FamilyChart, SpreadChart, VizStyle } from "@/components/FeatureCharts";
 import { Badge, Card, Td, Th } from "@/components/ui";
@@ -38,7 +39,7 @@ export default function FeaturesPage() {
   const nOps = EXTERNAL.length;
 
   return (
-    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
       <VizStyle />
       <div className="min-w-0 space-y-8">
         <header className="space-y-1">
@@ -92,7 +93,7 @@ export default function FeaturesPage() {
           </Card>
           <Card title="Table view">
             <div className="overflow-x-auto">
-              <table className="w-full text-xs">
+              <div className="tbl"><table className="w-full text-xs">
                 <thead>
                   <tr>
                     <Th>Mechanic</Th>
@@ -117,7 +118,7 @@ export default function FeaturesPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
         </section>
@@ -162,7 +163,7 @@ export default function FeaturesPage() {
           <H2 id="matrix">4. The matrix</H2>
           <Card>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[900px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[900px] text-xs">
                 <thead>
                   <tr>
                     <Th>Mechanic</Th>
@@ -178,7 +179,7 @@ export default function FeaturesPage() {
                     <FamilyRows key={f.id} familyId={f.id} familyName={f.name} />
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
             <div className="mt-2 text-[11px] text-ink-3">✓ has it as described · ~ close variant · – absent · ? not visible from outside. Hover a cell for the note.</div>
           </Card>
@@ -240,29 +241,7 @@ export default function FeaturesPage() {
           </div>
         </section>
       </div>
-      <aside className="mt-8 lg:mt-0">
-        <div className="rounded-xl border border-line bg-paper p-3 text-xs lg:sticky lg:top-4">
-          <Link href="/" className="btn w-full justify-center no-underline">
-            ← Back to the hub
-          </Link>
-          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
-          <ol className="space-y-1">
-            {TOC.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="block rounded px-1 py-0.5 text-ink-2 no-underline hover:bg-accent-soft hover:text-ink">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ol>
-          <Link href="/docs/misty" className="mt-3 block text-accent-ink underline underline-offset-2">
-            Misty, explained →
-          </Link>
-          <Link href="/build" className="mt-1 block text-accent-ink underline underline-offset-2">
-            Create a mystery box →
-          </Link>
-        </div>
-      </aside>
+      <DocsToc toc={TOC} back={{ href: "/", label: "← Back to the hub" }} links={[{ href: "/docs/misty", label: "Misty, explained →" }, { href: "/build", label: "Create a mystery box →" }]} />
     </div>
   );
 }

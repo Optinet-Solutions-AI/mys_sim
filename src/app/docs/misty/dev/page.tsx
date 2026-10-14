@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DocsToc } from "@/components/DocsToc";
 import { buildTable, liveWeights, mistyBox, mistyDigest, rollOf, lookup } from "@/engine/labs/misty";
 import { sha256Hex } from "@/engine/hash";
 import { Badge, Card, Td, Th } from "@/components/ui";
@@ -148,7 +149,7 @@ export default function MistyDevPage() {
   const e1 = lookup(table, r1);
 
   return (
-    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
       <div className="min-w-0 space-y-8">
       <header className="space-y-2">
         <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Misty · for developers</div>
@@ -305,7 +306,7 @@ export default function MistyDevPage() {
         </P>
         <Card>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-xs">
+            <div className="tbl"><table className="w-full min-w-[640px] text-xs">
               <thead>
                 <tr>
                   <Th>Method</Th>
@@ -322,7 +323,7 @@ export default function MistyDevPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </section>
@@ -333,7 +334,7 @@ export default function MistyDevPage() {
           DDL in <Ext href="/downloads/misty-backend-kit/schema.sql">schema.sql</Ext> (Postgres; works on Supabase). Money in cents, credit in whole units, timestamps UTC.
         </P>
         <Card>
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th>Table</Th>
@@ -348,7 +349,7 @@ export default function MistyDevPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </Card>
         <P>Invariants: a table version is immutable and its percents sum to 100; every open pins the hash of the table it was resolved with and the price at creation; the ledger is append-only and never negative; the seed is encrypted at rest and decrypted only inside the spin transaction.</P>
       </section>
@@ -455,7 +456,7 @@ export default function MistyDevPage() {
         <H2 id="changes">13. What changed in 1.1</H2>
         <P>The front end built against kit 1.0 (its mock runs at <Ext href="https://mysterybox-seven.vercel.app">mysterybox-seven.vercel.app</Ext>) and sent a list of gaps on 14 October 2026. Each point was checked against the kit. The roll did not change; every 1.0 vector still passes.</P>
         <Card>
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th>They found</Th>
@@ -483,7 +484,7 @@ export default function MistyDevPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </Card>
         <P>Still open for the main site: segments (if yes, the publication log is mandatory), spend limits and a paid-in / got-back counter, publishing the table hash before payment, shipping fees and carrier, and whether the Analysis section is shown to players.</P>
       </section>
@@ -493,29 +494,7 @@ export default function MistyDevPage() {
         <DevSandbox />
       </section>
       </div>
-      <aside className="mt-8 lg:mt-0">
-        <div className="rounded-xl border border-line bg-paper p-3 text-xs lg:sticky lg:top-4">
-          <Link href="/operators/misty" className="btn w-full justify-center no-underline">
-            ← Back to the Misty mystery box
-          </Link>
-          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
-          <ol className="space-y-1">
-            {TOC.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="block rounded px-1 py-0.5 text-ink-2 no-underline hover:bg-accent-soft hover:text-ink">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ol>
-          <Link href="/docs/misty" className="mt-3 block text-accent-ink underline underline-offset-2">
-            The mechanism in plain words →
-          </Link>
-          <Link href="/build" className="mt-1 block text-accent-ink underline underline-offset-2">
-            Build your own box →
-          </Link>
-        </div>
-      </aside>
+      <DocsToc toc={TOC} back={{ href: "/operators/misty", label: "← Back to the Misty mystery box" }} links={[{ href: "/docs/misty", label: "The mechanism in plain words →" }, { href: "/build", label: "Build your own box →" }]} />
     </div>
   );
 }

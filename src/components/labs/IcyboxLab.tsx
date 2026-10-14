@@ -18,7 +18,7 @@ function BandEditor({ box, cfg, onChange }: { box: IcyboxBox; cfg: IcyboxConfig;
   const off = Math.abs(m.total - 1) > 0.00005;
   return (
     <div className="space-y-3">
-      <table className="w-full text-sm">
+      <div className="tbl"><table className="w-full text-sm">
         <thead>
           <tr>
             <Th>Band</Th>
@@ -82,7 +82,7 @@ function BandEditor({ box, cfg, onChange }: { box: IcyboxBox; cfg: IcyboxConfig;
             </Td>
           </tr>
         </tfoot>
-      </table>
+      </table></div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge tone={off ? "warn" : "good"}>sum {(m.total * 100).toFixed(3)}%</Badge>
         <span className="ml-auto flex gap-2">

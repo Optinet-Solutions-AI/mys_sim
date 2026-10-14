@@ -19,7 +19,7 @@ export function JemlitResults({ r }: { r: JemlitResult }) {
       </div>
       <Card title="Each item: stated, expected, actual">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-xs">
+          <div className="tbl"><table className="w-full min-w-[640px] text-xs">
             <thead>
               <tr>
                 <Th>Item</Th>
@@ -49,12 +49,12 @@ export function JemlitResults({ r }: { r: JemlitResult }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </Card>
       {r.perPlayer.length > 1 && (
         <Card title="Per player">
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th>Player</Th>
@@ -79,7 +79,7 @@ export function JemlitResults({ r }: { r: JemlitResult }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </Card>
       )}
       <Card title="Proofs">

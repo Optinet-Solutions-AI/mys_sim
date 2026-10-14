@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DocsToc } from "@/components/DocsToc";
 import { ICYBOX_BOXES, ICYBOX_CAPTURED, bandMax, bandMin, icyboxMath } from "@/engine/labs/icybox";
 import { icyboxConfigFor } from "@/lib/icyboxPresets";
 import { money, num, oneIn, pct } from "@/lib/format";
@@ -74,7 +75,7 @@ export default function IcyboxDocsPage() {
   const sellBackReturn = 0.85 * rcfg.buybackPercent;
 
   return (
-    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
       <div className="min-w-0 space-y-8">
         <header className="space-y-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">IcyBox · mystery boxes</div>
@@ -111,7 +112,7 @@ export default function IcyboxDocsPage() {
         <section className="space-y-3">
           <H2 id="known">1. What IcyBox says about itself</H2>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Source</Th>
@@ -136,7 +137,7 @@ export default function IcyboxDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </section>
 
@@ -146,7 +147,7 @@ export default function IcyboxDocsPage() {
             <Tag kind="known" /> Prices and tier names. <Tag kind="known" /> The six values per tier come from the website&apos;s box carousel and are used as the grail band. <Tag kind="assumed" /> Everything else in the table: the band chances are fitted so each box returns 85% of its price at listed values; the app&apos;s odds modal is the source of truth.
           </P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Box</Th>
@@ -177,7 +178,7 @@ export default function IcyboxDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Legend
             items={[
@@ -198,7 +199,7 @@ export default function IcyboxDocsPage() {
             <Tag kind="assumed" /> Example items are named from the site&apos;s own ticker where the values match and from reviews otherwise; the chances are fitted. The shape is what the app shows: six bands, a chance and a value range each.
           </P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Band</Th>
@@ -238,7 +239,7 @@ export default function IcyboxDocsPage() {
                   <Td right mono>{money(rm.evListed, 2)}</Td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </section>
 
@@ -270,7 +271,7 @@ export default function IcyboxDocsPage() {
           <H2 id="buyback">5. The buyback loop</H2>
           <P>The buyback is the engine. On a box that pays back 85% at listed values, a player who sells everything back at 90% gets {pct(sellBackReturn)} of the price back per open: 15 points kept by the box, 8.5 more by the buyback. A player who keeps a winner pays shipping and tax for an item that sells for less than its listed value. Either way the listed figures never turn into that much money, and every sell-back leaves the balance inside the app, where the next box is one tap away.</P>
           <Card>
-            <table className="w-full max-w-xl text-xs">
+            <div className="tbl"><table className="w-full max-w-xl text-xs">
               <tbody>
                 {[
                   ["Ruby Box pays back per open at listed", money(rm.evListed, 2)],
@@ -284,7 +285,7 @@ export default function IcyboxDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <P>
             Reviews describe it in the same words: &quot;the sell-back loop keeps money inside the platform&quot;; &quot;like slot machines&quot;; &quot;fun, hard to stop&quot;. <Tag kind="reported" />
@@ -387,27 +388,7 @@ export default function IcyboxDocsPage() {
         </section>
       </div>
 
-      <aside className="mt-8 lg:mt-0">
-        <div className="lg:sticky lg:top-6">
-          <div className="rounded-xl border border-line bg-paper p-3 text-sm">
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
-            <ol className="space-y-1">
-              {TOC.map(([id, label]) => (
-                <li key={id}>
-                  <a href={`#${id}`} className="text-ink-2 hover:text-ink">
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ol>
-            <div className="mt-3 border-t border-line pt-3">
-              <Link href="/operators/icybox" className="text-accent-ink underline underline-offset-2">
-                ← Back to IcyBox mystery boxes
-              </Link>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <DocsToc toc={TOC} back={{ href: "/operators/icybox", label: "← Back to IcyBox mystery boxes" }} />
     </div>
   );
 }

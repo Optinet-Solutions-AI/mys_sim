@@ -66,7 +66,7 @@ export function MysteryBoxResults({ cfg, r }: { cfg: MysteryBoxConfig; r: Myster
 
       <Card title="Items">
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th>Item</Th>
@@ -102,13 +102,13 @@ export function MysteryBoxResults({ cfg, r }: { cfg: MysteryBoxConfig; r: Myster
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </Card>
 
       {Object.keys(r.byTag).length > 1 && (
         <Card title="By account tag">
-          <table className="text-xs">
+          <div className="tbl"><table className="text-xs">
             <thead>
               <tr>
                 <Th>Tag</Th>
@@ -125,13 +125,13 @@ export function MysteryBoxResults({ cfg, r }: { cfg: MysteryBoxConfig; r: Myster
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </Card>
       )}
 
       <Card title="Sample of opens (first 60) with proof fields">
         <div className="overflow-x-auto">
-          <table className="w-full text-[11px]">
+          <div className="tbl"><table className="w-full text-[11px]">
             <thead>
               <tr>
                 <Th>#</Th>
@@ -160,7 +160,7 @@ export function MysteryBoxResults({ cfg, r }: { cfg: MysteryBoxConfig; r: Myster
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </Card>
     </div>

@@ -190,7 +190,7 @@ export function JemlitBattlesStage({ cfg, onChange }: { cfg: JemlitConfig; onCha
 
         {outcome && (
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Round</Th>
@@ -236,7 +236,7 @@ export function JemlitBattlesStage({ cfg, onChange }: { cfg: JemlitConfig; onCha
                   ))}
                 </tr>
               </tbody>
-            </table>
+            </table></div>
             {done && (
               <div className="mt-3 rounded-lg border border-line bg-paper p-3 text-sm">
                 <b>{setup.teams > 1 ? `Team ${outcome.winningTeam + 1}` : seatName(outcome.winningTeam)} wins</b> the pot of {money(outcome.pot)} at listed prices ({money(outcome.prizePerWinner)} per winner), against {money(bm.stakePerPlayer)} paid each.
@@ -257,7 +257,7 @@ export function JemlitBattlesStage({ cfg, onChange }: { cfg: JemlitConfig; onCha
         <Card title="Analysis">
           <div className="space-y-2">
             <Acc title="The maths of this battle" info="Each open pays back the box's return on average; the battle only moves the money between the players. Jemlit keeps the same 20% whoever wins.">
-              <table className="w-full max-w-xl text-xs">
+              <div className="tbl"><table className="w-full max-w-xl text-xs">
                 <tbody>
                   {[
                     ["Each player pays", `${setup.rounds} × ${money(box.price)} = ${money(bm.stakePerPlayer)}`],
@@ -274,7 +274,7 @@ export function JemlitBattlesStage({ cfg, onChange }: { cfg: JemlitConfig; onCha
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button kind="ghost" onClick={runMc}>
                   Play 400 battles like this
@@ -444,7 +444,7 @@ export function JemlitUpgraderStage({ cfg, settings }: { cfg: JemlitConfig; sett
           </div>
         </Card>
         <Card title="What the chance buys">
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th>Chance</Th>
@@ -463,7 +463,7 @@ export function JemlitUpgraderStage({ cfg, settings }: { cfg: JemlitConfig; sett
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
           <p className="mt-2 text-xs text-ink-3">Whatever the chance, chance × worth = {money(wager * (1 - settings.fee), 2)}: the wager minus the fee. That is the whole Upgrader.</p>
         </Card>
       </div>
@@ -471,7 +471,7 @@ export function JemlitUpgraderStage({ cfg, settings }: { cfg: JemlitConfig; sett
         <Card title="Analysis">
           <div className="space-y-2">
             <Acc title="The maths of the Upgrader" info="The fee is the margin: whatever chance you pick, the item on offer is worth the wager less 15%, divided by the chance.">
-              <table className="w-full max-w-xl text-xs">
+              <div className="tbl"><table className="w-full max-w-xl text-xs">
                 <tbody>
                   {[
                     ["Wager", money(last.wager)],
@@ -488,7 +488,7 @@ export function JemlitUpgraderStage({ cfg, settings }: { cfg: JemlitConfig; sett
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </Acc>
             <Acc title="How this play was decided, step by step">
               <ol className="list-decimal space-y-1 pl-5">
@@ -624,7 +624,7 @@ export function JemlitMinesStage({ settings }: { settings: MinesSettings }) {
           </div>
         </Card>
         <Card title={`Multipliers with ${round?.mines ?? mines} mines`}>
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th right>Safe tiles</Th>
@@ -646,7 +646,7 @@ export function JemlitMinesStage({ settings }: { settings: MinesSettings }) {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
           <p className="mt-2 text-xs text-ink-3">Chance × multiplier is always {(1 - settings.houseEdge).toFixed(2)}: cash out after one tile or after ten, the average is the same. Only the swing changes.</p>
         </Card>
       </div>
@@ -654,7 +654,7 @@ export function JemlitMinesStage({ settings }: { settings: MinesSettings }) {
         <Card title="Analysis">
           <div className="space-y-2">
             <Acc title="The maths of Mines" info="The multiplier is the fair odds of surviving, times one minus the house edge. So every strategy returns the same share of the wager on average.">
-              <table className="w-full max-w-xl text-xs">
+              <div className="tbl"><table className="w-full max-w-xl text-xs">
                 <tbody>
                   {[
                     ["Tiles, mines, safe tiles", `${n}, ${round.mines}, ${n - round.mines}`],
@@ -671,7 +671,7 @@ export function JemlitMinesStage({ settings }: { settings: MinesSettings }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </Acc>
             <Acc title="How the mines were placed, step by step">
               <ol className="list-decimal space-y-1 pl-5">
@@ -800,7 +800,7 @@ export function JemlitCrashStage({ settings }: { settings: CrashSettings }) {
           </div>
         </Card>
         <Card title="How often the round gets there">
-          <table className="w-full text-xs">
+          <div className="tbl"><table className="w-full text-xs">
             <thead>
               <tr>
                 <Th right>Cash out at</Th>
@@ -822,7 +822,7 @@ export function JemlitCrashStage({ settings }: { settings: CrashSettings }) {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
           <p className="mt-2 text-xs text-ink-3">Chance × multiplier is always {(1 - settings.houseEdge).toFixed(2)}. The round shows ×1.00 and takes everything {pct(settings.houseEdge, 0)} of the time.</p>
         </Card>
       </div>
@@ -830,7 +830,7 @@ export function JemlitCrashStage({ settings }: { settings: CrashSettings }) {
         <Card title="Analysis">
           <div className="space-y-2">
             <Acc title="The maths of Crash" info="The crash point is (1 − edge) divided by (1 − roll). The chance of reaching any multiplier m is (1 − edge) ÷ m, so the average return is 1 − edge whatever you aim for.">
-              <table className="w-full max-w-xl text-xs">
+              <div className="tbl"><table className="w-full max-w-xl text-xs">
                 <tbody>
                   {[
                     ["Roll (fraction)", `${(1 - (1 - settings.houseEdge) / round.multiplier).toFixed(6)} (recovered from the multiplier)`],
@@ -846,7 +846,7 @@ export function JemlitCrashStage({ settings }: { settings: CrashSettings }) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </Acc>
             <Acc title="How this round was decided, step by step">
               <ol className="list-decimal space-y-1 pl-5">

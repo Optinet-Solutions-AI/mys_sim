@@ -49,7 +49,7 @@ function Acc({ title, info, children }: { title: React.ReactNode; info?: string;
 export function IcyboxMaths({ box, m, cfg, lastBand }: { box: IcyboxBox; m: IcyboxMath; cfg: IcyboxConfig; lastBand?: IcyboxBandId }) {
   return (
     <div className="space-y-2">
-      <table className="w-full text-xs">
+      <div className="tbl"><table className="w-full text-xs">
         <thead>
           <tr>
             <Th>Band</Th>
@@ -97,7 +97,7 @@ export function IcyboxMaths({ box, m, cfg, lastBand }: { box: IcyboxBox; m: Icyb
             </Td>
           </tr>
         </tfoot>
-      </table>
+      </table></div>
       <p className="text-xs text-ink-3">Average value = the mean of the items in the band (reconstructed). Costs per open = chance × average value. The chances are fitted so the box returns 85% at listed values; the app shows the real ones in its odds modal. Really = kept items at resale minus shipping and tax, everything else sold back at {pct(cfg.buybackPercent, 0)}.</p>
     </div>
   );
@@ -194,7 +194,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
           <h2 className="text-sm font-semibold text-ink-2">Select a Mystery Box</h2>
           <span className="text-xs text-ink-3">five tiers, {money(ICYBOX_BOXES[0].price)} to {money(ICYBOX_BOXES[ICYBOX_BOXES.length - 1].price)}</span>
         </div>
-        <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="hscroll">
           {ICYBOX_BOXES.map((b) => {
             const active = b.slug === cfg.boxSlug;
             const bm = icyboxMath(b, undefined, cfg);
@@ -258,7 +258,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
           <div className={`mt-4 rounded-xl border p-3 ${last.bandId === "grail" ? "border-good bg-good-soft" : "border-line bg-paper"}`}>
             <div className="flex flex-wrap items-center gap-3">
               <ItemTile item={icyboxAsCatalogItem(last.item, last.bandId)} size={64} />
-              <div className="min-w-0 flex-1 text-sm">
+              <div className="min-w-[12rem] flex-1 text-sm">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-lg font-semibold">{last.item.label}</span>
                   <span className={`misty-rarity misty-${last.bandId}`}>{BAND_LABEL[last.bandId]}</span>
@@ -268,7 +268,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
                 </div>
                 <div className="text-xs text-ink-3">Decide within {cfg.buybackWindowHours} hours or it is sold back automatically. The decision is final. (Window length is an assumption; IcyBox does not publish it.)</div>
               </div>
-              <div className="flex flex-col gap-2">
+              <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:flex-col">
                 <Button onClick={() => sell(false)} disabled={!!decision}>
                   Sell back for {money(last.buyback)}
                 </Button>
@@ -308,7 +308,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
           </span>
         }
       >
-        <table className="w-full text-xs">
+        <div className="tbl"><table className="w-full text-xs">
           <thead>
             <tr>
               <Th>Band</Th>
@@ -341,7 +341,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
               );
             })}
           </tbody>
-        </table>
+        </table></div>
       </Card>
 
       {last && (
@@ -385,7 +385,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
               </ul>
             </Acc>
             <Acc title="Last opens">
-              <table className="w-full text-xs">
+              <div className="tbl"><table className="w-full text-xs">
                 <thead>
                   <tr>
                     <Th>#</Th>
@@ -412,7 +412,7 @@ export function IcyboxStage({ cfg, onChange, onSettings }: { cfg: IcyboxConfig; 
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </Acc>
           </div>
         </Card>

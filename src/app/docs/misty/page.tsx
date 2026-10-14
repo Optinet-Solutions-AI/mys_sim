@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DocsToc } from "@/components/DocsToc";
 import { MISTY_BOXES, bonusEv, mistyBox, mistyMath, type MistyMath } from "@/engine/labs/misty";
 import { money, num, oneIn, pct } from "@/lib/format";
 import { Badge, Card, Td, Th } from "@/components/ui";
@@ -116,7 +117,7 @@ export default function MistyDocsPage() {
   const rolexCross = Math.round((rolex.valueUsd ?? 0) / rolexRow.costFace);
 
   return (
-    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
       <div className="min-w-0 space-y-8">
         <header className="space-y-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Misty · mystery boxes</div>
@@ -215,7 +216,7 @@ export default function MistyDocsPage() {
         <section className="space-y-3">
           <H2 id="little-box">3. The sums</H2>
           <Card>
-            <table className="w-full max-w-xl text-xs">
+            <div className="tbl"><table className="w-full max-w-xl text-xs">
               <thead>
                 <tr>
                   <Th>What you can get</Th>
@@ -244,7 +245,7 @@ export default function MistyDocsPage() {
                   <Td right mono>5 to 100</Td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Legend
             items={[
@@ -256,7 +257,7 @@ export default function MistyDocsPage() {
           />
           <P>100 opens: most likely 1 watch, 4 perfumes, 95 × 2 Mistees. In 1 group of 3 nobody gets the watch; in 1 group of 4, two or more do.</P>
           <Card>
-            <table className="w-full max-w-xl text-xs">
+            <div className="tbl"><table className="w-full max-w-xl text-xs">
               <thead>
                 <tr>
                   <Th>Row</Th>
@@ -296,7 +297,7 @@ export default function MistyDocsPage() {
                   <Td right mono>$2.10</Td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Legend
             items={[
@@ -318,7 +319,7 @@ export default function MistyDocsPage() {
           </P>
           <Card>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[720px] text-xs">
                 <thead>
                   <tr>
                     <Th>Outcome</Th>
@@ -405,7 +406,7 @@ export default function MistyDocsPage() {
                     </Td>
                   </tr>
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
           <Legend
@@ -435,7 +436,7 @@ export default function MistyDocsPage() {
             <li>The rare piece is the knob. Its chance makes a big piece fit a small price.</li>
           </Ul>
           <Card>
-            <table className="w-full max-w-2xl text-xs">
+            <div className="tbl"><table className="w-full max-w-2xl text-xs">
               <thead>
                 <tr>
                   <Th>Rolex chance</Th>
@@ -457,7 +458,7 @@ export default function MistyDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Legend
             items={[
@@ -480,7 +481,7 @@ export default function MistyDocsPage() {
             <li>To a player a Mistee only buys a slice of another open. The loop: one Mistee = pieces per open × resale share ÷ (price − Mistees per open).</li>
           </Ul>
           <Card>
-            <table className="w-full max-w-xl text-xs">
+            <div className="tbl"><table className="w-full max-w-xl text-xs">
               <thead>
                 <tr>
                   <Th>Pieces counted at</Th>
@@ -504,7 +505,7 @@ export default function MistyDocsPage() {
                   <Td right mono>{money(wResale, 2)}</Td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Ul>
             <li>
@@ -523,7 +524,7 @@ export default function MistyDocsPage() {
           </P>
           <Card>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[640px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[640px] text-xs">
                 <thead>
                   <tr>
                     <Th>Opens so far</Th>
@@ -553,7 +554,7 @@ export default function MistyDocsPage() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
           <Legend
@@ -649,7 +650,7 @@ export default function MistyDocsPage() {
           <H2 id="sources">11. Sources</H2>
           <P>All from Misty&apos;s public pages on {CAPTURED}, saved and parsed by a script. Nothing guessed.</P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Fact</Th>
@@ -756,7 +757,7 @@ export default function MistyDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Ul>
             <li>
@@ -854,29 +855,7 @@ export default function MistyDocsPage() {
           </div>
         </section>
       </div>
-      <aside className="mt-8 lg:mt-0">
-        <div className="rounded-xl border border-line bg-paper p-3 text-xs lg:sticky lg:top-4">
-          <Link href="/operators/misty" className="btn w-full justify-center no-underline">
-            ← Back to the Misty mystery box
-          </Link>
-          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
-          <ol className="space-y-1">
-            {TOC.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="block rounded px-1 py-0.5 text-ink-2 no-underline hover:bg-accent-soft hover:text-ink">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ol>
-          <Link href="/docs/misty/dev" className="mt-3 block text-accent-ink underline underline-offset-2">
-            For developers →
-          </Link>
-          <Link href="/build" className="mt-1 block text-accent-ink underline underline-offset-2">
-            Build your own box →
-          </Link>
-        </div>
-      </aside>
+      <DocsToc toc={TOC} back={{ href: "/operators/misty", label: "← Back to the Misty mystery box" }} links={[{ href: "/docs/misty/dev", label: "For developers →" }, { href: "/build", label: "Build your own box →" }]} />
     </div>
   );
 }

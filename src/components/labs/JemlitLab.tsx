@@ -21,7 +21,7 @@ function OddsEditor({ box, chances, onChange, values }: { box: JemlitBox; chance
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <div className="tbl"><table className="w-full text-sm">
           <thead>
             <tr>
               <Th>Item</Th>
@@ -86,7 +86,7 @@ function OddsEditor({ box, chances, onChange, values }: { box: JemlitBox; chance
               </Td>
             </tr>
           </tfoot>
-        </table>
+        </table></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge tone={off ? "warn" : "good"}>sum {(m.total * 100).toFixed(4)}%</Badge>

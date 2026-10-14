@@ -764,7 +764,7 @@ function GenericMaths({ cfg, table, price, lastId }: { cfg: MysteryBoxConfig; ta
   return (
     <div className="space-y-3 text-sm">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-xs">
+        <div className="tbl"><table className="w-full min-w-[640px] text-xs">
           <thead>
             <tr>
               <Th>Item</Th>
@@ -827,7 +827,7 @@ function GenericMaths({ cfg, table, price, lastId }: { cfg: MysteryBoxConfig; ta
               </Td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
       <p className="text-xs text-ink-3">
         Shown = the value the page displays ({cfg.box.displayLayer}); cash = what the item fetches when sold on. Return = pays back ÷ price: {pct(payShown / price)} at shown values, {pct(payCash / price)} in cash.

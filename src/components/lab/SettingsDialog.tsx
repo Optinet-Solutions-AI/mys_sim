@@ -46,12 +46,12 @@ export function SettingsDialog({
   const current = sections.find((s) => s.id === active) ?? sections[0];
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-2 md:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-0 md:p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div role="dialog" aria-modal="true" aria-label={title} className="flex h-[min(900px,96vh)] w-[min(1200px,100%)] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-label={title} className="flex h-[100dvh] w-full flex-col overflow-hidden border border-line bg-surface shadow-2xl md:h-[min(900px,96vh)] md:w-[min(1200px,100%)] md:rounded-2xl">
         <header className="flex items-center gap-3 border-b border-line px-4 py-3">
           <Icon name="ph:gear-six" size={20} className="text-accent-ink" />
           <h2 className="text-base font-semibold">{title}</h2>

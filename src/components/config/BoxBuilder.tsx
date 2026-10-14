@@ -376,7 +376,7 @@ export function BoxBuilder({ box, onChange, compact = false, lockModel = false, 
       {table && statedRtp && (
         <>
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Item</Th>
@@ -420,7 +420,7 @@ export function BoxBuilder({ box, onChange, compact = false, lockModel = false, 
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
           <div className="mt-3 grid gap-2 text-xs md:grid-cols-3">
             {LAYERS.map((L) => (

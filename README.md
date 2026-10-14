@@ -78,6 +78,10 @@ The Misty page (`/operators/misty`, tab "Mystery boxes") is a dedicated lab rath
 
 For the team building the main site there is a developer page at `/docs/misty/dev` (`src/app/docs/misty/dev/page.tsx`, sandbox in `src/components/DevSandbox.tsx`) and a downloadable kit. The kit's source is `kit/misty-backend/` (README, `schema.sql`, `openapi.yaml`, `server-reference.ts`); `npx tsx scripts/misty-vectors.ts` regenerates `test-vectors.json` and `python scripts/build-misty-kit.py` assembles `public/downloads/misty-backend-kit.zip` (engine files copied with flattened imports) plus the readable copies under `public/downloads/misty-backend-kit/`. The `kit` and `public` folders are excluded from the app's typecheck.
 
+## Mobile
+
+The layout is mobile first: under 768 px the sidebar becomes a top bar with a drawer (`src/components/Nav.tsx`), tables are wrapped in `div.tbl` which scrolls inside its own box on phones and is plain on wide screens (keep wrapping new tables the same way), the settings dialog is full screen, docs pages use `DocsToc` (a collapsed contents block above the text on phones, a sticky rail beside it on wide screens), and `.hscroll` is the horizontal tile row. The mobile rules live at the end of `src/app/globals.css`. To check a page at phone width headlessly, see the Playwright scripts in the session scratchpad (`pwcheck/check.js`): they report any page wider than the viewport.
+
 ## Misty kit 1.1
 
 The front-end team ran kit 1.0 against a browser mock and sent findings on 14 October 2026; kit 1.1 answers them (`kit/misty-backend/README.md` section 0 lists each point and the decision). Rebuild after a change: `npx -y tsx scripts/misty-vectors.ts && node scripts/check-prompt.mjs && python scripts/build-misty-kit.py`. The engine's Misty vocabulary (oroos, mistees, weight) is mapped to the API contract (credit or bonus, credits, percent) at the boundary; `bonusHash` lives in `src/engine/labs/misty.ts`.

@@ -352,6 +352,8 @@ table {
 .misty-view {
   position: relative;
   overflow: hidden;
+  contain: inline-size;
+  max-width: 100%;
   border-radius: 0.75rem;
   border: 1px solid var(--color-line);
   background: linear-gradient(90deg, var(--color-paper), var(--color-surface, var(--color-paper)) 50%, var(--color-paper));
@@ -462,3 +464,34 @@ details.acc > summary { cursor: pointer; list-style: none; display: flex; align-
 details.acc > summary::-webkit-details-marker { display: none; }
 details.acc > summary::before { content: "▸"; color: var(--color-ink-3); font-size: 0.8rem; }
 details.acc[open] > summary::before { content: "▾"; }
+
+/* ---------- mobile first ---------- */
+body { overflow-x: clip; }
+/* a table scrolls inside its own box on phones; on wide screens it shows whole, no scrollbars */
+.tbl { max-width: 100%; min-width: 0; }
+/* grid cells never grow past the screen because of wide content on phones */
+@media (max-width: 767px) {
+  .grid > * { min-width: 0; }
+  pre { max-width: 100%; overflow-x: auto; }
+  p, li, dd, dt, summary, code { overflow-wrap: anywhere; }
+  .tbl th, .tbl td.font-mono { white-space: nowrap; }
+}
+@media (max-width: 767px) {
+  .tbl { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+  .tbl > table { min-width: 100%; }
+  .btn { min-height: 44px; }
+  .btn-icon { min-height: 40px; min-width: 40px; justify-content: center; }
+  .chip { min-height: 36px; padding-inline: 0.8rem; }
+  details.acc > summary { min-height: 44px; }
+  .info-pop, .info-pop-fixed { max-width: calc(100vw - 24px); }
+  .misty-box-tile { min-width: 9.5rem; }
+  h1 { font-size: 1.35rem; line-height: 1.25; }
+  .viz-tip { max-width: calc(100vw - 32px); }
+}
+/* a horizontal row of tiles that snaps on phones and wraps nowhere */
+.hscroll { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.hscroll > * { flex: 0 0 auto; scroll-snap-align: start; }
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .chip { min-height: 36px; }
+}

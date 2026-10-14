@@ -51,7 +51,7 @@ export function OperatorHub({ id }: { id: string }) {
   const kind = op.kind === "operator" ? "operator" : op.kind === "ours" ? "our design" : op.kind === "adjacent" ? "adjacent models" : "research";
   return (
     <SkinProvider skin={skin}>
-      <div className={`op-skin -mx-5 -my-6 min-h-screen px-5 py-6 md:-mx-8 md:px-8 ${skin.font === "serif" ? "op-serif" : ""}`} style={skin.vars as CSSProperties} data-skin={skin.id}>
+      <div className={`op-skin -mx-4 -my-4 min-h-screen px-4 py-4 md:-mx-8 md:-my-6 md:px-8 md:py-6 ${skin.font === "serif" ? "op-serif" : ""}`} style={skin.vars as CSSProperties} data-skin={skin.id}>
         <div className="space-y-4">
           <header className="op-banner flex flex-wrap items-center gap-3 rounded-2xl border border-line px-4 py-3">
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface shadow-sm">
@@ -74,9 +74,9 @@ export function OperatorHub({ id }: { id: string }) {
               {op.tagline && <div className="text-xs text-ink-2">{op.tagline}</div>}
             </div>
           </header>
-          <nav className="flex flex-wrap gap-1 border-b border-line">
+          <nav className="flex gap-1 overflow-x-auto border-b border-line md:flex-wrap">
             {op.features.map((f) => (
-              <button key={f.key} type="button" onClick={() => setKey(f.key)} data-tip={f.doc.short} data-tip-below="" className={`-mb-px border-b-2 px-3 py-2 text-sm ${feature.key === f.key ? "border-accent font-medium text-accent-ink" : "border-transparent text-ink-2 hover:text-ink"}`}>
+              <button key={f.key} type="button" onClick={() => setKey(f.key)} data-tip={f.doc.short} data-tip-below="" className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm ${feature.key === f.key ? "border-accent font-medium text-accent-ink" : "border-transparent text-ink-2 hover:text-ink"}`}>
                 {f.doc.title}
               </button>
             ))}

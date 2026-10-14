@@ -30,7 +30,7 @@ export function MistyResults({ r }: { r: MistyResult }) {
         }
       >
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <div className="tbl"><table className="w-full text-sm">
             <thead>
               <tr>
                 <Th>Outcome</Th>
@@ -58,14 +58,14 @@ export function MistyResults({ r }: { r: MistyResult }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </Card>
 
       {r.perPlayer.length > 1 && (
         <Card title="Per player">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <div className="tbl"><table className="w-full text-sm">
               <thead>
                 <tr>
                   <Th>Player</Th>
@@ -92,7 +92,7 @@ export function MistyResults({ r }: { r: MistyResult }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       )}

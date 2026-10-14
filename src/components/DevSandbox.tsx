@@ -48,11 +48,11 @@ function Step({ n, title, method, path, request, response, children }: { n: numb
         <span className="ml-auto flex gap-2">{children}</span>
       </div>
       <div className="mt-2 grid gap-2 md:grid-cols-2">
-        <div>
+        <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wide text-ink-3">request</div>
           <pre className="max-h-48 overflow-auto rounded bg-surface p-2 text-[11px] leading-5">{request === undefined ? "–" : json(request)}</pre>
         </div>
-        <div>
+        <div className="min-w-0">
           <div className="text-[10px] uppercase tracking-wide text-ink-3">response</div>
           <pre className="max-h-48 overflow-auto rounded bg-surface p-2 text-[11px] leading-5">{response === undefined ? "(not called yet)" : json(response)}</pre>
         </div>

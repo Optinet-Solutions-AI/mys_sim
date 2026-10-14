@@ -318,7 +318,7 @@ export function JemlitStage({ cfg, seed, onChange, onSettings, collection = "box
           }
         >
           <div>
-            <table className="w-full table-fixed text-xs">
+            <div className="tbl"><table className="w-full table-fixed text-xs">
               <colgroup>
                 <col />
                 <col style={{ width: "4.6rem" }} />
@@ -357,7 +357,7 @@ export function JemlitStage({ cfg, seed, onChange, onSettings, collection = "box
                     </tr>
                   ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </div>
@@ -496,7 +496,7 @@ export function JemlitMaths({ box, m, cfg, lastId }: { box: JemlitBox; m: Jemlit
   return (
     <div className="space-y-3 text-sm">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] text-xs">
+        <div className="tbl"><table className="w-full min-w-[720px] text-xs">
           <thead>
             <tr>
               <Th>Item</Th>
@@ -561,7 +561,7 @@ export function JemlitMaths({ box, m, cfg, lastId }: { box: JemlitBox; m: Jemlit
               </Td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
       <p className="text-xs text-ink-3">
         Price = the listed value Jemlit shows. In Credits = the cashback if every win were exchanged (mostly {pct(0.9, 0)} of price; credit rows 100%). Really = credit rows at {money(cfg.creditReal)} per Credit and shipped items at {pct(cfg.itemRealized, 0)} of listed. Return = pays back ÷ price: {pct(m.returnPrice)}, {pct(m.returnCashback)}, {pct(m.returnReal)}.
@@ -635,7 +635,7 @@ function Narration({ spin, box, cfg, table, im, playerName, ratio, exchanged }: 
       <details className="rounded-lg border border-line bg-paper p-3 text-xs">
         <summary className="cursor-pointer font-semibold">The bands on the 0 to 100 line (the roll was {spin.roll.toFixed(4)})</summary>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[520px]">
+          <div className="tbl"><table className="w-full min-w-[520px]">
             <thead>
               <tr>
                 <Th>Above</Th>
@@ -662,7 +662,7 @@ function Narration({ spin, box, cfg, table, im, playerName, ratio, exchanged }: 
                   );
                 })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </details>
     </div>

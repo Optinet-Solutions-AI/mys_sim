@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { OPERATORS } from "@/lib/operators";
 import { Icon } from "./Icon";
 
@@ -55,38 +56,73 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
 
 export function Nav() {
   const path = usePathname();
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [path]);
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  const logo = (
+    <Link href="/" className="flex items-center gap-2 px-2 text-ink no-underline">
+      <Icon name="fluent:package" size={28} />
+      <div className="leading-tight">
+        <div className="font-semibold">Box Simulator</div>
+        <div className="text-xs text-ink-3">research sandbox · v0.3</div>
+      </div>
+    </Link>
+  );
+  const list = groups.map((g) => (
+    <div key={g.label} className="mb-5">
+      <div className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-ink-3">{g.label}</div>
+      <ul className="space-y-0.5">
+        {g.items.map((it) => {
+          const active = isActive(it.href);
+          return (
+            <li key={it.href}>
+              <Link href={it.href} className={`flex min-h-10 items-center gap-2 rounded-lg px-2 py-1.5 text-sm no-underline ${active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-paper"}`}>
+                <Icon name={it.icon} size={18} className={active ? "text-accent-ink" : "text-ink-3"} />
+                {it.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ));
   return (
-    <aside className="hidden w-60 shrink-0 border-r border-line bg-surface px-4 py-6 md:block">
-      <Link href="/" className="mb-6 flex items-center gap-2 px-2 text-ink no-underline">
-        <Icon name="fluent:package" size={28} />
-        <div className="leading-tight">
-          <div className="font-semibold">Box Simulator</div>
-          <div className="text-xs text-ink-3">research sandbox · v0.3</div>
+    <>
+      {/* phones: a top bar and a drawer */}
+      <div className="sticky top-0 z-40 flex items-center gap-2 border-b border-line bg-surface px-3 py-2 md:hidden">
+        <button type="button" className="btn btn-icon" aria-label="Open menu" aria-expanded={open} onClick={() => setOpen(true)}>
+          <Icon name="ph:list" size={22} />
+        </button>
+        <Link href="/" className="flex items-center gap-2 text-ink no-underline">
+          <Icon name="fluent:package" size={24} />
+          <span className="font-semibold">Box Simulator</span>
+        </Link>
+      </div>
+      {open && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button type="button" className="absolute inset-0 bg-ink/40" aria-label="Dismiss menu" onClick={() => setOpen(false)} />
+          <nav className="absolute inset-y-0 left-0 w-[min(20rem,85vw)] overflow-y-auto bg-surface px-3 py-3 shadow-2xl" aria-label="Site menu">
+            <div className="mb-4 flex items-center justify-between">
+              {logo}
+              <button type="button" className="btn btn-icon" aria-label="Close menu" onClick={() => setOpen(false)}>
+                <Icon name="ph:x" size={20} />
+              </button>
+            </div>
+            {list}
+          </nav>
         </div>
-      </Link>
-      {groups.map((g) => (
-        <div key={g.label} className="mb-5">
-          <div className="mb-1 px-2 text-[11px] font-semibold uppercase tracking-wider text-ink-3">{g.label}</div>
-          <ul className="space-y-0.5">
-            {g.items.map((it) => {
-              const active = it.href === "/" ? path === "/" : path.startsWith(it.href);
-              return (
-                <li key={it.href}>
-                  <Link
-                    href={it.href}
-                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm no-underline ${
-                      active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-paper"
-                    }`}
-                  >
-                    <Icon name={it.icon} size={18} className={active ? "text-accent-ink" : "text-ink-3"} />
-                    {it.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </aside>
+      )}
+      {/* wide screens: the sidebar */}
+      <aside className="hidden w-60 shrink-0 border-r border-line bg-surface px-4 py-6 md:block">
+        <div className="mb-6">{logo}</div>
+        {list}
+      </aside>
+    </>
   );
 }

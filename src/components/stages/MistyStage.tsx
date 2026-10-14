@@ -388,7 +388,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
           }
         >
           <div>
-            <table className="w-full table-fixed text-xs">
+            <div className="tbl"><table className="w-full table-fixed text-xs">
               <colgroup>
                 <col />
                 <col style={{ width: "5.5rem" }} />
@@ -424,7 +424,7 @@ export function MistyStage({ cfg, seed, onChange, onSettings }: { cfg: MistyConf
                     </tr>
                   ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         </Card>
       </div>
@@ -552,7 +552,7 @@ export function BoxMaths({ box, m, cfg, lastId }: { box: MistyBox; m: MistyMath;
   return (
     <div className="space-y-3 text-sm">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-xs">
+        <div className="tbl"><table className="w-full min-w-[640px] text-xs">
           <thead>
             <tr>
               <Th>Outcome</Th>
@@ -617,7 +617,7 @@ export function BoxMaths({ box, m, cfg, lastId }: { box: MistyBox; m: MistyMath;
               </Td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="rounded-lg border border-line bg-paper p-3">
@@ -777,7 +777,7 @@ function Narration({ spin, box, cfg, table, om, rank, playerName, ratio, traded 
       <details className="rounded-lg border border-line bg-paper p-3 text-xs" open>
         <summary className="cursor-pointer font-semibold">The bands on the 0 to 100 line (the roll was {roll.toFixed(3)})</summary>
         <div className="mt-2 overflow-x-auto">
-          <table className="w-full min-w-[520px]">
+          <div className="tbl"><table className="w-full min-w-[520px]">
             <thead>
               <tr>
                 <Th>From</Th>
@@ -809,7 +809,7 @@ function Narration({ spin, box, cfg, table, om, rank, playerName, ratio, traded 
                   );
                 })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </details>
     </div>

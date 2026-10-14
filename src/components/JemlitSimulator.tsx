@@ -349,7 +349,7 @@ export function JemlitSimulator() {
             <Deviation r={r} />
           </Card>
           <Card title="Items worth the price or more">
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Item</Th>
@@ -372,7 +372,7 @@ export function JemlitSimulator() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </>
       )}

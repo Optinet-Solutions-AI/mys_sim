@@ -352,7 +352,7 @@ export function BuildBox() {
   const chanceTable = (
     <div className="space-y-3">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-xs">
+        <div className="tbl"><table className="w-full min-w-[640px] text-xs">
           <thead>
             <tr>
               <Th>Row</Th>
@@ -410,7 +410,7 @@ export function BuildBox() {
               </Td>
             </tr>
           </tfoot>
-        </table>
+        </table></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 rounded-md border border-line bg-paper p-2 text-sm">
         <span className="text-ink-2">Easy way: the box should give back</span>
@@ -420,7 +420,7 @@ export function BuildBox() {
         <span className="text-ink-2">out of 100 on screen</span>
         <Button onClick={fit}>Fit the chances</Button>
         <Info>Keeps the mix you typed and scales the prize chances up or down until the total pays back that share of the price. Credit rows absorb the difference. Misty: 55 to 66.</Info>
-        <span className="ml-auto flex items-center gap-2">
+        <span className="ml-auto flex flex-wrap items-center justify-end gap-2">
           <Badge tone={off ? "warn" : "good"}>sum {m.total.toFixed(3)}%</Badge>
           {off && (
             <Button kind="ghost" onClick={normalise}>
@@ -559,7 +559,7 @@ export function BuildBox() {
       </div>
       <details className="mt-3 text-xs">
         <summary className="cursor-pointer text-ink-2">Bands on 0 to 100{last ? ` (roll ${(last.roll * 100).toFixed(3)})` : ""}</summary>
-        <table className="mt-2 w-full max-w-2xl">
+        <div className="tbl"><table className="mt-2 w-full max-w-2xl">
           <thead>
             <tr>
               <Th>From</Th>
@@ -580,7 +580,7 @@ export function BuildBox() {
                 </tr>
               ))}
           </tbody>
-        </table>
+        </table></div>
       </details>
     </div>
   );
@@ -736,7 +736,7 @@ export function BuildBox() {
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Demo</div>
           <h1 className="text-2xl font-semibold">Build your own mystery box</h1>
         </div>
-        <span className="ml-auto flex items-center gap-2 text-xs">
+        <span className="ml-auto flex flex-wrap items-center justify-end gap-2 text-xs">
           <Link href="/operators/misty" className="btn no-underline">
             ← Back to Misty
           </Link>

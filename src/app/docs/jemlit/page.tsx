@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DocsToc } from "@/components/DocsToc";
 import { JEMLIT_CAPTURED, JEMLIT_FEATURED, JEMLIT_SETTINGS, JEMLIT_SUMMARY } from "@/engine/jemlitLive.generated";
 import { jemlitCommit, jemlitDigest, jemlitMath, jemlitRoll, type JemlitMath } from "@/engine/labs/jemlit";
 import { CRASH_DEFAULT, MINES_DEFAULT, UPGRADER_DEFAULT, crashProbAtLeast, minesMultiplier, minesSurvival, upgraderTarget } from "@/engine/labs/jemlitGames";
@@ -120,7 +121,7 @@ export default function JemlitDocsPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
+    <div className="mx-auto flex max-w-6xl flex-col pb-16 lg:grid lg:grid-cols-[minmax(0,1fr)_230px] lg:gap-8">
       <div className="min-w-0 space-y-8">
         <header className="space-y-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Jemlit · mystery boxes</div>
@@ -230,7 +231,7 @@ export default function JemlitDocsPage() {
           </P>
           <Card>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[760px] text-xs">
                 <thead>
                   <tr>
                     <Th>Item</Th>
@@ -294,7 +295,7 @@ export default function JemlitDocsPage() {
                     </Td>
                   </tr>
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
           <Legend
@@ -345,7 +346,7 @@ export default function JemlitDocsPage() {
             </li>
           </Ul>
           <Card>
-            <table className="w-full max-w-xl text-xs">
+            <div className="tbl"><table className="w-full max-w-xl text-xs">
               <thead>
                 <tr>
                   <Th>Shipped items counted at</Th>
@@ -369,7 +370,7 @@ export default function JemlitDocsPage() {
                   <Td right mono>{money(wResale, 2)}</Td>
                 </tr>
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Ul>
             <li>
@@ -388,7 +389,7 @@ export default function JemlitDocsPage() {
           </P>
           <Card>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[600px] text-xs">
                 <thead>
                   <tr>
                     <Th>Opens so far</Th>
@@ -414,7 +415,7 @@ export default function JemlitDocsPage() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
           <Legend
@@ -488,7 +489,7 @@ export default function JemlitDocsPage() {
           <H2 id="settings">9. Platform settings seen in the page</H2>
           <P>Every Jemlit page ships a block of platform settings to the browser. These are the ones that touch the money. They describe other games as well as the boxes.</P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Setting</Th>
@@ -505,7 +506,7 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </section>
 
@@ -513,7 +514,7 @@ export default function JemlitDocsPage() {
           <H2 id="games">10. The other games</H2>
           <P>Jemlit runs five more products on the same Credits and the same roll recipe. Each is a tab under Jemlit in the simulator. One line each, then the rule in words.</P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Game</Th>
@@ -544,7 +545,7 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Legend
             items={[
@@ -557,7 +558,7 @@ export default function JemlitDocsPage() {
             <b>Why the return never changes with how you play.</b> In Mines and Crash the multiplier is the fair odds times (1 − edge), so chance × multiplier is always 1 − edge. Cash out early and often or late and rarely; the average is the same, only the swing differs. In the Upgrader chance × prize is always wager × (1 − fee). In a battle the house keeps the box&apos;s 20% on every open and the players only move the rest between themselves.
           </P>
           <Card title="Mines: the multiplier with 3 mines on 25 tiles">
-            <table className="w-full max-w-lg text-xs">
+            <div className="tbl"><table className="w-full max-w-lg text-xs">
               <thead>
                 <tr>
                   <Th right>Safe tiles</Th>
@@ -584,11 +585,11 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <P>First tile: 22 safe out of 25, so the fair multiplier is 25 ÷ 22 = ×1.136; less 8% it is ×{minesMultiplier(25, 3, 1, MINES_DEFAULT.houseEdge).toFixed(3)}. Each further tile multiplies by (tiles left ÷ safe tiles left).</P>
           </Card>
           <Card title="Crash: how often a round reaches a target">
-            <table className="w-full max-w-lg text-xs">
+            <div className="tbl"><table className="w-full max-w-lg text-xs">
               <thead>
                 <tr>
                   <Th right>Cash out at</Th>
@@ -615,11 +616,11 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <P>The chance of reaching ×m is (1 − 0.08) ÷ m. The round shows ×1.00 and takes everything 8% of the time.</P>
           </Card>
           <Card title="Upgrader: what $10 buys at each chance">
-            <table className="w-full max-w-lg text-xs">
+            <div className="tbl"><table className="w-full max-w-lg text-xs">
               <thead>
                 <tr>
                   <Th right>Chance</Th>
@@ -642,7 +643,7 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
             <P>Whatever the chance, chance × worth = $10 × 0.85 = $8.50. The 92% option is clipped to 85% because the cap is 1 − fee.</P>
           </Card>
           <Ul>
@@ -663,7 +664,7 @@ export default function JemlitDocsPage() {
           <H2 id="sources">11. Sources</H2>
           <P>All from Jemlit&apos;s public pages and its front API on {JEMLIT_CAPTURED}, saved and parsed by a script. Nothing guessed.</P>
           <Card>
-            <table className="w-full text-xs">
+            <div className="tbl"><table className="w-full text-xs">
               <thead>
                 <tr>
                   <Th>Fact</Th>
@@ -691,7 +692,7 @@ export default function JemlitDocsPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
           <Ul>
             <li>
@@ -801,29 +802,7 @@ export default function JemlitDocsPage() {
           </div>
         </section>
       </div>
-      <aside className="mt-8 lg:mt-0">
-        <div className="rounded-xl border border-line bg-paper p-3 text-xs lg:sticky lg:top-4">
-          <Link href="/operators/jemlit" className="btn w-full justify-center no-underline">
-            ← Back to the Jemlit mystery box
-          </Link>
-          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-ink-3">On this page</div>
-          <ol className="space-y-1">
-            {TOC.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="block rounded px-1 py-0.5 text-ink-2 no-underline hover:bg-accent-soft hover:text-ink">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ol>
-          <Link href="/docs/misty" className="mt-3 block text-accent-ink underline underline-offset-2">
-            Misty, explained →
-          </Link>
-          <Link href="/simulate?src=jemlit" className="mt-1 block text-accent-ink underline underline-offset-2">
-            Simulator →
-          </Link>
-        </div>
-      </aside>
+      <DocsToc toc={TOC} back={{ href: "/operators/jemlit", label: "← Back to the Jemlit mystery box" }} links={[{ href: "/docs/misty", label: "Misty, explained →" }, { href: "/simulate?src=jemlit", label: "Simulator →" }]} />
     </div>
   );
 }

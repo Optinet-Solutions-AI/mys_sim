@@ -242,7 +242,7 @@ export function IcyboxSimulator() {
           <IcyboxResults r={r} />
           {r.drop && (
             <Card title="The drop and the operator exit">
-              <table className="w-full max-w-xl text-xs">
+              <div className="tbl"><table className="w-full max-w-xl text-xs">
                 <tbody>
                   {[
                     ["Copies per drop", num(r.drop.copies)],
@@ -259,7 +259,7 @@ export function IcyboxSimulator() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
               <p className="mt-2 text-xs text-ink-3">The odds shown at the start of a drop are the copies in the drop. If the operator retires it early, the grail copies never ship, and nobody outside can tell whether the grail was still inside.</p>
             </Card>
           )}
@@ -279,7 +279,7 @@ export function IcyboxSimulator() {
               </Button>
               <span className="text-xs text-ink-3">seed {lastSeed}</span>
             </div>
-            <table className="mt-3 w-full max-w-2xl text-xs">
+            <div className="tbl"><table className="mt-3 w-full max-w-2xl text-xs">
               <thead>
                 <tr>
                   <Th>Measure</Th>
@@ -302,7 +302,7 @@ export function IcyboxSimulator() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </Card>
         </>
       )}

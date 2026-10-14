@@ -31,7 +31,7 @@ export function OddsEditor({ box, weights, onChange, values, bonus }: { box: Mis
   return (
     <div className="space-y-3">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <div className="tbl"><table className="w-full text-sm">
           <thead>
             <tr>
               <Th>Outcome</Th>
@@ -100,7 +100,7 @@ export function OddsEditor({ box, weights, onChange, values, bonus }: { box: Mis
               </Td>
             </tr>
           </tfoot>
-        </table>
+        </table></div>
       </div>
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Badge tone={off ? "warn" : "good"}>sum {m.total.toFixed(3)}%</Badge>

@@ -18,7 +18,7 @@ export function IcyboxResults({ r }: { r: IcyboxResult }) {
         <Stat label={r.drop ? "Drops" : "Odds check"} value={r.drop ? num(r.drop.drops) : `p = ${r.chi.pValue.toFixed(3)}`} sub={r.drop ? `${num(r.drop.retired)} retired early · ${num(r.drop.grailsLeftBehind)} grails never shipped · ${num(r.drop.grailsShipped)} grails kept` : r.chi.pValue < 0.05 ? "counts stray from the stated odds" : "counts match the stated odds"} tone={chiTone as "good" | "warn" | "bad" | undefined} />
       </div>
       <Card title="Each band: stated, expected, actual">
-        <table className="w-full text-xs">
+        <div className="tbl"><table className="w-full text-xs">
           <thead>
             <tr>
               <Th>Band</Th>
@@ -41,7 +41,7 @@ export function IcyboxResults({ r }: { r: IcyboxResult }) {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Card>
       <Card title="Proofs">
         <p className="text-sm text-ink-2">None. IcyBox publishes no secret, hash or seed, so no open can be recomputed. {num(r.opens)} opens, 0 checkable.</p>

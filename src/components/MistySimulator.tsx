@@ -359,7 +359,7 @@ export function MistySimulator() {
             <p className="mb-2 max-w-[78ch] text-xs text-ink-3">How far each count landed from its expected count, in percent. Rare outcomes swing more: that is chance, not a fault.</p>
             <Deviation r={r} />
             <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[640px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[640px] text-xs">
                 <thead>
                   <tr>
                     <Th>Outcome</Th>
@@ -382,13 +382,13 @@ export function MistySimulator() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
 
           <Card title="The pieces">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-xs">
+              <div className="tbl"><table className="w-full min-w-[560px] text-xs">
                 <thead>
                   <tr>
                     <Th>Piece</Th>
@@ -409,7 +409,7 @@ export function MistySimulator() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </Card>
         </>
