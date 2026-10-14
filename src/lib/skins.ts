@@ -215,6 +215,10 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
     player: ["Pick an item you want and choose your chance of winning it, up to 80%. The price goes up with the chance.", "The chance is a green zone on a wheel. You can drag the zone anywhere around the wheel; a needle spins and slows down, and if it stops inside the zone you win. The needle starts each spin from where it last stopped.", "Moving the zone changes nothing: the roll is read relative to where the zone sits, so the odds are the same wherever you put it.", "Win and you get the item; lose and the money is gone."],
     settings: ["Terms: the item, the chance, the cap and the stated edge, which decides how much more than fair the price is.", "Agents: a bankroll and whether they keep trying.", "Run gives the real win rate, the real edge and how many players go bust."],
   },
+  "icybox-boxes": {
+    player: ["Pick one of five boxes, $50 to $1,000. Tap it to see a chance and a value range for each of six bands, Common to Grail. Open it: every box pays a watch or a bag.", "Then choose: sell it back to IcyBox at an offer it sets (about 90% of the listed value, reviews say), or keep it and pay shipping and tax. Say nothing and it is sold back for you.", "Nothing is published to check an open. Limited boxes are finite and the terms let IcyBox end one before the grail goes out."],
+    settings: ["Box & odds: the band chances, reconstructed and fitted to 85% at listed values; edit or fit to another target.", "Limited drop: copies, and whether the operator retires the drop early.", "Buyback, fees, cash-out: the offer rate, the window, shipping, tax, the withdrawal minimum and fee, resale share.", "The proof: nothing to switch on; IcyBox has no scheme."],
+  },
   "icybox-drops": {
     player: ["A drop is a limited run: a fixed number of cards, one grail among them. You buy a card and flip it.", "Because cards are not replaced, the odds change as the drop sells. Once they're gone, they're gone.", "Nothing is published to check the draw, and the terms allow a drop to be ended before the grail is ever handed out."],
     settings: ["Box & items: copies of each item in the drop. Odds are copies left over copies in total.", "Retirement rule: whether a drop can be ended early and whether leftover top items must be distributed.", "The early-retirement rig ends the drop once most of it has sold while the grail is still inside."],
@@ -368,4 +372,5 @@ export const GUIDE_BY_LAB: Record<string, { player: string[]; settings: string[]
   misty: GUIDES["misty-boxes"],
   jemlit: GUIDES["jemlit-boxes-live"],
   "jemlit-games": GUIDES["jemlit-battles"],
+  icybox: GUIDES["icybox-boxes"],
 };

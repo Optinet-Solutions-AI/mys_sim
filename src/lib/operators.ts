@@ -3,6 +3,7 @@
 import { applyGuarantee } from "@/engine/table";
 import { DEFAULT_MISTY, mistyConfigFor } from "./mistyPresets";
 import { DEFAULT_JEMLIT, DEFAULT_JEMLIT_PACKS } from "./jemlitPresets";
+import { DEFAULT_ICYBOX } from "./icyboxPresets";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import type { AnyConfig, BattleMode, BattlesConfig, CreditsConfig, LabId, MysteryBoxConfig, RetentionConfig, SellbackConfig, UpgraderConfig } from "@/engine/types";
 import {
@@ -203,11 +204,27 @@ export const OPERATORS: OperatorDef[] = [
     id: "icybox",
     name: "IcyBox",
     kind: "operator",
-    tagline: "Luxury-only drops, buyback at an undisclosed estimate",
-    description: "Finite 'drops' of watches and bags valued at retail, no fairness scheme, a buyback 'determined solely by IcyBox', a buyback period after which the item is sold back automatically, and sales tax, shipping and insurance to keep an item. The terms allow a box to be retired before its grail is distributed.",
+    tagline: "",
+    description: "The iOS luxury app, reconstructed from public sources (terms, App Store, icybox.io, press releases, reviews): five boxes from $50 to $1,000, six rarity bands with a chance and a value range each, a buyback set by IcyBox, an auto sell-back window, fees to keep, limited drops the terms let IcyBox end early, and no proof of any kind.",
     icon: "fluent:watch",
-    sources: "Dossier 1 §2.4; dossier 2 §3.4",
+    sources: "research/09-icybox-mechanism.md; captures of 14 October 2026",
     features: [
+      {
+        key: "icybox-boxes",
+        lab: "icybox",
+        minimal: true,
+        doc: {
+          title: "Mystery boxes",
+          short: "Five boxes, six bands, a buyback instead of a proof.",
+          what: "IcyBox as its public sources describe it: Bronze, Silver, Ruby, Gold and Icy boxes at $50, $100, $250, $500 and $1,000; six rarity bands from Common to Grail with a chance and a value range shown before buying; every open pays a watch or a bag; sell it back at an offer IcyBox sets (about 90% of the listed value, reviews say) or keep it and pay shipping and tax; miss the window and it is sold back automatically; limited-edition boxes are finite and may be ended before the grail goes out; no seed, hash or verifier. The bands, items and chances here are reconstructed (fitted to 85% at listed values) because the app is iOS-only and its odds modal was not captured.",
+          configure: ["Box; the chance per band (edit or fit to a target return); limited drop and the retirement rule; buyback rate, window, fees, cash-out; resale share."],
+          read: ["Return at listed values, if sold back, and really; grail odds; the drop status; the simulator's 200,000-open report."],
+          source: "icybox.io (home, terms, support, privacy), App Store listing and reviews, press releases of 2 September and 1 October 2026, review sites; captured 14 October 2026.",
+        },
+        initial: DEFAULT_ICYBOX,
+      },
+    ],
+    hiddenFeatures: [
       {
         key: "icybox-drops",
         lab: "mystery-box",

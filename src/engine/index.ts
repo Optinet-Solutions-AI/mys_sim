@@ -7,6 +7,7 @@ import { runCredits } from "./labs/credits";
 import { runUpgrader } from "./labs/upgrader";
 import { runMisty } from "./labs/misty";
 import { runJemlit } from "./labs/jemlit";
+import { runIcybox } from "./labs/icybox";
 import type {
   AnyConfig,
   AnyResult,
@@ -21,6 +22,7 @@ import type {
   UpgraderConfig,
   MistyConfig,
   JemlitConfig,
+  IcyboxConfig,
 } from "./types";
 
 export const ENGINE_VERSION = "0.2.0";
@@ -54,6 +56,8 @@ export function runLab(req: RunRequest, onProgress?: Progress): AnyResult {
       return runJemlit(req.config as JemlitConfig, req.seed, onProgress);
     case "jemlit-games":
       throw new Error("The Jemlit games are played on the page; they have no batch simulation.");
+    case "icybox":
+      return runIcybox(req.config as IcyboxConfig, req.seed, onProgress);
   }
 }
 

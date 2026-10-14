@@ -58,7 +58,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("pool", "Finite pool, drawn without replacement", "draw", "A fixed stock of copies; each win removes one; the box can run out.", {
     evo: ["no", "Not in the demo."],
-    icybox: ["yes", "'Once they are gone, they are gone'; 100-copy drops."],
+    icybox: ["yes", "Limited-edition boxes: 'once they're gone, they're gone' (site); stock not published."],
     stockx: ["variant", "Finite editions exist alongside open ones."],
     courtyard: ["no", ""],
     jemlit: ["no", ""],
@@ -91,7 +91,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("odds", "Exact odds published per outcome", "proof", "The player can see the chance of every row before paying.", {
     evo: ["variant", "The operator decides; the demo showed per-item odds."],
-    icybox: ["variant", "Percent per item shown; no hash."],
+    icybox: ["variant", "Chance and value range per rarity band (six bands) before buying; no per-item odds, no hash."],
     stockx: ["yes", "Tier odds published."],
     courtyard: ["variant", "Contents listed; the pack is the odds."],
     jemlit: ["yes", "Per-item chances in the page JSON."],
@@ -168,7 +168,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("sellback", "Sell an item back for balance", "money", "Convert a won item into balance instead of shipping it.", {
     evo: ["yes", "At displayed value, into balance."],
-    icybox: ["yes", "Undisclosed buyback; forced auto-buyback in places."],
+    icybox: ["yes", "Buyback set solely by IcyBox, formula undisclosed (reported about 90%); sold back automatically after the buyback period."],
     stockx: ["variant", "Resell on the marketplace."],
     courtyard: ["yes", "Sell to Courtyard."],
     jemlit: ["yes", ""],
@@ -179,7 +179,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("itemsonly", "Money leaves only as shipped items", "money", "No cash withdrawal; balance turns into money only by shipping an item.", {
     evo: ["yes", "Withdraw only through items."],
-    icybox: ["variant", "Buyback credit; shipping."],
+    icybox: ["no", "Balance can be withdrawn: minimum $6, fees by method (site FAQ); shipping 15 to 20 business days."],
     stockx: ["no", "Marketplace payout."],
     courtyard: ["no", "Cash on sell-back."],
     jemlit: ["variant", ""],
@@ -278,7 +278,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("retention", "Missions, streaks, free box, spend caps", "retain", "Mechanics that bring the player back or slow them down.", {
     evo: ["yes", "Retention module: missions, free entry, spend cap."],
-    icybox: ["unknown", ""],
+    icybox: ["variant", "Referral earnings, leaderboard, collection, gifting, limited-time boxes (App Store notes, support index)."],
     stockx: ["no", ""],
     courtyard: ["no", ""],
     jemlit: ["variant", "Rewards and daily cases."],
@@ -300,7 +300,7 @@ export const MECHANICS: Mechanic[] = [
   }),
   M("marketvalue", "Independent market value shown", "price", "A value next to the operator's own figure.", {
     evo: ["no", "Listed value only."],
-    icybox: ["no", "Retail-style values."],
+    icybox: ["no", "Listed values are IcyBox's own; reviews say they run above resale."],
     stockx: ["variant", "Its own marketplace prices."],
     courtyard: ["variant", "Its own sales data."],
     jemlit: ["no", ""],

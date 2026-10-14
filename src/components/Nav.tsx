@@ -17,7 +17,7 @@ const NAV_ICON: Record<string, string> = {
   presentation: "ph:sparkle",
 };
 
-const ORDER = ["misty", "jemlit", "vendor"];
+const ORDER = ["misty", "jemlit", "icybox", "vendor"];
 const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
 
 const groups: { label: string; items: { href: string; label: string; icon: string }[] }[] = [
@@ -46,6 +46,8 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
       { href: "/docs/features", label: "Feature report", icon: "ph:chart-bar" },
       { href: "/docs/misty", label: "Misty, explained", icon: "ph:book-open-text" },
       { href: "/docs/misty/dev", label: "Misty for developers", icon: "ph:file-code" },
+      { href: "/docs/jemlit", label: "Jemlit, explained", icon: "ph:book-open-text" },
+      { href: "/docs/icybox", label: "IcyBox, explained", icon: "ph:book-open-text" },
       { href: "/docs", label: "Docs", icon: "ph:book-open-text" },
     ],
   },

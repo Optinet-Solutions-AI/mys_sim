@@ -10,6 +10,7 @@ import { BattlesResults, RetentionResults, SellbackResults } from "./results/Oth
 import { CreditsResults, UpgraderResults } from "./results/MoreResults";
 import { MistyResults } from "./results/MistyResults";
 import { JemlitResults } from "./results/JemlitResults";
+import { IcyboxResults } from "./results/IcyboxResults";
 import { Badge, Button, Card } from "./ui";
 import { Icon } from "./Icon";
 
@@ -22,6 +23,7 @@ function Results({ run }: { run: RunRecord }) {
   if (r.kind === "upgrader") return <UpgraderResults r={r} />;
   if (r.kind === "misty") return <MistyResults r={r} />;
   if (r.kind === "jemlit") return <JemlitResults r={r} />;
+  if (r.kind === "icybox") return <IcyboxResults r={r} />;
   return <RetentionResults r={r} />;
 }
 

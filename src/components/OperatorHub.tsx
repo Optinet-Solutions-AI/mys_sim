@@ -14,6 +14,7 @@ import { UpgraderLab } from "./labs/UpgraderLab";
 import { MistyLab } from "./labs/MistyLab";
 import { JemlitLab } from "./labs/JemlitLab";
 import { JemlitGamesLab } from "./labs/JemlitGamesLab";
+import { IcyboxLab } from "./labs/IcyboxLab";
 
 function FeatureLab({ feature, operator }: { feature: FeatureDef; operator: string }) {
   switch (feature.lab) {
@@ -33,6 +34,8 @@ function FeatureLab({ feature, operator }: { feature: FeatureDef; operator: stri
       return <JemlitLab variant={feature} operator={operator} />;
     case "jemlit-games":
       return <JemlitGamesLab variant={feature} operator={operator} />;
+    case "icybox":
+      return <IcyboxLab variant={feature} operator={operator} />;
     case "upgrader":
       return <UpgraderLab variant={feature} operator={operator} />;
   }
