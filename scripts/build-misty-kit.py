@@ -31,7 +31,7 @@ def misty_types():
         m = re.search(r"export interface %s \{.*?\n\}\n" % name, s, flags=re.S)
         extra.append(m.group(0))
     extra.append("export type Progress = (done: number, total: number) => void;\n")
-    return "// Types used by the Misty engine. Extracted from the simulator's types.ts (kit v1.0).\n\n" + block + "\n" + "\n".join(extra)
+    return "// Types used by the Misty engine. Extracted from the simulator's types.ts (kit v1.1).\n// API vocabulary differs: kind oroos -> credit (freeSpins >= 1 -> bonus), mistees -> credits, weight -> percent, valueUsd -> valueCents.\n\n" + block + "\n" + "\n".join(extra)
 
 
 files = {}
@@ -46,7 +46,7 @@ for name in ("README.md", "schema.sql", "openapi.yaml", "server-reference.ts", "
 files["misty-boxes-2026-10-12.json"] = read(os.path.join(ROOT, "public", "captures", "misty-boxes-2026-10-12.json"))
 _fp = read(os.path.join(ROOT, "src", "lib", "frontendPrompt.ts"))
 files["FRONTEND_PROMPT.md"] = "# Prompt for the front-end session\n\nPaste everything below into a Claude session opened in the front-end repository.\n\n---\n\n" + _fp[_fp.index("`") + 1 : _fp.rindex("`")] + "\n"
-files["package.json"] = '{\n  "name": "misty-backend-kit",\n  "version": "1.0.0",\n  "private": true,\n  "type": "module",\n  "dependencies": { "@noble/hashes": "^2.4.0" },\n  "devDependencies": { "typescript": "^5.6.0", "tsx": "^4.19.0" }\n}\n'
+files["package.json"] = '{\n  "name": "misty-backend-kit",\n  "version": "1.1.0",\n  "private": true,\n  "type": "module",\n  "dependencies": { "@noble/hashes": "^2.4.0" },\n  "devDependencies": { "typescript": "^5.6.0", "tsx": "^4.19.0" }\n}\n'
 
 # rng.ts and metrics.ts import from ./types: make sure the names they need exist
 need = set(re.findall(r"import type \{([^}]*)\} from \"\./types\"", files["rng.ts"] + files["metrics.ts"]))

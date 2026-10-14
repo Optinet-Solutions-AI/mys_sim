@@ -86,6 +86,12 @@ export interface BonusTable {
   entries: { mistees: number; percent: number; from: number; to: number }[];
   total: number;
 }
+/** Kit 1.1: the hash frozen onto an open for its free-spin table. Rows in stored order, API vocabulary. */
+export function bonusHash(slug: string, bonus: { credits: number; percent: number }[]): string {
+  return sha256Hex(canonicalJson({ slug, bonus: bonus.map((b) => ({ credits: b.credits, percent: b.percent })) }));
+}
+export const bonusHashOfBox = (box: MistyBox) => bonusHash(box.slug, box.bonus.map((b) => ({ credits: b.mistees, percent: b.weight })));
+
 export function buildBonus(bonus: MistyBonusEntry[]): BonusTable {
   let acc = 0;
   const entries = bonus.map((b) => {

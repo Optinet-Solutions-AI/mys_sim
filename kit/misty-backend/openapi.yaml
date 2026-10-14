@@ -1,15 +1,17 @@
 openapi: 3.1.0
 info:
   title: Misty-style mystery box API
-  version: 1.0.0
+  version: 1.1.0
   description: >-
     Backend of a priced mystery box with published odds, a secret committed before payment, a player seed,
-    free spins, site credit and a public verifier. Kit v1.0, 13 October 2026. See README.md for the rules.
+    free spins, site credit and a public verifier. Kit v1.1, 14 October 2026. See README.md for the rules and
+    section 0 for what changed since 1.0. Every error body is { code, message, details? } (schema Error).
 servers:
   - url: https://api.example.com/v1
 tags:
   - name: boxes
   - name: opens
+  - name: awards
   - name: credit
   - name: verify
   - name: admin
@@ -18,7 +20,7 @@ paths:
   /boxes:
     get:
       tags: [boxes]
-      summary: List active boxes with the current odds table and its hash
+      summary: List active boxes with the current odds table, bonus table, hashes and maths
       responses:
         "200":
           description: OK
@@ -31,11 +33,11 @@ paths:
   /boxes/{slug}:
     get:
       tags: [boxes]
-      summary: One box, its ordered odds table, bonus table and hashes
+      summary: One box, its ordered odds table, bonus table, hashes, maths and trade-in rate
       parameters: [{ $ref: "#/components/parameters/slug" }]
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Box" } } } }
-        "404": { description: Unknown box }
+        "404": { $ref: "#/components/responses/Error" }
 
   /opens:
     post:
@@ -43,7 +45,7 @@ paths:
       summary: Create an open and commit to the secret (before payment)
       description: >-
         Generates a 32-byte CSPRNG server seed, stores it encrypted, pins the box price and the current table and
-        bonus hashes (or the player's segment table), and returns the hash of the seed. Expires if unpaid.
+        bonus hashes (or the player's segment table), and returns the hash of the seed. Expires if unpaid (15 minutes).
       security: [{ bearer: [] }]
       requestBody:
         required: true
@@ -60,6 +62,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OpenCommitted" }
+        "404": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
 
   /opens/{openId}/client-seed:
     put:
@@ -78,12 +82,14 @@ paths:
                 clientSeed: { type: string, minLength: 1, maxLength: 64, example: my-lucky-seed }
       responses:
         "204": { description: Stored }
-        "409": { description: Open already paid or resolved }
+        "409": { description: "seed_locked: open already paid or resolved", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "422": { description: "invalid_seed", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /opens/{openId}/pay:
     post:
       tags: [opens]
       summary: Pay for the open (card via provider, or site credit); idempotent
+      description: If no client seed was set, the server fills the published default (grailnoir-default) and records clientSeedSource = server-default.
       security: [{ bearer: [] }]
       parameters: [{ $ref: "#/components/parameters/openId" }]
       requestBody:
@@ -106,27 +112,30 @@ paths:
                 type: object
                 properties:
                   status: { type: string, enum: [paid] }
-                  creditBalance: { type: number }
-        "402": { description: Payment failed or insufficient credit }
-        "409": { description: Already paid, expired or seed missing }
+                  clientSeed: { type: string }
+                  clientSeedSource: { type: string, enum: [player, server-default] }
+                  creditBalance: { type: integer }
+        "402": { description: "payment_failed or insufficient_credit", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "409": { description: "open_not_payable or open_expired", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /opens/{openId}/spin:
     post:
       tags: [opens]
-      summary: Resolve the open and reveal the secret (once)
+      summary: Resolve the open from the pinned snapshots and reveal the secret (once)
       description: >-
-        Computes the digest, the roll, the band, any free spins; writes the item award or credit ledger entries in the
-        same transaction; returns the full record including the revealed server seed. A retry returns the stored
-        result, never a new roll.
+        Loads the table and bonus snapshots by the hashes pinned at create time (never the current versions), computes
+        the digest, the roll, the band, any free spins; writes the item award or credit ledger entries in the same
+        transaction; returns the full record including the revealed server seed. A retry returns the stored result,
+        never a new roll.
       security: [{ bearer: [] }]
       parameters: [{ $ref: "#/components/parameters/openId" }]
       responses:
         "200":
-          description: Resolved
+          description: Resolved (also on retry)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/OpenResolved" }
-        "409": { description: Not paid, or already resolved (returns the stored result with 200 instead when idempotent) }
+        "409": { description: "open_not_paid", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /opens/{openId}:
     get:
@@ -143,14 +152,60 @@ paths:
                 oneOf:
                   - { $ref: "#/components/schemas/OpenCommitted" }
                   - { $ref: "#/components/schemas/OpenResolved" }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /me/opens:
+    get:
+      tags: [opens]
+      summary: The caller's opens, newest first (resolved ones carry the revealed seed)
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: before, in: query, schema: { type: string, format: date-time }, description: cursor on createdAt }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      oneOf:
+                        - { $ref: "#/components/schemas/OpenCommitted" }
+                        - { $ref: "#/components/schemas/OpenResolved" }
+                  nextBefore: { type: string, format: date-time, nullable: true }
+
+  /me/awards:
+    get:
+      tags: [awards]
+      summary: The caller's item awards (awarded, shipping, shipped, traded), newest first
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [awarded, shipping, shipped, traded, cancelled] } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: before, in: query, schema: { type: string, format: date-time } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Award" }
+                  nextBefore: { type: string, format: date-time, nullable: true }
 
   /awards/{awardId}/trade-in:
     post:
-      tags: [credit]
+      tags: [awards, credit]
       summary: Trade an awarded item in for credit at the rate stored on the award
       security: [{ bearer: [] }]
-      parameters:
-        - { name: awardId, in: path, required: true, schema: { type: string, format: uuid } }
+      parameters: [{ $ref: "#/components/parameters/awardId" }]
       responses:
         "200":
           description: Credited
@@ -159,9 +214,39 @@ paths:
               schema:
                 type: object
                 properties:
-                  credits: { type: number }
-                  creditBalance: { type: number }
-        "409": { description: Already shipped or traded }
+                  award: { $ref: "#/components/schemas/Award" }
+                  credits: { type: integer }
+                  creditBalance: { type: integer }
+        "409": { description: "award_not_tradeable: already shipping, shipped or traded", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /awards/{awardId}/ship:
+    post:
+      tags: [awards]
+      summary: Ask for the item to be shipped; the award moves to shipping
+      description: Records the address and the fee quoted at request time. Carrier, label and insurance are the main site's fulfilment; update the shipment through admin.
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/awardId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address]
+              properties:
+                address: { $ref: "#/components/schemas/Address" }
+      responses:
+        "200":
+          description: Requested
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  award: { $ref: "#/components/schemas/Award" }
+                  shipment: { $ref: "#/components/schemas/Shipment" }
+        "409": { description: "award_not_shippable", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "422": { description: "validation_failed (address)", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /me/credits:
     get:
@@ -176,7 +261,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  balance: { type: number }
+                  balance: { type: integer }
                   ledger:
                     type: array
                     items: { $ref: "#/components/schemas/LedgerEntry" }
@@ -184,10 +269,12 @@ paths:
   /verify:
     get:
       tags: [verify]
-      summary: Public, stateless recomputation of an open
+      summary: Public, stateless recomputation of an open, with one check per claim
       description: >-
         Recomputes sha256(serverSeed), the digest, the roll and the outcome against the table identified by tableHash
-        (fetched from /tables/{hash}); bonus spins with the following nonces. Anyone may call it.
+        (loaded from the snapshot store), and the bonus spins with nonces 2, 3… against the bonus table identified by
+        bonusHash. Optional claims (serverHash, outcomeId, bonusCredits) are compared and reported one by one.
+        ok is true only when every check passes. Anyone may call it.
       parameters:
         - { name: slug, in: query, required: true, schema: { type: string } }
         - { name: serverSeed, in: query, required: true, schema: { type: string, pattern: "^[0-9a-f]{64}$" } }
@@ -195,13 +282,16 @@ paths:
         - { name: nonce, in: query, required: false, schema: { type: integer, default: 1 } }
         - { name: tableHash, in: query, required: true, schema: { type: string } }
         - { name: bonusHash, in: query, required: false, schema: { type: string } }
+        - { name: serverHash, in: query, required: false, schema: { type: string }, description: the hash shown before payment }
+        - { name: outcomeId, in: query, required: false, schema: { type: string }, description: the outcome the player was shown }
+        - { name: bonusCredits, in: query, required: false, schema: { type: string, example: "2,1" }, description: credits of each free spin in nonce order, comma separated }
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema: { $ref: "#/components/schemas/VerifyResult" }
-        "404": { description: Unknown table hash }
+        "404": { description: "unknown_table", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /tables/{tableHash}:
     get:
@@ -211,12 +301,22 @@ paths:
         - { name: tableHash, in: path, required: true, schema: { type: string } }
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/TableSnapshot" } } } }
-        "404": { description: Unknown hash }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /bonus-tables/{bonusHash}:
+    get:
+      tags: [verify]
+      summary: The frozen free-spin table for a hash (public)
+      parameters:
+        - { name: bonusHash, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BonusTableSnapshot" } } } }
+        "404": { $ref: "#/components/responses/Error" }
 
   /tables/log:
     get:
       tags: [verify]
-      summary: Public append-only log of every table activation (box, hash, segment, time)
+      summary: Public append-only log of every table activation (box, hashes, segment, time)
       responses:
         "200":
           description: OK
@@ -232,6 +332,28 @@ paths:
                     bonusHash: { type: string, nullable: true }
                     segmentId: { type: string, nullable: true }
                     publishedAt: { type: string, format: date-time }
+
+  /admin/boxes:
+    post:
+      tags: [admin]
+      summary: Create or update a box from the catalogue export, with its outcomes and bonus table
+      description: >-
+        Upserts the box and its outcomes (ids are the catalogue's and survive table versions), creates table version 1
+        and bonus version 1 from the given percents, validates them (sum 100, whole credits, values on items), activates
+        both and publishes the hashes. Later odds changes go through /admin/boxes/{slug}/tables.
+      security: [{ adminBearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BoxUpsert" }
+      responses:
+        "200":
+          description: Upserted, with the maths preview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Box" }
+        "422": { description: "validation_failed", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /admin/boxes/{slug}/tables:
     post:
@@ -253,7 +375,7 @@ paths:
                     type: object
                     required: [id, percent]
                     properties:
-                      id: { type: string, format: uuid }
+                      id: { type: string }
                       percent: { type: number, minimum: 0 }
                 note: { type: string }
       responses:
@@ -267,7 +389,7 @@ paths:
                   - type: object
                     properties:
                       maths: { $ref: "#/components/schemas/TableMaths" }
-        "422": { description: Percents do not sum to 100, missing outcome, negative percent }
+        "422": { description: "validation_failed: percents do not sum to 100, missing outcome, negative percent", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
 
   /admin/boxes/{slug}/tables/{tableId}/activate:
     post:
@@ -279,6 +401,58 @@ paths:
         - { name: tableId, in: path, required: true, schema: { type: string, format: uuid } }
       responses:
         "204": { description: Activated and published }
+
+  /admin/boxes/{slug}/bonus-tables:
+    post:
+      tags: [admin]
+      summary: Create a new bonus table version (validated, not yet active)
+      security: [{ adminBearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/slug" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [entries]
+              properties:
+                entries:
+                  type: array
+                  items: { $ref: "#/components/schemas/BonusEntry" }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/BonusTableSnapshot" } } } }
+        "422": { description: "validation_failed", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /admin/boxes/{slug}/bonus-tables/{bonusId}/activate:
+    post:
+      tags: [admin]
+      summary: Make a bonus table version current (publishes its hash to the log)
+      security: [{ adminBearer: [] }]
+      parameters:
+        - { $ref: "#/components/parameters/slug" }
+        - { name: bonusId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "204": { description: Activated and published }
+
+  /admin/shipments/{shipmentId}:
+    patch:
+      tags: [admin]
+      summary: Update a shipment (carrier, tracking, status); shipped marks the award shipped
+      security: [{ adminBearer: [] }]
+      parameters:
+        - { name: shipmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                carrier: { type: string }
+                tracking: { type: string }
+                status: { type: string, enum: [requested, label, shipped, delivered, cancelled] }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Shipment" } } } }
 
   /admin/segments:
     get:
@@ -316,32 +490,64 @@ paths:
 
 components:
   securitySchemes:
-    bearer: { type: http, scheme: bearer }
-    adminBearer: { type: http, scheme: bearer }
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >-
+        Issued by the main site's auth (Supabase Auth in the plan of record). The API verifies the signature (JWT
+        secret or JWKS), takes `sub` as the player's external id and creates the player on first sight. The front
+        end's mock accepts any token.
+    adminBearer:
+      type: http
+      scheme: bearer
+      description: A separate admin token (service role or an admin JWT claim).
   parameters:
     slug: { name: slug, in: path, required: true, schema: { type: string } }
     openId: { name: openId, in: path, required: true, schema: { type: string, format: uuid } }
+    awardId: { name: awardId, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
   schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [unknown_box, unknown_open, unknown_award, unknown_table, open_expired, seed_locked, open_not_payable, open_not_paid, payment_failed, insufficient_credit, award_not_tradeable, award_not_shippable, invalid_seed, validation_failed, unauthenticated, forbidden, rate_limited, internal]
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
     Outcome:
       type: object
+      required: [id, label, rarity, kind, credits, freeSpins, valueCents, percent]
       properties:
-        id: { type: string, format: uuid }
+        id: { type: string, description: the catalogue's id; stable across table versions }
         label: { type: string }
-        rarity: { type: string }
-        kind: { type: string, enum: [item, credit, bonus] }
-        credits: { type: number }
-        freeSpins: { type: integer }
-        valueCents: { type: integer, nullable: true }
+        rarity: { type: string, description: common | uncommon | rare | epic | legendary | grail | bonus (the catalogue's words) }
+        kind: { type: string, enum: [item, credit, bonus], description: bonus = credit plus free spins }
+        credits: { type: integer, description: whole credits paid by this outcome; 0 for items }
+        freeSpins: { type: integer, minimum: 0, maximum: 3 }
+        valueCents: { type: integer, nullable: true, description: listed value for items; null for credit and bonus }
         percent: { type: number, description: chance in percent; the box sums to 100 }
+        brand: { type: string, nullable: true }
+        category: { type: string, nullable: true }
+        imageUrl: { type: string, nullable: true }
     TableSnapshot:
       type: object
       properties:
         boxSlug: { type: string }
         version: { type: integer }
         tableHash: { type: string }
+        price: { type: number, description: the dollar price that went into the hash (10, not 1000) }
         priceCents: { type: integer }
         entries:
           type: array
+          description: in stored order; exactly the numbers that were hashed
           items:
             type: object
             properties:
@@ -349,16 +555,29 @@ components:
               percent: { type: number }
     BonusEntry:
       type: object
+      required: [credits, percent]
       properties:
-        credits: { type: number }
+        credits: { type: integer }
         percent: { type: number }
+    BonusTableSnapshot:
+      type: object
+      properties:
+        boxSlug: { type: string }
+        version: { type: integer }
+        bonusHash: { type: string, description: "sha256(canonicalJson({ slug, bonus: entries }))" }
+        entries:
+          type: array
+          items: { $ref: "#/components/schemas/BonusEntry" }
     Box:
       type: object
+      required: [slug, name, tagline, price, priceCents, tradeInPercent, tableHash, bonusHash, outcomes, bonus, maths]
       properties:
         slug: { type: string }
         name: { type: string }
         tagline: { type: string }
+        price: { type: number, description: dollars as listed (hashed) }
         priceCents: { type: integer }
+        tradeInPercent: { type: integer, description: credits paid for an item = round(valueCents × tradeInPercent ÷ 100 ÷ 100) }
         tableHash: { type: string }
         bonusHash: { type: string }
         outcomes:
@@ -368,6 +587,22 @@ components:
           type: array
           items: { $ref: "#/components/schemas/BonusEntry" }
         maths: { $ref: "#/components/schemas/TableMaths" }
+    BoxUpsert:
+      type: object
+      required: [slug, name, price, outcomes]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        tagline: { type: string }
+        price: { type: number, description: dollars }
+        tradeInPercent: { type: integer, default: 90 }
+        active: { type: boolean, default: true }
+        outcomes:
+          type: array
+          items: { $ref: "#/components/schemas/Outcome" }
+        bonus:
+          type: array
+          items: { $ref: "#/components/schemas/BonusEntry" }
     TableMaths:
       type: object
       description: Per-open sums, so the front end can show "pays back per open" honestly
@@ -382,21 +617,23 @@ components:
       properties:
         openId: { type: string, format: uuid }
         boxSlug: { type: string }
-        status: { type: string, enum: [created, paid] }
+        status: { type: string, enum: [created, paid, expired] }
         priceCents: { type: integer }
         serverHash: { type: string, description: sha256 of the server seed, shown before payment }
         tableHash: { type: string }
         bonusHash: { type: string }
         nonce: { type: integer, example: 1 }
         clientSeed: { type: string, nullable: true }
+        clientSeedSource: { type: string, nullable: true, enum: [player, server-default] }
         expiresAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
     BonusSpin:
       type: object
       properties:
         nonce: { type: integer }
         digest: { type: string }
         roll: { type: number }
-        credits: { type: number }
+        credits: { type: integer }
     OpenResolved:
       allOf:
         - { $ref: "#/components/schemas/OpenCommitted" }
@@ -410,19 +647,66 @@ components:
             bonusSpins:
               type: array
               items: { $ref: "#/components/schemas/BonusSpin" }
-            creditsAwarded: { type: number }
+            creditsAwarded: { type: integer }
             itemAward:
               type: object
               nullable: true
               properties:
                 awardId: { type: string, format: uuid }
                 valueCents: { type: integer }
-                tradeInCredits: { type: number }
-            verifyUrl: { type: string }
+                tradeInPercent: { type: integer }
+                tradeInCredits: { type: integer }
+            verifyUrl: { type: string, description: "/v1/verify with slug, serverSeed, clientSeed, tableHash, bonusHash, serverHash, outcomeId, bonusCredits" }
+            resolvedAt: { type: string, format: date-time }
+    Address:
+      type: object
+      required: [name, line1, city, postalCode, country]
+      properties:
+        name: { type: string }
+        line1: { type: string }
+        line2: { type: string }
+        city: { type: string }
+        region: { type: string }
+        postalCode: { type: string }
+        country: { type: string, description: ISO 3166-1 alpha-2 }
+        phone: { type: string }
+    Shipment:
+      type: object
+      properties:
+        shipmentId: { type: string, format: uuid }
+        awardId: { type: string, format: uuid }
+        address: { $ref: "#/components/schemas/Address" }
+        feeCents: { type: integer }
+        carrier: { type: string, nullable: true }
+        tracking: { type: string, nullable: true }
+        status: { type: string, enum: [requested, label, shipped, delivered, cancelled] }
+        requestedAt: { type: string, format: date-time }
+    Award:
+      type: object
+      properties:
+        awardId: { type: string, format: uuid }
+        openId: { type: string, format: uuid }
+        boxSlug: { type: string }
+        outcome: { $ref: "#/components/schemas/Outcome" }
+        valueCents: { type: integer }
+        status: { type: string, enum: [awarded, shipping, shipped, traded, cancelled] }
+        tradeInPercent: { type: integer }
+        tradeInCredits: { type: integer }
+        shipment: { $ref: "#/components/schemas/Shipment", nullable: true }
+        createdAt: { type: string, format: date-time }
     VerifyResult:
       type: object
       properties:
-        ok: { type: boolean }
+        ok: { type: boolean, description: true only when every check below is true }
+        checks:
+          type: object
+          description: one boolean per claim; null when the claim was not supplied
+          properties:
+            serverHash: { type: boolean, nullable: true }
+            tableHash: { type: boolean }
+            bonusHash: { type: boolean, nullable: true }
+            outcome: { type: boolean, nullable: true }
+            bonusSpins: { type: boolean, nullable: true }
         serverHash: { type: string }
         digest: { type: string }
         roll: { type: number }
@@ -435,7 +719,7 @@ components:
       type: object
       properties:
         id: { type: integer }
-        delta: { type: number }
+        delta: { type: integer }
         reason: { type: string }
         refType: { type: string, nullable: true }
         refId: { type: string, nullable: true }

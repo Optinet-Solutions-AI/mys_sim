@@ -45,6 +45,7 @@ const TOC = [
   ["plan", "10. Implementation plan"],
   ["decisions", "11. Decisions for the main site"],
   ["frontend-prompt", "12. Prompt for the front end"],
+  ["changes", "13. What changed in 1.1"],
   ["sandbox", "API sandbox"],
 ] as const;
 
@@ -102,17 +103,22 @@ const SEQ = `front end                      API                                 
 
 const ENDPOINTS: [string, string, string][] = [
   ["GET", "/v1/boxes", "Active boxes with the current ordered table, bonus table and hashes."],
-  ["GET", "/v1/boxes/{slug}", "One box. Includes the per-open maths so the front end can show pays-back honestly."],
+  ["GET", "/v1/boxes/{slug}", "One box: ordered table, bonus table, both hashes, the dollar price that was hashed, tradeInPercent, and the per-open maths so the front end can show pays-back honestly."],
   ["POST", "/v1/opens", "Create the open: CSPRNG seed, store encrypted, return sha256(seed), pin price and hashes, set expiry."],
   ["PUT", "/v1/opens/{id}/client-seed", "Player seed. Allowed only while status is created (before payment)."],
   ["POST", "/v1/opens/{id}/pay", "Card or credit. Idempotent on a key. Fills the published default seed if none was set and records that."],
-  ["POST", "/v1/opens/{id}/spin", "Resolve once, write award + ledger in one transaction, reveal the seed. Retries return the stored result."],
+  ["POST", "/v1/opens/{id}/spin", "Resolve once from the snapshots pinned at create time, write award + ledger in one transaction, reveal the seed. Retries return the stored result."],
   ["GET", "/v1/opens/{id}", "Read an open. The seed appears only after reveal."],
-  ["POST", "/v1/awards/{id}/trade-in", "Item to credit at the rate stored on the award."],
+  ["GET", "/v1/me/opens", "The caller's opens, newest first (1.1)."],
+  ["GET", "/v1/me/awards", "The caller's item awards with status and shipment (1.1)."],
+  ["POST", "/v1/awards/{id}/trade-in", "Item to credit at the rate stored on the award (90% on the main site)."],
+  ["POST", "/v1/awards/{id}/ship", "Address in; the award moves to shipping; fee, carrier and tracking on the shipment (1.1)."],
   ["GET", "/v1/me/credits", "Balance and ledger."],
-  ["GET", "/v1/verify", "Public, stateless: recompute hash, digest, roll, band, bonus spins for a given table hash."],
-  ["GET", "/v1/tables/{hash}", "The frozen table for a hash."],
+  ["GET", "/v1/verify", "Public, stateless: recompute hash, digest, roll, band, bonus spins; one boolean per claim (seed hash, table hash, bonus hash, outcome, free spins) (1.1)."],
+  ["GET", "/v1/tables/{hash}", "The frozen table for a hash, with the dollar price and the exact numbers hashed."],
+  ["GET", "/v1/bonus-tables/{hash}", "The frozen free-spin table for a hash (1.1)."],
   ["GET", "/v1/tables/log", "Public append-only log of every table activation (box, hash, segment, time)."],
+  ["POST", "/v1/admin/boxes", "Upsert a box with its outcomes and bonus table from the main site's catalogue export; creates and activates version 1 of both (1.1)."],
   ["POST", "/v1/admin/boxes/{slug}/tables", "New table version: validated (sum 100, all outcomes), with the maths preview. Never edit in place."],
   ["POST", "/v1/admin/boxes/{slug}/tables/{id}/activate", "Make current; publishes the hash to the log."],
   ["PUT", "/v1/admin/segments/{id}/tables/{slug}", "Point a segment at a table version (publishes too). Build only if the product says yes."],
@@ -120,14 +126,15 @@ const ENDPOINTS: [string, string, string][] = [
 
 const TABLES: [string, string][] = [
   ["boxes", "slug, name, price_cents, current_table_id, current_bonus_id"],
-  ["outcomes", "per box: label, rarity, kind (item | credit | bonus), credits, free_spins, value_cents. Ids survive table versions."],
-  ["box_tables", "immutable versions: ordered entries [{id, percent}], percent_sum = 100, table_hash unique, activated_at"],
+  ["outcomes", "per box: label, rarity, kind (item | credit | bonus), credits (whole), free_spins, value_cents, brand, category, image_url. Ids survive table versions."],
+  ["box_tables", "immutable versions: ordered entries [{id, percent}] stored exactly as hashed (dollar price in the hash), percent_sum = 100, table_hash unique, activated_at"],
   ["bonus_tables", "immutable versions of the free-spin table, bonus_hash"],
   ["table_publication_log", "every activation: box, table_hash, bonus_hash, segment, time. Public."],
   ["segments, segment_tables, players", "optional per-segment table overrides; a player is in at most one segment"],
   ["opens", "player, box, pinned table_hash and bonus_hash, price, status, server_seed_enc, server_hash, client_seed + source, nonce_start, payment, digest, roll, outcome_id, credits_awarded, resolved_at, revealed_at, expires_at"],
   ["bonus_spins", "per open: nonce, digest, roll, credits"],
-  ["item_awards", "per open: value_cents, status (awarded | shipping | shipped | traded), trade_in_credits"],
+  ["item_awards", "per open: value_cents, status (awarded | shipping | shipped | traded), trade_in_percent and trade_in_credits fixed at award time"],
+  ["award_shipments", "one per ship request: address, fee_cents, carrier, tracking, status (1.1)"],
   ["credit_ledger", "append-only deltas with reasons; balance = sum; never negative; no cash-out path"],
   ["admin_audit", "who changed what, before and after"],
 ];
@@ -160,7 +167,7 @@ export default function MistyDevPage() {
           <li>The table used is snapshotted and hashed (&quot;frozen onto the open&quot;); the secret is revealed after the spin.</li>
           <li>Payout is a physical item (ship or trade in for credit) or site credit, which lives in an append-only ledger and never becomes cash.</li>
         </ul>
-        <P>Out of scope here: competitions, the payments provider, shipping, KYC. The kit marks the hooks.</P>
+        <P>Out of scope here: competitions, the payments provider, KYC. Shipping has an endpoint and a table, not a carrier. The kit marks the hooks.</P>
       </section>
 
       <section className="space-y-3">
@@ -429,7 +436,7 @@ export default function MistyDevPage() {
           <li>Whether to show the table hash on the box page before payment (recommended: yes).</li>
         </ul>
         <div className="pt-1">
-          <Badge>Kit v1.0 · 13 October 2026</Badge>
+          <Badge>Kit v1.1 · 14 October 2026</Badge>
         </div>
       </section>
 
@@ -442,6 +449,43 @@ export default function MistyDevPage() {
           <li>The prompt forbids computing outcomes in the browser and forbids near-miss effects. Keep both lines if you edit it.</li>
           <li>It is also in the kit as FRONTEND_PROMPT.md.</li>
         </ul>
+      </section>
+
+      <section className="space-y-3">
+        <H2 id="changes">13. What changed in 1.1</H2>
+        <P>The front end built against kit 1.0 (its mock runs at <Ext href="https://mysterybox-seven.vercel.app">mysterybox-seven.vercel.app</Ext>) and sent a list of gaps on 14 October 2026. Each point was checked against the kit. The roll did not change; every 1.0 vector still passes.</P>
+        <Card>
+          <table className="w-full text-xs">
+            <thead>
+              <tr>
+                <Th>They found</Th>
+                <Th>Decision</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["The table hash only matches with the dollar price and the raw percents; rounding to 8 decimals changes it.", "Correct. Hash input: { slug, price in dollars, table: [{ id, percent }] } with the percents exactly as stored. The database keeps the hashed JSON as is. The 1.0 note about numeric(12,8) is gone. test-vectors.json carries tableHashInput, the exact string hashed."],
+                ["bonusHash has no recipe.", "Their placeholder is now the recipe: sha256(canonicalJson({ slug, bonus: [{ credits, percent }] })). Engine function bonusHash; vectors carry bonusHash and bonusHashInput."],
+                ["Outcome kinds: openapi says item, credit, bonus; the vectors say oroos, mistees, weight; the sandbox sent free-spin rows as credit.", "The API vocabulary is the contract: kind item | credit | bonus (bonus = credit plus free spins), credits, percent, valueCents. The engine keeps Misty's words; the mapping is in the README. The sandbox below sends free-spin rows as bonus and the vectors carry an api block."],
+                ["Outcomes have no image, brand or category; the box response lacked rarity, tagline, bonusHash and maths.", "Added imageUrl, brand, category on outcomes; the box returns tagline, bonusHash, maths, tradeInPercent and the dollar price."],
+                ["No endpoint to list awards or opens; no shipping endpoint.", "GET /v1/me/awards, GET /v1/me/opens, POST /v1/awards/{id}/ship; award_shipments in the schema."],
+                ["GET /v1/tables/{hash} returns only the main table; the public check needs the bonus table too.", "GET /v1/bonus-tables/{bonusHash}; the open and verifyUrl carry both hashes."],
+                ["The browser also checks the outcome, each free spin's credits and the bonus hash; /v1/verify did not.", "GET /v1/verify takes outcomeId, bonusCredits and bonusHash and answers ok plus one boolean per claim."],
+                ["Every open pins a full copy of the table.", "Same invariant. The reference server now loads the pinned snapshots by hash instead of refusing when the current table moved."],
+                ["Credits are whole numbers on their side; Misty's $25 and $50 bonus tables are fractional.", "Decided: credits are whole numbers in the contract, shown as $1 each. The Misty capture stays reference data and is not seeded on the main site."],
+                ["Trade-in 90%, default seed grailnoir-default, 15-minute expiry.", "Recorded as the main site's policy; tradeInPercent is returned on the box and fixed on every award."],
+                ["Their catalogue is their own 8 boxes, not the Misty capture.", "POST /v1/admin/boxes upserts a box from the catalogue export and activates its first table and bonus versions."],
+                ["Who issues the bearer token; the error body shape.", "The main site's auth issues the JWT (Supabase Auth in the plan); the API verifies it and maps sub to the player. Errors are { code, message, details? } with the codes listed in the README."],
+              ].map(([a, b]) => (
+                <tr key={a} className="border-t border-line align-top">
+                  <Td>{a}</Td>
+                  <Td>{b}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+        <P>Still open for the main site: segments (if yes, the publication log is mandatory), spend limits and a paid-in / got-back counter, publishing the table hash before payment, shipping fees and carrier, and whether the Analysis section is shown to players.</P>
       </section>
 
       <section className="space-y-3">

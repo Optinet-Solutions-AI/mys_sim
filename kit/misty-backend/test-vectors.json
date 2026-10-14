@@ -1,18 +1,25 @@
 {
-  "kit": "misty-backend 1.0",
-  "generated": "2026-10-13",
+  "kit": "misty-backend 1.1",
+  "generated": "2026-10-14",
   "recipe": {
     "serverHash": "sha256(serverSeedHex)",
     "key": "DRAW-<slug>-<serverSeed>-<clientSeed>-<nonce>",
     "digest": "HMAC-SHA256(key, message = '')",
     "roll": "parseInt(digest.slice(0, 13), 16) / 2^52",
     "resolve": "position = roll × sum(percent); first band in stored order whose upper edge is above the position",
-    "tableHash": "sha256(canonicalJson({ slug, price, table: [{ id, percent }] })) with sorted keys and no whitespace"
+    "tableHash": "sha256(canonicalJson({ slug, price, table: [{ id, percent }] })) with sorted keys and no whitespace; price in dollars; percents exactly as stored",
+    "bonusHash": "sha256(canonicalJson({ slug, bonus: [{ credits, percent }] })) with sorted keys and no whitespace; rows in stored order",
+    "canonicalJson": "keys sorted alphabetically at every level, no whitespace, numbers as JSON.stringify prints them",
+    "kinds": "API kind: item | credit | bonus (bonus = credit plus free spins). Engine: item | oroos (credit); a row with freeSpins ≥ 1 is bonus."
   },
   "box": {
     "slug": "timepiece-suite",
     "price": 10,
+    "priceCents": 1000,
     "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+    "tableHashInput": "{\"price\":10,\"slug\":\"timepiece-suite\",\"table\":[{\"id\":\"defbeedf-5cea-4e62-82ec-7c1119bfa7eb\",\"percent\":30.83042011764706},{\"id\":\"54771a4e-4eaa-468d-891d-e9e4fd026e2d\",\"percent\":20.553613411764704},{\"id\":\"d5a85838-92d3-4547-94fd-de312eb3ac4d\",\"percent\":18.498252070588237},{\"id\":\"d2892691-b234-45d0-a903-19e05e245cb4\",\"percent\":9},{\"id\":\"daca5b60-d544-4a7c-84e9-6d7d6f2e880b\",\"percent\":8.221445364705882},{\"id\":\"fb06b996-e027-4bbd-9a88-95c3a986a3d3\",\"percent\":6.166084023529412},{\"id\":\"62ed1e2b-7bd7-4427-bdb9-f6e2b1b6c59e\",\"percent\":2.569201676470588},{\"id\":\"09e14bce-7eee-451f-8065-d3dca88faafd\",\"percent\":2},{\"id\":\"72801ec5-767f-48b0-84a4-9a439d5290ff\",\"percent\":0.579465},{\"id\":\"034ef938-596c-4e68-b6af-ddcb0acf279c\",\"percent\":0.54776},{\"id\":\"916be1e0-fa08-40c8-aa55-bb39539320e8\",\"percent\":0.5138403352941177},{\"id\":\"32d8b50b-74ff-4b21-9201-ee49c39ec0fa\",\"percent\":0.22833},{\"id\":\"f92b5056-8cd3-4a7d-856b-c1fd086a2821\",\"percent\":0.110719},{\"id\":\"e8def10e-cdf7-49db-b431-530568197162\",\"percent\":0.108225},{\"id\":\"e7013300-99ea-465f-8658-32aae28e0e1c\",\"percent\":0.053229},{\"id\":\"81034127-be39-4bfe-b791-e11dd8cdc676\",\"percent\":0.015365},{\"id\":\"dff0b77f-a875-439a-9f70-30d66bd01cca\",\"percent\":0.00405}]}",
+    "bonusHash": "5d4155c15939f18cb382f5f3fc85113872e930d3e45a2a44c6d1d7b4c9140c96",
+    "bonusHashInput": "{\"bonus\":[{\"credits\":1,\"percent\":70},{\"credits\":2,\"percent\":22},{\"credits\":5,\"percent\":6},{\"credits\":10,\"percent\":1.8},{\"credits\":20,\"percent\":0.2}],\"slug\":\"timepiece-suite\"}",
     "total": 100.00000000000001,
     "entries": [
       {
@@ -158,6 +165,213 @@
       }
     ]
   },
+  "api": {
+    "box": {
+      "slug": "timepiece-suite",
+      "name": "The Timepiece Suite",
+      "tagline": "A Rolex Lady-Datejust waits at the top. Fragrance, Chanel and Louis Vuitton on the way up. Every box holds at least 10 credits.",
+      "price": 10,
+      "priceCents": 1000,
+      "tradeInPercent": 90,
+      "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+      "bonusHash": "5d4155c15939f18cb382f5f3fc85113872e930d3e45a2a44c6d1d7b4c9140c96",
+      "outcomes": [
+        {
+          "id": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "label": "2 Mistees",
+          "rarity": "common",
+          "kind": "credit",
+          "credits": 2,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 30.83042011764706
+        },
+        {
+          "id": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "label": "3 Mistees",
+          "rarity": "uncommon",
+          "kind": "credit",
+          "credits": 3,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 20.553613411764704
+        },
+        {
+          "id": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+          "label": "1 Mistees",
+          "rarity": "common",
+          "kind": "credit",
+          "credits": 1,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 18.498252070588237
+        },
+        {
+          "id": "d2892691-b234-45d0-a903-19e05e245cb4",
+          "label": "Free Spin + 1 Mistees",
+          "rarity": "bonus",
+          "kind": "bonus",
+          "credits": 1,
+          "freeSpins": 1,
+          "valueCents": null,
+          "percent": 9
+        },
+        {
+          "id": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+          "label": "4 Mistees",
+          "rarity": "uncommon",
+          "kind": "credit",
+          "credits": 4,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 8.221445364705882
+        },
+        {
+          "id": "fb06b996-e027-4bbd-9a88-95c3a986a3d3",
+          "label": "5 Mistees",
+          "rarity": "rare",
+          "kind": "credit",
+          "credits": 5,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 6.166084023529412
+        },
+        {
+          "id": "62ed1e2b-7bd7-4427-bdb9-f6e2b1b6c59e",
+          "label": "10 Mistees",
+          "rarity": "epic",
+          "kind": "credit",
+          "credits": 10,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 2.569201676470588
+        },
+        {
+          "id": "09e14bce-7eee-451f-8065-d3dca88faafd",
+          "label": "2 Free Spins + 2 Mistees",
+          "rarity": "bonus",
+          "kind": "bonus",
+          "credits": 2,
+          "freeSpins": 2,
+          "valueCents": null,
+          "percent": 2
+        },
+        {
+          "id": "72801ec5-767f-48b0-84a4-9a439d5290ff",
+          "label": "Chanel Rouge Coco lip colour, 434 Mademoiselle",
+          "rarity": "epic",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 6500,
+          "percent": 0.579465
+        },
+        {
+          "id": "034ef938-596c-4e68-b6af-ddcb0acf279c",
+          "label": "Ralph Lauren Romance eau de parfum, 100 ml",
+          "rarity": "epic",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 7000,
+          "percent": 0.54776
+        },
+        {
+          "id": "916be1e0-fa08-40c8-aa55-bb39539320e8",
+          "label": "30 Mistees",
+          "rarity": "legendary",
+          "kind": "credit",
+          "credits": 30,
+          "freeSpins": 0,
+          "valueCents": null,
+          "percent": 0.5138403352941177
+        },
+        {
+          "id": "32d8b50b-74ff-4b21-9201-ee49c39ec0fa",
+          "label": "Tiffany & Co. Rose Gold eau de parfum, 75 ml",
+          "rarity": "epic",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 18500,
+          "percent": 0.22833
+        },
+        {
+          "id": "f92b5056-8cd3-4a7d-856b-c1fd086a2821",
+          "label": "Louis Vuitton x Murakami Spell on You Cherry",
+          "rarity": "legendary",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 41000,
+          "percent": 0.110719
+        },
+        {
+          "id": "e8def10e-cdf7-49db-b431-530568197162",
+          "label": "Louis Vuitton x Murakami Spell on You Cherry Blossom",
+          "rarity": "legendary",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 42000,
+          "percent": 0.108225
+        },
+        {
+          "id": "e7013300-99ea-465f-8658-32aae28e0e1c",
+          "label": "Louis Vuitton x Murakami Denim Cerise shawl",
+          "rarity": "legendary",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 92000,
+          "percent": 0.053229
+        },
+        {
+          "id": "81034127-be39-4bfe-b791-e11dd8cdc676",
+          "label": "Louis Vuitton x Murakami Sunset Cherry bag",
+          "rarity": "grail",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 364500,
+          "percent": 0.015365
+        },
+        {
+          "id": "dff0b77f-a875-439a-9f70-30d66bd01cca",
+          "label": "Rolex Lady-Datejust 28 mm, pink dial, Jubilee bracelet, ref. 279174",
+          "rarity": "grail",
+          "kind": "item",
+          "credits": 0,
+          "freeSpins": 0,
+          "valueCents": 1603500,
+          "percent": 0.00405
+        }
+      ],
+      "bonus": [
+        {
+          "credits": 1,
+          "percent": 70
+        },
+        {
+          "credits": 2,
+          "percent": 22
+        },
+        {
+          "credits": 5,
+          "percent": 6
+        },
+        {
+          "credits": 10,
+          "percent": 1.8
+        },
+        {
+          "credits": 20,
+          "percent": 0.2
+        }
+      ]
+    },
+    "note": "Misty's own bonus tables for the $25 and $50 boxes carry fractional credits (reference data); the main site's contract uses whole credits."
+  },
   "vectors": [
     {
       "serverSeed": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
@@ -171,6 +385,7 @@
           "roll": 0.7478648656717957,
           "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
           "outcomeLabel": "Free Spin + 1 Mistees",
+          "outcomeKind": "bonus",
           "bandFrom": 69.8822856,
           "bandTo": 78.8822856,
           "bonusIfFreeSpin": 2
@@ -182,6 +397,7 @@
           "roll": 0.6976701476910381,
           "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
           "outcomeLabel": "1 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 51.38403352941177,
           "bandTo": 69.8822856,
           "bonusIfFreeSpin": 1
@@ -193,6 +409,7 @@
           "roll": 0.8671917336636588,
           "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
           "outcomeLabel": "4 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 78.8822856,
           "bandTo": 87.10373096470589,
           "bonusIfFreeSpin": 2
@@ -204,6 +421,7 @@
           "roll": 0.816998733561485,
           "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
           "outcomeLabel": "4 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 78.8822856,
           "bandTo": 87.10373096470589,
           "bonusIfFreeSpin": 2
@@ -215,11 +433,28 @@
           "roll": 0.44537418881268165,
           "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
           "outcomeLabel": "3 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 30.83042011764706,
           "bandTo": 51.38403352941177,
           "bonusIfFreeSpin": 1
         }
-      ]
+      ],
+      "resolved": {
+        "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+        "kind": "bonus",
+        "credits": 1,
+        "freeSpins": 1,
+        "bonusSpins": [
+          {
+            "nonce": 2,
+            "digest": "b29a82c3ba7eeb70da2e361d453aba89216455831f247b30f1f49c01be7dc1fe",
+            "roll": 0.6976701476910381,
+            "credits": 1
+          }
+        ],
+        "creditsAwarded": 2,
+        "bonusCreditsParam": "1"
+      }
     },
     {
       "serverSeed": "ffeeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
@@ -233,6 +468,7 @@
           "roll": 0.33230222138858356,
           "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
           "outcomeLabel": "3 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 30.83042011764706,
           "bandTo": 51.38403352941177,
           "bonusIfFreeSpin": 1
@@ -244,6 +480,7 @@
           "roll": 0.9229488487236133,
           "outcomeId": "fb06b996-e027-4bbd-9a88-95c3a986a3d3",
           "outcomeLabel": "5 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 87.10373096470589,
           "bandTo": 93.2698149882353,
           "bonusIfFreeSpin": 5
@@ -255,6 +492,7 @@
           "roll": 0.1305462593607356,
           "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
           "outcomeLabel": "2 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 0,
           "bandTo": 30.83042011764706,
           "bonusIfFreeSpin": 1
@@ -266,6 +504,7 @@
           "roll": 0.27606160467572827,
           "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
           "outcomeLabel": "2 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 0,
           "bandTo": 30.83042011764706,
           "bonusIfFreeSpin": 1
@@ -277,11 +516,21 @@
           "roll": 0.17729224132451793,
           "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
           "outcomeLabel": "2 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 0,
           "bandTo": 30.83042011764706,
           "bonusIfFreeSpin": 1
         }
-      ]
+      ],
+      "resolved": {
+        "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+        "kind": "credit",
+        "credits": 3,
+        "freeSpins": 0,
+        "bonusSpins": [],
+        "creditsAwarded": 3,
+        "bonusCreditsParam": ""
+      }
     },
     {
       "serverSeed": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -295,6 +544,7 @@
           "roll": 0.3908501513000002,
           "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
           "outcomeLabel": "3 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 30.83042011764706,
           "bandTo": 51.38403352941177,
           "bonusIfFreeSpin": 1
@@ -306,6 +556,7 @@
           "roll": 0.17079007467533458,
           "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
           "outcomeLabel": "2 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 0,
           "bandTo": 30.83042011764706,
           "bonusIfFreeSpin": 1
@@ -317,6 +568,7 @@
           "roll": 0.7660991766426455,
           "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
           "outcomeLabel": "Free Spin + 1 Mistees",
+          "outcomeKind": "bonus",
           "bandFrom": 69.8822856,
           "bandTo": 78.8822856,
           "bonusIfFreeSpin": 2
@@ -328,6 +580,7 @@
           "roll": 0.34229202040142725,
           "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
           "outcomeLabel": "3 Mistees",
+          "outcomeKind": "credit",
           "bandFrom": 30.83042011764706,
           "bandTo": 51.38403352941177,
           "bonusIfFreeSpin": 1
@@ -339,15 +592,26 @@
           "roll": 0.740622534417599,
           "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
           "outcomeLabel": "Free Spin + 1 Mistees",
+          "outcomeKind": "bonus",
           "bandFrom": 69.8822856,
           "bandTo": 78.8822856,
           "bonusIfFreeSpin": 2
         }
-      ]
+      ],
+      "resolved": {
+        "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+        "kind": "credit",
+        "credits": 3,
+        "freeSpins": 0,
+        "bonusSpins": [],
+        "creditsAwarded": 3,
+        "bonusCreditsParam": ""
+      }
     }
   ],
   "fullOpen": {
     "commitmentShownBeforePayment": "01885fedac27477110066cd0890adc566951d68c1a1e03842212f28c6d46fd6c",
+    "bonusHash": "5d4155c15939f18cb382f5f3fc85113872e930d3e45a2a44c6d1d7b4c9140c96",
     "spin": {
       "idx": 1,
       "playerId": "guest",
