@@ -17,6 +17,9 @@ const NAV_ICON: Record<string, string> = {
   presentation: "ph:sparkle",
 };
 
+const ORDER = ["misty", "jemlit", "vendor"];
+const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
+
 const groups: { label: string; items: { href: string; label: string; icon: string }[] }[] = [
   {
     label: "Hub",
@@ -30,7 +33,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
   },
   {
     label: "Operators",
-    items: [...OPERATORS.filter((o) => o.kind === "operator")].sort((a, b) => (a.id === "misty" ? -1 : b.id === "misty" ? 1 : 0)).map((o) => ({ href: `/operators/${o.id}`, label: o.name.replace(" Mystery Boxes", "").replace(" platform", ""), icon: NAV_ICON[o.id] ?? "ph:package" })),
+    items: [...OPERATORS.filter((o) => o.kind === "operator")].sort((a, b) => rank(a.id) - rank(b.id)).map((o) => ({ href: `/operators/${o.id}`, label: o.name.replace(" Mystery Boxes", "").replace(" platform", ""), icon: NAV_ICON[o.id] ?? "ph:package" })),
   },
   {
     label: "Ours and others",

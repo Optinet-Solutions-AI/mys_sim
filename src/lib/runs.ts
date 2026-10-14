@@ -6,7 +6,7 @@ import { headlineFor } from "./report";
 
 function boxesOf(config: AnyConfig): BoxDef[] {
   if ("boxes" in config) return config.boxes;
-  if ("box" in config) return [config.box];
+  if ("box" in config && config.box && "ticketTotal" in config.box) return [config.box];
   return [];
 }
 

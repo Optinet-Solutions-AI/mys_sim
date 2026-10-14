@@ -12,6 +12,7 @@ import { RetentionLab } from "./labs/RetentionLab";
 import { CreditsLab } from "./labs/CreditsLab";
 import { UpgraderLab } from "./labs/UpgraderLab";
 import { MistyLab } from "./labs/MistyLab";
+import { JemlitLab } from "./labs/JemlitLab";
 
 function FeatureLab({ feature, operator }: { feature: FeatureDef; operator: string }) {
   switch (feature.lab) {
@@ -27,6 +28,8 @@ function FeatureLab({ feature, operator }: { feature: FeatureDef; operator: stri
       return <CreditsLab variant={feature} operator={operator} />;
     case "misty":
       return <MistyLab variant={feature} operator={operator} />;
+    case "jemlit":
+      return <JemlitLab variant={feature} operator={operator} />;
     case "upgrader":
       return <UpgraderLab variant={feature} operator={operator} />;
   }

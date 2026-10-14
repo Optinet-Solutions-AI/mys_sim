@@ -2,6 +2,7 @@
 // allowed settings. Nothing from one operator is mixed into another's screens.
 import { applyGuarantee } from "@/engine/table";
 import { DEFAULT_MISTY, mistyConfigFor } from "./mistyPresets";
+import { DEFAULT_JEMLIT } from "./jemlitPresets";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import type { AnyConfig, BattleMode, BattlesConfig, CreditsConfig, LabId, MysteryBoxConfig, RetentionConfig, SellbackConfig, UpgraderConfig } from "@/engine/types";
 import {
@@ -340,11 +341,27 @@ export const OPERATORS: OperatorDef[] = [
     id: "jemlit",
     name: "Jemlit",
     kind: "operator",
-    tagline: "Published HMAC scheme, cashback credits never cash, Upgrader",
+    tagline: "",
     description: "A fully published provably-fair scheme (HMAC-SHA512/256 with lower and upper ranges), drop tables embedded in the page, headline items at one in a million, items exchangeable for credits at a 0 to 30% haircut that are 'not worth real money' and expire after a year, 'guaranteed' tiers, and an Upgrader.",
     icon: "fluent:mobile-phone",
     sources: "Dossier 1 §1.3, §2.2",
     features: [
+      {
+        key: "jemlit-boxes-live",
+        lab: "jemlit",
+        minimal: true,
+        doc: {
+          title: "Mystery boxes",
+          short: "All 333 live boxes with their real names, prices and page chances, opened the way the site does it.",
+          what: "A copy of Jemlit's box mechanism as captured from the live site on 14 October 2026: every box with its exact chances and roll bands from the box API, the cashback per item, Credits as the only payout for most opens, and the published proof (SHA-512 hash of a server seed shown before play, a browser-generated client seed the player can change, a play count, HMAC-SHA512/256, a roll from 0 to 100 read against the bands). Below the box the decision of every spin is written out step by step. The cog is the back office.",
+          configure: ["Box & odds: pick any captured box; edit any chance; fit the big items to a target return.", "Per player: give a player their own odds.", "What things are worth: a Credit on screen and really; shipped items at resale.", "The proof: on (Jemlit's recipe) or off."],
+          read: ["Return at listed prices, in Credits and really; the bands; the check."],
+          source: "Live box API, algorithm page, terms and FAQ captured 14 October 2026 (research/captures); dossier 1 §1.3 and §2.2.",
+        },
+        initial: DEFAULT_JEMLIT,
+      },
+    ],
+    hiddenFeatures: [
       {
         key: "jemlit-ebox",
         lab: "mystery-box",

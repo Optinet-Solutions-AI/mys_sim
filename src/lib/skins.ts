@@ -290,6 +290,20 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
       "Run opens the box thousands of times and compares counts, returns and per-player results with what the tables say.",
     ],
   },
+  "jemlit-boxes-live": {
+    player: [
+      "Pick a box, pay its price in Credits and spin. The wheel stops on one item.",
+      "Most spins pay less than the box cost: a sticker, a case, a cable, or a few Credits. An item worth the price or more drops rarely; the headline items sit at one in a million.",
+      "A win can be shipped or exchanged for Credits at its cashback, usually 90% of the listed price. Credits buy more boxes and games and never become money.",
+      "Before play you see a scrambled copy of the site's secret. Your browser makes a seed you can change. Every spin counts up by one. The secret is revealed when you rotate it, and every spin under it can be rechecked.",
+    ],
+    settings: [
+      "Box & odds: the live table of the chosen box. Every chance can be changed; the sum and what the box pays back update as you type. Fit sets the big items to a target return; Jemlit's own boxes sit at 80%.",
+      "Per player: give any player a private table. Jemlit commits the seed, not the table, so every check still passes.",
+      "What things are worth: one Credit on screen ($1) and really (about 40 cents, an assumption); shipped items at resale.",
+      "The proof: Jemlit's recipe on or off; the client seed.",
+    ],
+  },
   "misty-boxes-generic": {
     player: ["The same Timepiece Suite table inside the shared research lab, so it can be compared with the other sources.", "One open in 61 pays a piece; the rest pay Mistees counted at $1 face."],
     settings: ["Box & items: the live table, locked to the published odds (unlock to experiment).", "Algorithm: swap the scheme and mapping; research rigs; the detector.", "Run shows the return with Mistees at face against what they really cost Misty."],
@@ -332,4 +346,5 @@ export const GUIDE_BY_LAB: Record<string, { player: string[]; settings: string[]
   credits: GUIDES["misty-credits"],
   upgrader: GUIDES["jemlit-upgrader"],
   misty: GUIDES["misty-boxes"],
+  jemlit: GUIDES["jemlit-boxes-live"],
 };

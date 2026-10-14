@@ -1,0 +1,18 @@
+Jemlit copied one to one: 333 live boxes, engine, page, explanation, simulator
+
+- capture: every box from Jemlit's front API (chances, bands, prices,
+  cashback), the algorithm page, terms, FAQ, settings block; per-box JSON
+  served from public/captures/jemlit; generated summary and featured tables
+- engine/labs/jemlit.ts: SHA-512 commitment, browser client seed, nonce
+  counting up under one seed, HMAC-SHA512/256 over client-nonce, roll =
+  hexdec / 16^64 x 100, lower < roll <= upper; reproduces the published
+  example; verifier; per-player tables; runner with return curve
+- Jemlit page (first tab; other tabs hidden): Document, Create, Simulator
+  buttons, Select a Mystery Box with search over all boxes, spinning strip,
+  Box Content and Odds with Price and Cashback, Analysis accordions, back
+  office (odds, Fit to 80%, per player, values, proof)
+- /docs/jemlit explanation with live sums, sources, critique, developer notes
+- /simulate?src=jemlit with charts; SimulatorSwitch; nav order Misty, Jemlit,
+  Evo Verse; scripts/smoke-jemlit.ts and scripts/jemlit-report.ts; README
+
+Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>

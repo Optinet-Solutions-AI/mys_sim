@@ -1,7 +1,7 @@
-import { MistySimulator } from "@/components/MistySimulator";
+import { SimulatorSwitch } from "@/components/SimulatorSwitch";
 
-export const metadata = { title: "Simulator · Misty boxes" };
+export const metadata = { title: "Simulator" };
 
 export default function SimulatePage() {
-  return <MistySimulator />;
+  return <SimulatorSwitch />;
 }

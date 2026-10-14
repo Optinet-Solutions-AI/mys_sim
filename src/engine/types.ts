@@ -635,10 +635,146 @@ export interface MistyResult {
   elapsedMs: number;
 }
 
-export type LabId = "mystery-box" | "sellback" | "battles" | "retention" | "credits" | "upgrader" | "misty";
+/* ---------- Jemlit: a copy of the live box mechanism (captured 14 October 2026) ---------- */
 
-export type AnyConfig = MysteryBoxConfig | SellbackConfig | BattlesConfig | RetentionConfig | CreditsConfig | UpgraderConfig | MistyConfig;
-export type AnyResult = MysteryBoxResult | SellbackResult | BattlesResult | RetentionResult | CreditsResult | UpgraderResult | MistyResult;
+/** One row of a Jemlit box, as the site's box API lists it. */
+export interface JemlitItem {
+  id: string;
+  label: string;
+  /** listed price, the value shown on the page */
+  price: number;
+  /** Credits paid if the item is exchanged instead of shipped (mostly 90% of price) */
+  cashback: number;
+  /** chance as a fraction; the box sums to 1 */
+  chance: number;
+  /** roll band on a 0 to 1 line: wins if from < roll/100 <= to */
+  from: number;
+  to: number;
+  /** credit rows: converted to Credits automatically, never shipped */
+  autoCashback: boolean;
+  shippable: boolean;
+}
+export interface JemlitBox {
+  slug: string;
+  name: string;
+  price: number;
+  basePrice?: number;
+  riskLevel?: number | null;
+  items: JemlitItem[];
+}
+export interface JemlitBoxSummary {
+  slug: string;
+  name: string;
+  price: number;
+  items: number;
+  rtpPrice: number | null;
+  rtpCashback: number | null;
+  pAtOrAbovePrice: number;
+  pShippableItem: number;
+  top: { label: string; price: number; chance: number } | null;
+  riskLevel?: number | null;
+}
+export interface JemlitPlayer {
+  id: string;
+  name: string;
+  share: number;
+  /** chance per item id; missing ids fall back to the box table */
+  chances?: Record<string, number>;
+}
+export interface JemlitConfig {
+  boxSlug: string;
+  /** the loaded or built box; the featured boxes are also embedded */
+  box?: JemlitBox;
+  /** back-office odds: chance per item id (fractions, sum 1) */
+  chances: Record<string, number>;
+  creditFace: number;
+  creditReal: number;
+  itemRealized: number;
+  provablyFair: boolean;
+  clientSeed: string;
+  players: JemlitPlayer[];
+  activePlayerId: string;
+  run: { opens: number; verifySample: number };
+}
+export interface JemlitSpin {
+  idx: number;
+  playerId: string;
+  boxSlug: string;
+  price: number;
+  serverSeed: string;
+  serverHash: string;
+  clientSeed: string;
+  nonce: number;
+  digest: string;
+  /** 0 to 100 */
+  roll: number;
+  tableHash: string;
+  itemId: string;
+  label: string;
+  itemPrice: number;
+  cashback: number;
+  /** credit row: paid as Credits, never shipped */
+  credit: boolean;
+  lower: number;
+  upper: number;
+  verified?: boolean;
+}
+export interface JemlitItemStat {
+  id: string;
+  label: string;
+  credit: boolean;
+  chance: number;
+  price: number;
+  cashback: number;
+  expected: number;
+  actual: number;
+  costPerOpen: number;
+}
+export interface JemlitPlayerStat {
+  id: string;
+  name: string;
+  opens: number;
+  spent: number;
+  items: number;
+  itemValue: number;
+  credits: number;
+  returnPrice: number;
+  expectedPrice: number;
+  bigChance: number;
+}
+export interface JemlitResult {
+  kind: "jemlit";
+  boxSlug: string;
+  boxName: string;
+  price: number;
+  opens: number;
+  spent: number;
+  items: number;
+  itemValue: number;
+  itemValueReal: number;
+  credits: number;
+  creditOpens: number;
+  bigWins: number;
+  returnPrice: number;
+  returnReal: number;
+  expectedPrice: number;
+  expectedCashback: number;
+  expectedReal: number;
+  pBig: number;
+  byItem: JemlitItemStat[];
+  chi: ChiSquare;
+  perPlayer: JemlitPlayerStat[];
+  verifier: Verifier;
+  sample: JemlitSpin[];
+  curve: { n: number; price: number; real: number }[];
+  longestDry: number;
+  elapsedMs: number;
+}
+
+export type LabId = "mystery-box" | "sellback" | "battles" | "retention" | "credits" | "upgrader" | "misty" | "jemlit";
+
+export type AnyConfig = MysteryBoxConfig | SellbackConfig | BattlesConfig | RetentionConfig | CreditsConfig | UpgraderConfig | MistyConfig | JemlitConfig;
+export type AnyResult = MysteryBoxResult | SellbackResult | BattlesResult | RetentionResult | CreditsResult | UpgraderResult | MistyResult | JemlitResult;
 
 export interface RunRecord {
   id: string;
