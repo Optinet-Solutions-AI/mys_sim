@@ -2,7 +2,7 @@
 // allowed settings. Nothing from one operator is mixed into another's screens.
 import { applyGuarantee } from "@/engine/table";
 import { DEFAULT_MISTY, mistyConfigFor } from "./mistyPresets";
-import { DEFAULT_JEMLIT } from "./jemlitPresets";
+import { DEFAULT_JEMLIT, DEFAULT_JEMLIT_PACKS } from "./jemlitPresets";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import type { AnyConfig, BattleMode, BattlesConfig, CreditsConfig, LabId, MysteryBoxConfig, RetentionConfig, SellbackConfig, UpgraderConfig } from "@/engine/types";
 import {
@@ -357,6 +357,76 @@ export const OPERATORS: OperatorDef[] = [
           configure: ["Box & odds: pick any captured box; edit any chance; fit the big items to a target return.", "Per player: give a player their own odds.", "What things are worth: a Credit on screen and really; shipped items at resale.", "The proof: on (Jemlit's recipe) or off."],
           read: ["Return at listed prices, in Credits and really; the bands; the check."],
           source: "Live box API, algorithm page, terms and FAQ captured 14 October 2026 (research/captures); dossier 1 §1.3 and §2.2.",
+        },
+        initial: DEFAULT_JEMLIT,
+      },
+      {
+        key: "jemlit-packs",
+        lab: "jemlit",
+        minimal: true,
+        doc: {
+          title: "Packs",
+          short: "Collectible card packs: the same draw as a box, on Pokémon, One Piece and Yu-Gi-Oh cards.",
+          what: "Jemlit's collectibles listing holds 15 boxes of trading cards, captured 14 October 2026. They run on exactly the box mechanism: a table of items with chances that sum to 1, a roll from 0 to 100, bands, cashback at 90%. The only difference is the goods.",
+          configure: ["Pick a pack; edit any chance; the same back office as the boxes."],
+          read: ["Return at listed, in Credits and really; the bands; the check."],
+          source: "front/api/en/boxes/collectibles and the box API, 14 October 2026.",
+        },
+        initial: DEFAULT_JEMLIT_PACKS,
+      },
+      {
+        key: "jemlit-battles",
+        lab: "jemlit-games",
+        minimal: true,
+        doc: {
+          title: "Battles",
+          short: "Several players open the same box in turn; the highest total takes everything.",
+          what: "Jemlit's battles as its pages describe them: solo for 2, 3 or 4 players or teams (2v2, 3v3, 2v2v2); each round every seat opens the same box; styles classic (highest total wins), crazy (lowest wins), jackpot (the winner is drawn in proportion to totals) and final drop (the last round alone decides). Every pull is a normal box open under one server seed with the play count rising; the house keeps the box's 20% on each open.",
+          configure: ["Box, players or teams, rounds, style; the proof on or off."],
+          read: ["The pot, what it is worth, your chance, the result; 400 battles at a time for the odds."],
+          source: "Battle pages and client code captured 14 October 2026; settings block (turn timing).",
+        },
+        initial: DEFAULT_JEMLIT,
+      },
+      {
+        key: "jemlit-upgrader-live",
+        lab: "jemlit-games",
+        minimal: true,
+        doc: {
+          title: "Upgrader",
+          short: "Pick a chance and a wager; the prize on offer is worth the wager less 15%, divided by the chance.",
+          what: "Jemlit's Upgrader as its settings and client state it: upgrader_fee 0.15 caps the chance selector at 85%; the chance options are 1%, 10%, 25%, 50%, 75% and 92% (clipped); the server offers prizes near wager × (1 − fee) ÷ chance; a roll below the chance wins the item, which can be upgraded again or exchanged for Credits.",
+          configure: ["Wager, chance, your seed; the fee in the back office."],
+          read: ["What each chance buys, the roll against the win zone, the 85% return."],
+          source: "Settings block and the Upgrader client code captured 14 October 2026.",
+        },
+        initial: DEFAULT_JEMLIT,
+      },
+      {
+        key: "jemlit-mines",
+        lab: "jemlit-games",
+        minimal: true,
+        doc: {
+          title: "Mines",
+          short: "Reveal tiles, avoid the mines, cash out before you hit one.",
+          what: "Jemlit's Mines as its own fairness text describes it: the mine layout is a Fisher–Yates shuffle driven by HMAC-SHA512/256 of your seed and the step number, keyed by a server seed committed by its SHA-512 hash; the cash-out multiplier is the fair survival odds times one minus the house edge. The edge itself is set by the server and was not visible; the Crash edge of 8% is used as a placeholder.",
+          configure: ["Tiles, mines, wager, your seed; the edge in the back office."],
+          read: ["The multiplier table, the shuffle step by step, the check."],
+          source: "Mines client code and its provably-fair text, captured 14 October 2026.",
+        },
+        initial: DEFAULT_JEMLIT,
+      },
+      {
+        key: "jemlit-crash",
+        lab: "jemlit-games",
+        minimal: true,
+        doc: {
+          title: "Crash",
+          short: "A multiplier climbs until it crashes; cash out before it does.",
+          what: "Jemlit's Crash as its client code states it: the crash point is (1 − edge) ÷ (1 − roll) with the roll from the server seed and your seed, capped at 1,000,000 and never below 1.00; the edge is 8% (crash_house_edge); seeds form a hash chain published ahead; a win can be taken as a prize item.",
+          configure: ["Wager, auto cash-out, your seed; edge and caps in the back office."],
+          read: ["How often the round reaches each multiplier, the 92% return, the check."],
+          source: "Settings block and the Crash client code captured 14 October 2026.",
         },
         initial: DEFAULT_JEMLIT,
       },

@@ -771,7 +771,7 @@ export interface JemlitResult {
   elapsedMs: number;
 }
 
-export type LabId = "mystery-box" | "sellback" | "battles" | "retention" | "credits" | "upgrader" | "misty" | "jemlit";
+export type LabId = "mystery-box" | "sellback" | "battles" | "retention" | "credits" | "upgrader" | "misty" | "jemlit" | "jemlit-games";
 
 export type AnyConfig = MysteryBoxConfig | SellbackConfig | BattlesConfig | RetentionConfig | CreditsConfig | UpgraderConfig | MistyConfig | JemlitConfig;
 export type AnyResult = MysteryBoxResult | SellbackResult | BattlesResult | RetentionResult | CreditsResult | UpgraderResult | MistyResult | JemlitResult;

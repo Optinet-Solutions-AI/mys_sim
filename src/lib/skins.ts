@@ -304,6 +304,26 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
       "The proof: Jemlit's recipe on or off; the client seed.",
     ],
   },
+  "jemlit-packs": {
+    player: ["Pick a pack of trading cards, pay, spin. One card or bundle comes out, exactly like a box.", "Cashback at 90% if you exchange it; Credits never become money."],
+    settings: ["The pack's live table; every chance editable; the same back office as the boxes."],
+  },
+  "jemlit-battles": {
+    player: ["Join a battle: 2 to 4 players solo, or teams. Every seat opens the same box each round.", "Highest total wins everything (or lowest in crazy, drawn by share in jackpot, last round only in final drop).", "Your chance is one in the number of seats; the house keeps the box's 20% whoever wins."],
+    settings: ["Box, players or teams, rounds, style; the proof on or off; play 400 battles for the odds."],
+  },
+  "jemlit-upgrader-live": {
+    player: ["Put in Credits, pick a chance up to 85%. The item on offer is worth your wager less 15%, divided by the chance.", "A roll below the chance wins the item; otherwise the wager is gone."],
+    settings: ["Wager, chance, seed; the fee in the back office. Chance × worth is always the wager minus the fee."],
+  },
+  "jemlit-mines": {
+    player: ["Choose how many mines on 25 tiles and a wager. Reveal tiles; each safe one raises the multiplier. Cash out any time; a mine ends the round.", "The mines were placed before your first click, from a secret you can check afterwards."],
+    settings: ["Tiles, mines, wager, seed; the house edge (placeholder 8%). Chance × multiplier is always 1 − edge."],
+  },
+  "jemlit-crash": {
+    player: ["Set a wager and an auto cash-out. The multiplier climbs; if it reaches your target before it crashes, you win wager × target.", "The crash point was fixed before the round from a seed published ahead."],
+    settings: ["Wager, cash-out, seed; edge 8%, max multiplier and max win. Chance × multiplier is always 1 − edge."],
+  },
   "misty-boxes-generic": {
     player: ["The same Timepiece Suite table inside the shared research lab, so it can be compared with the other sources.", "One open in 61 pays a piece; the rest pay Mistees counted at $1 face."],
     settings: ["Box & items: the live table, locked to the published odds (unlock to experiment).", "Algorithm: swap the scheme and mapping; research rigs; the detector.", "Run shows the return with Mistees at face against what they really cost Misty."],
@@ -347,4 +367,5 @@ export const GUIDE_BY_LAB: Record<string, { player: string[]; settings: string[]
   upgrader: GUIDES["jemlit-upgrader"],
   misty: GUIDES["misty-boxes"],
   jemlit: GUIDES["jemlit-boxes-live"],
+  "jemlit-games": GUIDES["jemlit-battles"],
 };

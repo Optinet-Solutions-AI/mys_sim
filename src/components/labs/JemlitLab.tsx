@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useState } from "react";
 import type { JemlitBox, JemlitConfig, JemlitPlayer } from "@/engine/types";
-import { JEMLIT_FEATURED } from "@/engine/jemlitLive.generated";
+import { JEMLIT_FEATURED, JEMLIT_PACKS } from "@/engine/jemlitLive.generated";
 import { bigOddsRatio, fitBigOdds, jemlitBoxOf, jemlitMath, liveChances, normaliseChances, scaleBigOdds } from "@/engine/labs/jemlit";
 import type { FeatureDef } from "@/lib/operators";
 import { JEMLIT_BOX_LIST, jemlitConfigFor, loadJemlitBox } from "@/lib/jemlitPresets";
@@ -186,7 +186,7 @@ export function JemlitLab({ variant, operator }: { variant: FeatureDef; operator
         <div className="space-y-4">
           <Card title="Which box" actions={<Info>{JEMLIT_FEATURED.length} boxes are embedded; all {JEMLIT_BOX_LIST.length} captured boxes can be loaded by name. Picking a box loads its own table and price.</Info>}>
             <div className="flex flex-wrap gap-2">
-              {JEMLIT_FEATURED.map((b) => (
+              {(variant.key === "jemlit-packs" ? JEMLIT_PACKS : JEMLIT_FEATURED).map((b) => (
                 <button key={b.slug} type="button" className={`chip ${b.slug === cfg.boxSlug ? "chip-accent" : ""}`} onClick={() => pick(b.slug)}>
                   {b.name} · {money(b.price)}
                 </button>
@@ -291,7 +291,7 @@ export function JemlitLab({ variant, operator }: { variant: FeatureDef; operator
   return (
     <>
       <LabFrame doc={variant.doc} featureKey={variant.key} lab={variant.lab} operator={operator} rigCount={ownOdds} onSettings={openSettings} settingsOpen={settings.open} chips={[]}>
-        <JemlitStage cfg={cfg} seed={seed} onChange={setCfg} onSettings={openSettings} />
+        <JemlitStage cfg={cfg} seed={seed} onChange={setCfg} onSettings={openSettings} collection={variant.key === "jemlit-packs" ? "packs" : "boxes"} />
       </LabFrame>
       <SettingsDialog
         open={settings.open}

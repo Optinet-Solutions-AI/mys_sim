@@ -1,5 +1,5 @@
 import type { JemlitBox, JemlitConfig } from "@/engine/types";
-import { JEMLIT_FEATURED, JEMLIT_SUMMARY } from "@/engine/jemlitLive.generated";
+import { JEMLIT_FEATURED, JEMLIT_PACKS, JEMLIT_SUMMARY } from "@/engine/jemlitLive.generated";
 import { liveChances } from "@/engine/labs/jemlit";
 
 const DEFAULT_PLAYERS = [
@@ -30,7 +30,7 @@ export const DEFAULT_JEMLIT: JemlitConfig = jemlitConfigFor(JEMLIT_DEFAULT_BOX);
 
 /** Load any of the captured boxes from the public capture folder (the featured ones are embedded). */
 export async function loadJemlitBox(slug: string): Promise<JemlitBox> {
-  const f = JEMLIT_FEATURED.find((b) => b.slug === slug);
+  const f = JEMLIT_FEATURED.find((b) => b.slug === slug) ?? JEMLIT_PACKS.find((b) => b.slug === slug);
   if (f) return f;
   const r = await fetch(`/captures/jemlit/${slug}.json`);
   if (!r.ok) throw new Error(`Box not found: ${slug}`);
@@ -39,3 +39,5 @@ export async function loadJemlitBox(slug: string): Promise<JemlitBox> {
 }
 
 export const JEMLIT_BOX_LIST = JEMLIT_SUMMARY;
+export const JEMLIT_DEFAULT_PACK: JemlitBox = JEMLIT_PACKS[0];
+export const DEFAULT_JEMLIT_PACKS: JemlitConfig = jemlitConfigFor(JEMLIT_DEFAULT_PACK);

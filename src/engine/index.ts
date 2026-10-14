@@ -52,6 +52,8 @@ export function runLab(req: RunRequest, onProgress?: Progress): AnyResult {
       return runMisty(req.config as MistyConfig, req.seed, onProgress);
     case "jemlit":
       return runJemlit(req.config as JemlitConfig, req.seed, onProgress);
+    case "jemlit-games":
+      throw new Error("The Jemlit games are played on the page; they have no batch simulation.");
   }
 }
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { JEMLIT_CAPTURED, JEMLIT_FEATURED, JEMLIT_SETTINGS, JEMLIT_SUMMARY } from "@/engine/jemlitLive.generated";
 import { jemlitCommit, jemlitDigest, jemlitMath, jemlitRoll, type JemlitMath } from "@/engine/labs/jemlit";
+import { CRASH_DEFAULT, MINES_DEFAULT, UPGRADER_DEFAULT, crashProbAtLeast, minesMultiplier, minesSurvival, upgraderTarget } from "@/engine/labs/jemlitGames";
+import { JEMLIT_PACKS } from "@/engine/jemlitLive.generated";
 import { money, num, oneIn, pct, pctSmart } from "@/lib/format";
 import { Badge, Card, Td, Th } from "@/components/ui";
 import { CollapsibleTable } from "@/components/CollapsibleTable";
@@ -9,6 +11,7 @@ export const metadata = { title: "Jemlit, explained · Simulator" };
 
 const V = { creditFace: 1, creditReal: 0.4, itemRealized: 0.7 };
 const SITE = "https://jemlit.com";
+const UPG_CAP = Math.floor((1 - UPGRADER_DEFAULT.fee) * 100) / 100;
 const fmtPct = (p: number) => (p >= 1 ? p.toFixed(2) : p >= 0.1 ? p.toFixed(3) : p >= 0.001 ? p.toFixed(4) : p.toFixed(6)) + "%";
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -58,8 +61,9 @@ const TOC = [
   ["proof", "7. The check"],
   ["back-office", "8. Back office"],
   ["settings", "9. Platform settings seen"],
-  ["sources", "10. Sources"],
-  ["critique", "11. Critique"],
+  ["games", "10. The other games"],
+  ["sources", "11. Sources"],
+  ["critique", "12. Critique"],
   ["developers", "For developers"],
   ["glossary", "Glossary"],
 ] as const;
@@ -121,7 +125,7 @@ export default function JemlitDocsPage() {
         <header className="space-y-1">
           <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-accent-ink">Jemlit · mystery boxes</div>
           <h1 className="text-3xl font-semibold">How a Jemlit box works</h1>
-          <P>Numbers computed from the {JEMLIT_SUMMARY.length} live box tables captured on {JEMLIT_CAPTURED}. Sources in section 10.</P>
+          <P>Numbers computed from the {JEMLIT_SUMMARY.length} live box tables captured on {JEMLIT_CAPTURED}. Sources in section 11.</P>
         </header>
 
         <section className="space-y-3">
@@ -506,7 +510,157 @@ export default function JemlitDocsPage() {
         </section>
 
         <section className="space-y-3">
-          <H2 id="sources">10. Sources</H2>
+          <H2 id="games">10. The other games</H2>
+          <P>Jemlit runs five more products on the same Credits and the same roll recipe. Each is a tab under Jemlit in the simulator. One line each, then the rule in words.</P>
+          <Card>
+            <table className="w-full text-xs">
+              <thead>
+                <tr>
+                  <Th>Game</Th>
+                  <Th>What it is</Th>
+                  <Th>The rule</Th>
+                  <Th right>Return</Th>
+                  <Th>Settings seen</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Packs", `${JEMLIT_PACKS.length} boxes of trading cards (Pokémon, One Piece, Yu-Gi-Oh) in the collectibles listing.`, "Exactly a box: table, bands, one roll, cashback at 90%.", "80% at listed", "same as boxes"],
+                  ["Battles", "2 to 4 players (or teams 2v2, 3v3, 2v2v2) open the same box each round.", "Every pull is a normal open under one server seed with the play count rising. Classic: the highest total takes every item. Crazy: the lowest wins. Jackpot: the winner is drawn in proportion to totals. Final drop: only the last round counts.", "80% at listed, paid to one seat", "turn 5 s, fast 2 s, start 3 s"],
+                  ["Upgrader", "Wager Credits for a chance at a dearer item.", `Prize on offer = wager × (1 − fee) ÷ chance. A roll below the chance wins. Fee ${pct(UPGRADER_DEFAULT.fee, 0)} caps the chance at ${pct(UPG_CAP, 0)}.`, pct(1 - UPGRADER_DEFAULT.fee, 0), `upgrader_fee ${UPGRADER_DEFAULT.fee}; options ${UPGRADER_DEFAULT.chanceOptions.map((o) => pct(o, 0)).join(", ")}`],
+                  ["Mines", `${MINES_DEFAULT.totalTiles} tiles; choose the mines and a wager; reveal tiles; cash out before a mine.`, "Mines placed by a Fisher–Yates shuffle fed by the roll recipe, one step per tile. Multiplier = fair survival odds × (1 − edge).", "1 − edge (edge not visible; 8% assumed)", "wager 1 to 1,000; max win 25,000"],
+                  ["Crash", "A multiplier climbs; cash out before it crashes.", `Crash point = (1 − ${CRASH_DEFAULT.houseEdge}) ÷ (1 − roll), never below 1.00, capped at ${num(CRASH_DEFAULT.maxMultiplier)}. Seeds form a chain published ahead.`, pct(1 - CRASH_DEFAULT.houseEdge, 0), `crash_house_edge ${CRASH_DEFAULT.houseEdge}; max win ${num(CRASH_DEFAULT.maxWinnable)}`],
+                ].map(([g, w, r, ret, st]) => (
+                  <tr key={g} className="border-t border-line align-top">
+                    <Td>
+                      <b>{g}</b>
+                    </Td>
+                    <Td>{w}</Td>
+                    <Td>{r}</Td>
+                    <Td right mono>
+                      {ret}
+                    </Td>
+                    <Td mono>{st}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+          <Legend
+            items={[
+              ["The rule", "The sum the site does, in words, taken from its own pages and client code (sources below)."],
+              ["Return", "What a player gets back per Credit wagered, on average, over many plays. For boxes and battles it is at listed prices; in Credits it is 90% of that."],
+              ["Settings seen", "Values read from the settings block every Jemlit page sends to the browser."],
+            ]}
+          />
+          <P>
+            <b>Why the return never changes with how you play.</b> In Mines and Crash the multiplier is the fair odds times (1 − edge), so chance × multiplier is always 1 − edge. Cash out early and often or late and rarely; the average is the same, only the swing differs. In the Upgrader chance × prize is always wager × (1 − fee). In a battle the house keeps the box&apos;s 20% on every open and the players only move the rest between themselves.
+          </P>
+          <Card title="Mines: the multiplier with 3 mines on 25 tiles">
+            <table className="w-full max-w-lg text-xs">
+              <thead>
+                <tr>
+                  <Th right>Safe tiles</Th>
+                  <Th right>Chance to get there</Th>
+                  <Th right>Multiplier</Th>
+                  <Th right>Chance × multiplier</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3, 5, 8, 12].map((k) => (
+                  <tr key={k} className="border-t border-line">
+                    <Td right mono>
+                      {k}
+                    </Td>
+                    <Td right mono>
+                      {pctSmart(minesSurvival(25, 3, k))}
+                    </Td>
+                    <Td right mono>
+                      ×{minesMultiplier(25, 3, k, MINES_DEFAULT.houseEdge).toFixed(2)}
+                    </Td>
+                    <Td right mono>
+                      {(minesSurvival(25, 3, k) * minesMultiplier(25, 3, k, MINES_DEFAULT.houseEdge)).toFixed(2)}
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <P>First tile: 22 safe out of 25, so the fair multiplier is 25 ÷ 22 = ×1.136; less 8% it is ×{minesMultiplier(25, 3, 1, MINES_DEFAULT.houseEdge).toFixed(3)}. Each further tile multiplies by (tiles left ÷ safe tiles left).</P>
+          </Card>
+          <Card title="Crash: how often a round reaches a target">
+            <table className="w-full max-w-lg text-xs">
+              <thead>
+                <tr>
+                  <Th right>Cash out at</Th>
+                  <Th right>Chance the round gets there</Th>
+                  <Th right>1 in</Th>
+                  <Th right>Chance × multiplier</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1.5, 2, 5, 10, 100].map((t) => (
+                  <tr key={t} className="border-t border-line">
+                    <Td right mono>
+                      ×{t.toFixed(2)}
+                    </Td>
+                    <Td right mono>
+                      {pct(crashProbAtLeast(t, CRASH_DEFAULT.houseEdge))}
+                    </Td>
+                    <Td right mono>
+                      {num(Math.round(1 / crashProbAtLeast(t, CRASH_DEFAULT.houseEdge)))}
+                    </Td>
+                    <Td right mono>
+                      {(crashProbAtLeast(t, CRASH_DEFAULT.houseEdge) * t).toFixed(2)}
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <P>The chance of reaching ×m is (1 − 0.08) ÷ m. The round shows ×1.00 and takes everything 8% of the time.</P>
+          </Card>
+          <Card title="Upgrader: what $10 buys at each chance">
+            <table className="w-full max-w-lg text-xs">
+              <thead>
+                <tr>
+                  <Th right>Chance</Th>
+                  <Th right>Item worth</Th>
+                  <Th right>Chance × worth</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {UPGRADER_DEFAULT.chanceOptions.map((o) => Math.min(o, UPG_CAP)).map((o) => (
+                  <tr key={o} className="border-t border-line">
+                    <Td right mono>
+                      {pct(o, 0)}
+                    </Td>
+                    <Td right mono>
+                      {money(upgraderTarget(10, o, UPGRADER_DEFAULT))}
+                    </Td>
+                    <Td right mono>
+                      {money(o * upgraderTarget(10, o, UPGRADER_DEFAULT))}
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <P>Whatever the chance, chance × worth = $10 × 0.85 = $8.50. The 92% option is clipped to 85% because the cap is 1 − fee.</P>
+          </Card>
+          <Ul>
+            <li>
+              <b>Not visible from outside:</b> the Mines house edge (the client multiplies by 1 − house_edge but the value comes from the server), the battle alliance mode, the exact prize lists the Upgrader and Crash offer, and the borrow and claims terms.
+            </li>
+            <li>
+              <b>Simulator tabs:</b>{" "}
+              <Link href="/operators/jemlit" className="text-accent-ink underline underline-offset-2">
+                Packs, Battles, Upgrader, Mines and Crash
+              </Link>
+              , each with the maths, the step-by-step decision and the check after a play.
+            </li>
+          </Ul>
+        </section>
+
+        <section className="space-y-3">
+          <H2 id="sources">11. Sources</H2>
           <P>All from Jemlit&apos;s public pages and its front API on {JEMLIT_CAPTURED}, saved and parsed by a script. Nothing guessed.</P>
           <Card>
             <table className="w-full text-xs">
@@ -550,7 +704,7 @@ export default function JemlitDocsPage() {
         </section>
 
         <section className="space-y-3">
-          <H2 id="critique">11. Critique</H2>
+          <H2 id="critique">12. Critique</H2>
           <P>
             <b>Confirmed, and good.</b>
           </P>

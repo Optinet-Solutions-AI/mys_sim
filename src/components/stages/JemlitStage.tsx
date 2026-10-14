@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { CatalogItem, JemlitBox, JemlitConfig, JemlitItem, JemlitSpin } from "@/engine/types";
-import { JEMLIT_FEATURED } from "@/engine/jemlitLive.generated";
+import { JEMLIT_FEATURED, JEMLIT_PACKS } from "@/engine/jemlitLive.generated";
 import { JemlitOpener, bigOddsRatio, buildBands, jemlitBoxOf, jemlitMath, lookupBand, playerChances, verifyJemlitSpin, type JemlitMath, type JemlitTable } from "@/engine/labs/jemlit";
 import { makeRng } from "@/engine/rng";
 import { JEMLIT_BOX_LIST, jemlitConfigFor, loadJemlitBox } from "@/lib/jemlitPresets";
@@ -76,8 +76,9 @@ interface Tally {
 const ZERO: Tally = { opens: 0, spent: 0, credits: 0, items: 0, itemValue: 0 };
 const short = (h: string, n = 10) => (h ? `${h.slice(0, n)}…${h.slice(-4)}` : "");
 
-export function JemlitStage({ cfg, seed, onChange, onSettings }: { cfg: JemlitConfig; seed: number; onChange: (c: JemlitConfig) => void; onSettings: (section?: string) => void }) {
+export function JemlitStage({ cfg, seed, onChange, onSettings, collection = "boxes" }: { cfg: JemlitConfig; seed: number; onChange: (c: JemlitConfig) => void; onSettings: (section?: string) => void; collection?: "boxes" | "packs" }) {
   const box = jemlitBoxOf(cfg);
+  const featured = collection === "packs" ? JEMLIT_PACKS : JEMLIT_FEATURED;
   const key = useMemo(() => JSON.stringify([cfg, seed]), [cfg, seed]);
   const openerRef = useRef<{ key: string; opener: JemlitOpener } | null>(null);
   if (!openerRef.current || openerRef.current.key !== key) openerRef.current = { key, opener: new JemlitOpener(cfg, `live:${seed}`) };
@@ -190,8 +191,8 @@ export function JemlitStage({ cfg, seed, onChange, onSettings }: { cfg: JemlitCo
 
       <div>
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <h2 className="text-sm font-semibold text-ink-2">Select a Mystery Box</h2>
-          <span className="text-xs text-ink-3">{JEMLIT_FEATURED.length} shown · {JEMLIT_BOX_LIST.length} captured</span>
+          <h2 className="text-sm font-semibold text-ink-2">{collection === "packs" ? "Select a Pack" : "Select a Mystery Box"}</h2>
+          <span className="text-xs text-ink-3">{featured.length} shown · {JEMLIT_BOX_LIST.length} captured</span>
           <input className="ml-auto w-56 rounded-md border border-line bg-paper px-2 py-1 text-xs" placeholder="Search all boxes…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         {matches.length > 0 && (
@@ -204,7 +205,7 @@ export function JemlitStage({ cfg, seed, onChange, onSettings }: { cfg: JemlitCo
           </div>
         )}
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {JEMLIT_FEATURED.map((b) => {
+          {featured.map((b) => {
             const bm = jemlitMath(b, undefined, cfg);
             const active = b.slug === cfg.boxSlug;
             const top = b.items.reduce((best, i) => (i.price > best.price ? i : best), b.items[0]);
