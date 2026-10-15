@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mystery Box Odds Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a two-column dossier. A sticky contents rail sits left at desktop widths and folds into a
+   collapsible block on phones. Running text stays near 68ch; tables, code and charts scroll inside
+   their own boxes so the page never scrolls sideways. */
+:root{
+  --bg:#F4F6F4; --surface:#FFFFFF; --ink:#16191D; --ink-2:#4A5560; --ink-3:#78838C; --line:#D6DDD8;
+  --accent:#0F6B6B; --accent-ink:#0A5252; --accent-soft:#DBECEA; --accent-2:#5FB3AE; --accent-3:#A9D6D2;
+  --good:#1E7A3C; --good-soft:#DCEFE1; --warn:#8F5A00; --warn-soft:#F7EBCF; --bad:#B0281F; --bad-soft:#F8DEDB;
+  --code-bg:#EBEFEC; --grid:#E1E6E2;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1314; --surface:#161B1D; --ink:#E6EAE7; --ink-2:#B4BCB7; --ink-3:#848E89; --line:#2A3336;
+    --accent:#5EC3BD; --accent-ink:#8EDBD6; --accent-soft:#163A3A; --accent-2:#2F8C87; --accent-3:#1F5A57;
+    --good:#5CC47A; --good-soft:#14301E; --warn:#E6B44E; --warn-soft:#3A2C0E; --bad:#F28B82; --bad-soft:#3D1A17;
+    --code-bg:#1C2325; --grid:#243033; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1314; --surface:#161B1D; --ink:#E6EAE7; --ink-2:#B4BCB7; --ink-3:#848E89; --line:#2A3336;
+  --accent:#5EC3BD; --accent-ink:#8EDBD6; --accent-soft:#163A3A; --accent-2:#2F8C87; --accent-3:#1F5A57;
+  --good:#5CC47A; --good-soft:#14301E; --warn:#E6B44E; --warn-soft:#3A2C0E; --bad:#F28B82; --bad-soft:#3D1A17;
+  --code-bg:#1C2325; --grid:#243033; color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(40px,6vw,64px);font-weight:700}
+h2{font-size:34px;font-weight:600;margin-top:56px;padding-top:20px;border-top:2px solid var(--ink)}
+h3{font-size:24px;font-weight:600;margin-top:36px}
+h4{font-size:19px;font-weight:600;margin-top:24px;color:var(--ink-2)}
+p{margin:14px 0;max-width:68ch}
+ul,ol{max-width:72ch;padding-left:1.3em}
+li{margin:8px 0}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--code-bg);border-left:3px solid var(--accent);padding:14px 16px;overflow-x:auto;margin:16px 0;max-width:100%}
+pre code{background:none;padding:0;font-size:inherit}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--accent-ink)}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+main{min-width:0;padding-block:40px 96px}
+nav.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding-block:48px 24px}
+nav.rail .eyebrow{display:block;margin-bottom:10px}
+nav.rail ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+nav.rail li{margin:0}
+nav.rail a{display:block;padding:6px 0 6px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-family:var(--display);font-size:16px;line-height:1.2}
+nav.rail a:hover{color:var(--ink)}
+nav.rail a.active{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+nav.rail a.ext{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:var(--accent-ink)}
+details.toc{display:none;margin:24px 0 0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.toc summary{cursor:pointer;padding:12px 16px;font-family:var(--display);font-size:18px;font-weight:600}
+details.toc ol{margin:0;padding:0 16px 12px 36px}
+details.toc a{font-family:var(--display);font-size:17px;text-decoration:none;color:var(--ink-2)}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0}
+  nav.rail{display:none}
+  details.toc{display:block}
+}
+
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:28px}
+header.masthead .eyebrow{display:block;margin-bottom:14px}
+header.masthead .lead{font-size:21px;line-height:1.45;max-width:62ch;margin-top:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:20px;font-family:var(--display);font-size:15px;color:var(--ink-2)}
+.meta b{color:var(--ink);font-weight:600}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:28px 0 8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;min-width:0}
+.tile .num{font-family:var(--display);font-size:36px;font-weight:700;line-height:1.05;color:var(--accent-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile .lbl{margin-top:8px;font-size:14px;color:var(--ink-2);line-height:1.35}
+
+.callout{background:var(--accent-soft);border-left:4px solid var(--accent);padding:16px 20px;margin:24px 0;border-radius:0 6px 6px 0;max-width:74ch}
+.callout p{margin:8px 0}
+.callout.warn{background:var(--warn-soft);border-left-color:var(--warn)}
+.callout.bad{background:var(--bad-soft);border-left-color:var(--bad)}
+
+.table-wrap{overflow-x:auto;margin:18px 0;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;background:var(--bg)}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.hl td{background:var(--accent-soft)}
+caption{caption-side:top;text-align:left;font-family:var(--display);font-size:16px;color:var(--ink-2);padding:0 0 8px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:14px;font-weight:600;letter-spacing:.02em;padding:3px 9px;border-radius:999px;white-space:nowrap;line-height:1.3}
+.chip .ic{font-family:var(--mono);font-size:12px}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+td .chip + .note{display:block;margin-top:5px;font-size:13px;color:var(--ink-2);white-space:normal}
+
+.site{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:22px 24px;margin:26px 0;min-width:0}
+.site h3{margin-top:0}
+.site .who{font-family:var(--display);font-size:15px;color:var(--ink-2);margin:4px 0 14px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 24px;margin:14px 0}
+.facts div{min-width:0}
+.facts dt{font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--ink-3);font-weight:600}
+.facts dd{margin:2px 0 0;font-size:15px}
+
+figure{margin:24px 0;max-width:100%;min-width:0}
+figure figcaption{font-family:var(--display);font-size:15px;color:var(--ink-2);margin-top:8px;max-width:70ch}
+figure .chart{overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;font-family:var(--display);font-size:14px}
+figure svg text{fill:var(--ink-2)}
+figure svg text.v{fill:var(--ink);font-family:var(--mono);font-size:12.5px}
+figure svg text.l{fill:var(--ink);font-size:14px}
+figure svg .grid{stroke:var(--grid);stroke-width:1}
+figure svg .axis{stroke:var(--line);stroke-width:1}
+figure svg .ref{stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:4 4}
+figure svg .bar{fill:var(--accent)}
+figure svg .bar.ghost{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+figure svg .bar.dim{fill:var(--accent-3)}
+figure svg g.row:hover .bar{opacity:.78}
+figure svg .seg1{fill:var(--accent-3)}
+figure svg .seg2{fill:var(--accent-2)}
+figure svg .seg3{fill:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--display);font-size:14px;color:var(--ink-2);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--accent)}
+.legend i.ghost{background:none;border:1.5px dashed var(--accent)}
+.legend i.s1{background:var(--accent-3)} .legend i.s2{background:var(--accent-2)} .legend i.s3{background:var(--accent)}
+
+.sources{font-size:14px;color:var(--ink-2)}
+.sources li{margin:6px 0;word-break:break-word}
+.sources b{color:var(--ink);font-family:var(--display);font-weight:600;font-size:15px}
+
+/* glossary terms and popovers */
+a.term{color:inherit;text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help}
+a.term:hover{color:var(--accent-ink)}
+.tip{position:absolute;z-index:20;max-width:350px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px 10px;font-family:var(--body);font-size:14.5px;line-height:1.45}
+.tip b.t{display:block;font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:4px}
+.tip p{margin:0 0 6px;max-width:none}
+.tip a.more{display:inline-block;margin-top:2px;font-family:var(--display);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:600px){.tip{max-width:calc(100vw - 32px)}}
+.howto{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:10px 14px;background:var(--surface);border:1px dashed var(--line);border-radius:6px;font-size:15px;max-width:68ch}
+.howto .i{font-family:var(--display);font-weight:700;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:50%;width:20px;height:20px;line-height:17px;text-align:center;font-size:13px;flex:none;margin-top:2px}
+.gloss h3{margin-top:30px}
+.gloss dl{margin:12px 0 0;max-width:76ch}
+.gloss dt{font-family:var(--display);font-size:19px;font-weight:600;margin-top:16px;scroll-margin-top:16px}
+.gloss dt:target{color:var(--accent-ink)}
+.gloss dd{margin:4px 0 0}
+
+@media print{
+  nav.rail,details.toc,.tip{display:none}
+  .wrap{display:block}
+  body{background:#fff;color:#000}
+  h2{break-before:page}
+  a{color:inherit}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="rail" aria-label="Contents">
+  <span class="eyebrow">Contents</span>
+  <ol>
+    <li><a href="#summary">Summary of findings</a></li>
+    <li><a href="#engine">1 · How the odds engine works</a></li>
+    <li><a href="#returns">2 · What the boxes return</a></li>
+    <li><a href="#misty">2.1 · Misty</a></li>
+    <li><a href="#jemlit">2.2 · Jemlit</a></li>
+    <li><a href="#casesgg">2.3 · Cases.gg</a></li>
+    <li><a href="#matrix">2.4 · Compliance matrix</a></li>
+    <li><a href="#second-wave">2.5 · Second-wave audit</a></li>
+    <li><a href="#loophole">3 · Where the loophole is</a></li>
+    <li><a href="#regulation">4 · Regulation and standards</a></li>
+    <li><a href="#literature">5 · Literature</a></li>
+    <li><a href="#simulations">6 · Simulation plan</a></li>
+    <li><a href="#glossary">Glossary in plain English</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a class="ext" href="02-market-data-pricing-and-product.html">Dossier 2: Data and Glass Box →</a></li>
+    <li><a class="ext" href="03-plan-and-alignment.html" style="margin-top:0;border-top:0;padding-top:6px">Plan: GrailNoir alignment →</a></li>
+    <li><a class="ext" href="04-backend-blueprint.html" style="margin-top:0;border-top:0;padding-top:6px">Doc 4: Backend blueprint →</a></li>
+<li><a class="ext" href="05-simulator-plan.html" style="margin-top:0;border-top:0;padding-top:6px">Doc 5: Simulator plan →</a></li>
+    <li><a class="ext" href="00-tracker.html" style="margin-top:0;border-top:0;padding-top:6px">Tracker: change log →</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="masthead">
+  <span class="eyebrow">Research dossier · thesis on gambling-platform algorithms</span>
+  <h1>Mystery Box Odds Audit</h1>
+  <p class="lead">How Misty, Jemlit and Cases.gg turn a weight table into a "provably fair" roll, what their own numbers say the boxes return, where the fairness guarantee stops, and which laws and standards apply.</p>
+  <div class="meta">
+    <span>Compiled <b>9 October 2026</b></span>
+    <span>Sites audited <b>3</b></span>
+    <span>Drop tables captured <b>4</b></span>
+    <span>Primary sources <b>40+</b></span>
+  </div>
+  <p class="small muted">Evidence comes from the sites' own pages, court filings, regulator documents, standards bodies and peer-reviewed papers. Secondary sources (affiliate and review sites) are marked and should not be cited as evidence.</p>
+  <p class="howto"><span class="i" aria-hidden="true">i</span><span>Terms with a dotted underline, <a class="term" href="#g-seed">like this one</a>, have plain-English explanations. Hover, tap or focus a term to read it, or jump to the <a href="#glossary">full glossary</a>.</span></p>
+</header>
+
+<details class="toc">
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#summary">Summary of findings</a></li>
+    <li><a href="#engine">1 · How the odds engine works</a></li>
+    <li><a href="#returns">2 · What the boxes return</a></li>
+    <li><a href="#misty">2.1 · Misty</a></li>
+    <li><a href="#jemlit">2.2 · Jemlit</a></li>
+    <li><a href="#casesgg">2.3 · Cases.gg</a></li>
+    <li><a href="#matrix">2.4 · Compliance matrix</a></li>
+    <li><a href="#second-wave">2.5 · Second-wave audit</a></li>
+    <li><a href="#loophole">3 · Where the loophole is</a></li>
+    <li><a href="#regulation">4 · Regulation and standards</a></li>
+    <li><a href="#literature">5 · Literature</a></li>
+    <li><a href="#simulations">6 · Simulation plan</a></li>
+    <li><a href="#glossary">Glossary in plain English</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a href="02-market-data-pricing-and-product.html">Dossier 2: Data and Glass Box →</a></li>
+    <li><a href="03-plan-and-alignment.html">Plan: GrailNoir alignment →</a></li>
+  </ol>
+</details>
+
+<section id="summary">
+  <h2>Summary of findings</h2>
+
+  <div class="tiles">
+    <div class="tile"><div class="num">1 in 1,000,000</div><div class="lbl">Odds of each of the ten headline items in Jemlit's Apple eBox</div></div>
+    <div class="tile"><div class="num">89.5%</div><div class="lbl">Return of the Cases.gg Pack Up box at the site's own valuations, matching its disclosed 10% edge</div></div>
+    <div class="tile"><div class="num">37.7%</div><div class="lbl">Return of Misty's $10 Timepiece Suite in physical goods; the rest is raffle credits</div></div>
+    <div class="tile"><div class="num">0</div><div class="lbl">Gambling licences held by the three operators, so none is bound by any RNG or disclosure standard</div></div>
+  </div>
+
+  <ol>
+    <li><strong>All three sites use the same odds engine.</strong> A <a class="term" href="#g-drop-table">weighted prize table</a> is mapped onto a uniform random roll from a <a class="term" href="#g-rng">random number generator</a>. The roll comes from a <a class="term" href="#g-commit">commit-reveal</a> ("<a class="term" href="#g-provably-fair">provably fair</a>") scheme: the <a class="term" href="#g-hash">hash</a> of the <a class="term" href="#g-server-seed">server seed</a> is published first, the player's <a class="term" href="#g-client-seed">client seed</a> and a counter (the <a class="term" href="#g-nonce">nonce</a>) are mixed in with <a class="term" href="#g-hmac">HMAC</a>, and the output is scaled into [0,1) or [0,100).</li>
+    <li><strong>Provably fair verifies the roll, not the odds.</strong> The hash check proves the server seed was fixed before play. It does not prove the prize table was fixed, that the table shown is the table used, that the item "values" are real, or that the <a class="term" href="#g-entropy">entropy</a> was not chosen by the operator. Every documented rigging case sits in those gaps, not in the hash.</li>
+    <li><strong>The published numbers are internally consistent and, at face value, honest.</strong> Cases.gg discloses a 10% <a class="term" href="#g-house-edge">house edge</a> and its Pack Up box computes to 89.5% <a class="term" href="#g-rtp">return</a> at its own valuations. Jemlit's Apple eBox computes to an <a class="term" href="#g-ev">expected value</a> of $6.78 at listed prices. Misty's boxes return 37 to 41% of price in physical goods plus "credits". The deception is in presentation: one-in-a-million <a class="term" href="#g-showcase">showcase items</a>, credits valued at face, <a class="term" href="#g-valuation">valuations</a> the site itself sets, and a verification path almost no player exercises.</li>
+    <li><strong>None of the three holds a <a class="term" href="#g-licence">gambling licence</a>.</strong> Misty relies on the UK <a class="term" href="#g-free-draw">free-draw and prize-competition exemptions</a>. Jemlit (Cyprus company, UK governing law) states no licence. Cases.gg (Cyprus company, Delaware payment entity) relies on a US <a class="term" href="#g-sweepstakes">sweepstakes "No purchase necessary"</a> structure. So none is bound by the RNG and disclosure standards that licensed operators must meet.</li>
+    <li><strong>Regulation is moving but fragmented.</strong> New York sued Valve on 25 February 2026 calling loot boxes "quintessential gambling". Ten US states banned dual-currency sweepstakes casinos in 2025 and 2026. GLI published a draft GLI-19 v4.0 (7 July 2026) that for the first time specifies requirements for provably-fair RNGs. The EU Digital Fairness Act proposal is expected in Q4 2026. The UK still does not classify loot boxes as gambling.</li>
+  </ol>
+</section>
+
+<section id="engine">
+  <h2>1 · How the odds engine works</h2>
+
+  <h3>1.1 The generic algorithm</h3>
+  <p>When an admin "sets a 0.5% chance", this is what the code does. Each item owns a slice of the unit interval whose width is its <a class="term" href="#g-drop-table">weight</a>; a uniform roll from the <a class="term" href="#g-rng">RNG</a> picks the slice it lands in.</p>
+<pre><code>table = [(item_1, w_1), (item_2, w_2), ..., (item_n, w_n)]   # weights sum to 1 (or 100)
+cumulative ranges: item_k owns (sum_{i&lt;k} w_i , sum_{i&lt;=k} w_i]
+roll r ~ Uniform[0, 1)
+winner = the item whose range contains r</code></pre>
+  <p>Everything about fairness reduces to two questions: is the roll uniform and fixed before the outcome is known, and is the table that was used the table that was shown.</p>
+
+  <h3>1.2 The commit-reveal ("provably fair") layer</h3>
+<pre><code>server_seed   : secret random string generated by the operator
+commitment    : H(server_seed) published BEFORE play   (SHA-256 on Cases.gg and Misty, SHA-512 on Jemlit)
+client_seed   : string chosen by, or generated for, the player
+nonce         : counter 1, 2, 3 ... per bet under the same server seed
+roll          : HMAC(key = server_seed, msg = client_seed || nonce)  ->  hex  ->  integer  ->  scale to [0,1)
+reveal        : when the server seed is "retired" it is published; anyone can check H(server_seed) == commitment
+                and recompute every roll made under it</code></pre>
+
+  <div class="callout">
+    <p><strong>In plain words.</strong> Think of the <a class="term" href="#g-server-seed">server seed</a> as the winning numbers written on a card and sealed in an envelope. The <a class="term" href="#g-hash">hash</a> is the wax seal: the site shows it to you before you pay, and the seal would look completely different if a single digit on the card were changed. Your <a class="term" href="#g-client-seed">client seed</a> is a second card you hand over, so the site cannot have pre-chosen the result from its card alone. The <a class="term" href="#g-nonce">nonce</a> just numbers your bets so each one gets a fresh roll from the same two cards. After you play, the envelope is opened: you hash the revealed seed yourself and compare it with the seal. If it matches, the site could not have swapped its card after seeing your bet.</p>
+    <p>What the seal does <em>not</em> tell you is what prizes were on the shelf, what they were really worth, or whether the site tried a thousand cards in private before choosing which one to seal. Those are the gaps in section 3.</p>
+  </div>
+
+  <h3>1.3 Per-site implementation</h3>
+  <p class="small muted">From the sites' own pages, October 2026.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th></th><th>Misty</th><th>Jemlit</th><th>Cases.gg</th></tr></thead>
+    <tbody>
+      <tr><td><b><a class="term" href="#g-commit">Commitment hash</a></b></td><td>SHA-256 of server seed</td><td>SHA-512 of server seed</td><td>SHA-256 of server seed ("Server Hash")</td></tr>
+      <tr><td><b><a class="term" href="#g-hmac">Mixing function</a></b></td><td>HMAC-SHA256 for draws; for boxes, seed + client seed + nonce with the formula not published</td><td>HMAC-SHA512/256, key = server seed, data = <code>"&lt;client seed&gt;-&lt;nonce&gt;"</code></td><td><b>Not published</b> for Cases and Upgrader. The coinflip and battle verifier in the site's JavaScript uses <code>sha256(serverSeed + blockHash)</code> with an external block hash</td></tr>
+      <tr><td><b>Scaling</b></td><td>First 13 <a class="term" href="#g-hex">hex</a> chars / 2<sup>52</sup> × entryCount (draws)</td><td>Full 64-hex integer / 16<sup>64</sup> × 100, giving a roll in [0,100)</td><td>Not published</td></tr>
+      <tr><td><b>Item mapping</b></td><td>Odds table "frozen onto your open"</td><td>Item owns range (from, to]; verified in page data, where range width equals chance</td><td>Percentage per item on the box page</td></tr>
+      <tr><td><b><a class="term" href="#g-client-seed">Client seed</a></b></td><td>Settable by the player</td><td>Browser-generated, changeable</td><td>Browser-generated, changeable, optional auto-rotate</td></tr>
+      <tr><td><b><a class="term" href="#g-seed-rotation">Seed rotation</a></b></td><td>Per open since 15 Sep 2026; before that one seed per box, revealed at retirement</td><td>Revealed when retired</td><td>Auto-rotated every 1,000 bets since 17 Jan 2025</td></tr>
+      <tr><td><b><a class="term" href="#g-verification">Verification tool</a></b></td><td>Node.js snippet on /verify/&lt;slug&gt; (see defect below)</td><td>PHP snippet, run on writephponline.com</td><td>None described beyond "retire seed"</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h4>Jemlit's published formula, verbatim from /en/provably-fair/algorithm</h4>
+<pre><code>echo hash_hmac('sha512/256', 'your client seed-your nonce', 'server seed');
+echo number_format(hexdec('&lt;hash&gt;'), 0, ".", "");      // hex -&gt; decimal
+roll = decimal / 16^64 * 100     // page prints "1664", a typo for 16^64; the worked example (22.0231) confirms
+// item wins if  lower_bound &lt; roll &lt;= upper_bound</code></pre>
+
+  <h4>Misty's published draw formula, verbatim from /verify/suite-707</h4>
+<pre><code>const key = ["DRAW", slug, serverSeed, clientSeed, entryCount].join("-");
+const hmac = createHmac("sha256", key).digest("hex");   // no .update() call: this hashes the EMPTY message
+const value = parseInt(hmac.slice(0, 13), 16);
+const position = Math.floor((value / 2 ** 52) * entryCount) + 1;
+// clientSeed = SHA-256 of `slug:entryCount:listHash:closesAt`</code></pre>
+  <div class="callout warn">
+    <p><strong>Finding, revised 10 Oct.</strong> The snippet as published never feeds a message into the HMAC: it computes an HMAC over an empty message keyed by the combined string. That is unusual, but Packs.com documents exactly the same convention (section 2.5), so the snippet is deterministic and reproducible once a seed is revealed. <code>tools/verify_roll.py misty</code> computes the as-published form, which is the one to trust. The remaining gaps are that the box-opening formula, as opposed to the draw formula, is not published, and that no draw had revealed a seed at capture, so nothing could yet be checked end to end.</p>
+  </div>
+</section>
+
+<section id="returns">
+  <h2>2 · What the boxes return</h2>
+  <p><a class="term" href="#g-ev">Expected value</a> computed from each site's own published <a class="term" href="#g-odds">odds</a> and its own <a class="term" href="#g-valuation">listed item values</a>, captured 9 October 2026. A <a class="term" href="#g-rtp">return</a> of 100% means the box pays back its price on average.</p>
+
+  <figure>
+    <div class="chart">
+    <svg viewBox="0 0 820 330" width="820" height="330" role="img" aria-label="Horizontal bar chart of return to player by box, with a dashed reference at 100 percent">
+      <!-- scale: 0..190% maps to x 330..770 (2.3158 px per percent) -->
+      <g class="gridlines">
+        <line class="grid" x1="330" y1="22" x2="330" y2="292"/>
+        <line class="grid" x1="445.8" y1="22" x2="445.8" y2="292"/>
+        <line class="grid" x1="677.4" y1="22" x2="677.4" y2="292"/>
+        <line class="ref" x1="561.6" y1="22" x2="561.6" y2="292"/>
+        <text x="330" y="312" text-anchor="middle">0%</text>
+        <text x="445.8" y="312" text-anchor="middle">50%</text>
+        <text x="561.6" y="312" text-anchor="middle" class="l">100% (break-even)</text>
+        <text x="677.4" y="312" text-anchor="middle">150%</text>
+      </g>
+      <g class="row"><title>Cases.gg Pack Up, $1,813.83: 89.5% at listed values</title>
+        <text class="l" x="320" y="46" text-anchor="end">Cases.gg · Pack Up ($1,814)</text>
+        <rect class="bar" x="330" y="34" width="207.3" height="18" rx="4"/>
+        <text class="v" x="543" y="47">89.5%</text></g>
+      <g class="row"><title>Misty Timepiece Suite, $10: 82.3% with credits valued at raffle expected value</title>
+        <text class="l" x="320" y="82" text-anchor="end">Misty · Timepiece ($10), credits at raffle value</text>
+        <rect class="bar" x="330" y="70" width="190.6" height="18" rx="4"/>
+        <text class="v" x="526" y="83">82.3%</text></g>
+      <g class="row"><title>Misty Penthouse, $50: 68.0% with credits valued at raffle expected value</title>
+        <text class="l" x="320" y="118" text-anchor="end">Misty · Penthouse ($50), credits at raffle value</text>
+        <rect class="bar" x="330" y="106" width="157.5" height="18" rx="4"/>
+        <text class="v" x="493" y="119">68.0%</text></g>
+      <g class="row"><title>Misty Penthouse, $50: 41.2% counting physical prizes only</title>
+        <text class="l" x="320" y="154" text-anchor="end">Misty · Penthouse, physical prizes only</text>
+        <rect class="bar dim" x="330" y="142" width="95.4" height="18" rx="4"/>
+        <text class="v" x="431" y="155">41.2%</text></g>
+      <g class="row"><title>Misty Timepiece Suite, $10: 37.7% counting physical prizes only</title>
+        <text class="l" x="320" y="190" text-anchor="end">Misty · Timepiece, physical prizes only</text>
+        <rect class="bar dim" x="330" y="178" width="87.3" height="18" rx="4"/>
+        <text class="v" x="423" y="191">37.7%</text></g>
+      <g class="row"><title>Misty Penthouse, $50: 125.3% if each credit were worth $1</title>
+        <text class="l" x="320" y="226" text-anchor="end">Misty · Penthouse, credits at $1 face value</text>
+        <rect class="bar ghost" x="330" y="214" width="290.2" height="18" rx="4"/>
+        <text class="v" x="626" y="227">125.3%</text></g>
+      <g class="row"><title>Misty Timepiece Suite, $10: 177.9% if each credit were worth $1</title>
+        <text class="l" x="320" y="262" text-anchor="end">Misty · Timepiece, credits at $1 face value</text>
+        <rect class="bar ghost" x="330" y="250" width="412" height="18" rx="4"/>
+        <text class="v" x="748" y="263">177.9%</text></g>
+      <line class="axis" x1="330" y1="292" x2="770" y2="292"/>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>Return at a realistic valuation</span><span><i class="s1"></i>Physical prizes only</span><span><i class="ghost"></i>Nominal claim implied by the page</span></div>
+    <figcaption>Misty presents credits as competition entries "from $1". Priced at face value, its $10 box appears to return 178%. Priced at the raffle's expected value (a sold-out 100,000-ticket pool against a $31,850 prize), the same box returns 82%. Jemlit is absent because its box price renders client-side and was not captured; its Apple eBox has an expected value of $6.78 at listed prices.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="chart">
+    <svg viewBox="0 0 760 290" width="760" height="290" role="img" aria-label="Bar chart on a logarithmic scale showing how rare each headline item is, from 1 in 200 to 1 in 1,000,000">
+      <!-- log10 scale: 100 (2) .. 1,000,000 (6) maps to x 310..730 -->
+      <g>
+        <line class="grid" x1="310" y1="22" x2="310" y2="252"/>
+        <line class="grid" x1="415" y1="22" x2="415" y2="252"/>
+        <line class="grid" x1="520" y1="22" x2="520" y2="252"/>
+        <line class="grid" x1="625" y1="22" x2="625" y2="252"/>
+        <line class="grid" x1="730" y1="22" x2="730" y2="252"/>
+        <text x="310" y="272" text-anchor="middle">1 in 100</text>
+        <text x="415" y="272" text-anchor="middle">1 in 1,000</text>
+        <text x="520" y="272" text-anchor="middle">1 in 10,000</text>
+        <text x="625" y="272" text-anchor="middle">1 in 100,000</text>
+        <text x="730" y="272" text-anchor="middle">1 in 1,000,000</text>
+      </g>
+      <g class="row"><title>Cases.gg Pack Up, Louis Vuitton by Tyler trunk: 0.5%, 1 in 200</title>
+        <text class="l" x="300" y="46" text-anchor="end">Cases.gg Pack Up · LV × Tyler trunk</text>
+        <rect class="bar" x="310" y="34" width="31.6" height="18" rx="4"/>
+        <text class="v" x="348" y="47">1 in 200 (0.5%)</text></g>
+      <g class="row"><title>Valve Counter-Strike case, Exceedingly Rare item: 0.26%, about 1 in 385 (as pleaded by New York)</title>
+        <text class="l" x="300" y="82" text-anchor="end">Valve CS case · "Exceedingly Rare" item</text>
+        <rect class="bar dim" x="310" y="70" width="61.5" height="18" rx="4"/>
+        <text class="v" x="378" y="83">1 in 385 (0.26%)</text></g>
+      <g class="row"><title>Misty Penthouse, Rolex Datejust 31: 0.0095%, 1 in 10,553</title>
+        <text class="l" x="300" y="118" text-anchor="end">Misty Penthouse · Rolex Datejust 31</text>
+        <rect class="bar" x="310" y="106" width="212.5" height="18" rx="4"/>
+        <text class="v" x="529" y="119">1 in 10,553</text></g>
+      <g class="row"><title>Misty Timepiece Suite, Rolex Lady-Datejust: 0.004%, 1 in 24,691</title>
+        <text class="l" x="300" y="154" text-anchor="end">Misty Timepiece · Rolex Lady-Datejust</text>
+        <rect class="bar" x="310" y="142" width="251.2" height="18" rx="4"/>
+        <text class="v" x="568" y="155">1 in 24,691</text></g>
+      <g class="row"><title>Cases.gg Welcome Case, Master Chief helmet: 0.001%, 1 in 100,000</title>
+        <text class="l" x="300" y="190" text-anchor="end">Cases.gg Welcome Case · Master Chief helmet</text>
+        <rect class="bar" x="310" y="178" width="315" height="18" rx="4"/>
+        <text class="v" x="632" y="191">1 in 100,000</text></g>
+      <g class="row"><title>Jemlit Apple eBox, each of ten headline items: 0.0001%, 1 in 1,000,000</title>
+        <text class="l" x="300" y="226" text-anchor="end">Jemlit Apple eBox · each of 10 headline items</text>
+        <rect class="bar" x="310" y="214" width="420" height="18" rx="4"/>
+        <text class="v" x="630" y="209">1 in 1,000,000</text></g>
+      <line class="axis" x1="310" y1="252" x2="730" y2="252"/>
+    </svg>
+    </div>
+    <figcaption>How rare the <a class="term" href="#g-showcase">showcase items</a> are, on a <a class="term" href="#g-log-scale">logarithmic scale</a>. Each grid step is ten times rarer than the last. The Valve figure is the disclosed Counter-Strike case rate quoted in New York's complaint and is shown for comparison.</figcaption>
+  </figure>
+</section>
+
+<section id="misty">
+  <div class="site">
+    <h3>2.1 Misty</h3>
+    <p class="who">themistybox.com · VGT Ventures Ltd, London · Companies House 17356642 · laws of England and Wales</p>
+    <dl class="facts">
+      <div><dt>Legal framing</dt><dd>"Skill-based prize competitions with a <a class="term" href="#g-free-draw">free entry route</a>". No gambling licence. Boxes can be opened free by postcard, one entry per postcard. Competitions need a <a class="term" href="#g-skill-question">skill question</a>; boxes do not.</dd></div>
+      <div><dt>Products</dt><dd>Boxes at $10 to $50 paying a physical luxury item or "credits" (1 credit = 1 competition entry). Competitions such as "The Birkin and the Opyum": stated value $31,850, entries from $1 ($0.95 at 10), max 500 per person, ticket pool of 100,000, drawn on the date regardless of sell-through.</dd></div>
+      <div><dt>Fairness mechanism</dt><dd><a class="term" href="#g-server-seed">Server seed</a> <a class="term" href="#g-commit">committed</a> by <a class="term" href="#g-hash">SHA-256</a> before payment, client seed settable, nonce per open; odds table "frozen onto your open". Until 15 Sep 2026 one seed covered every open of a box and was <a class="term" href="#g-seed-rotation">revealed</a> only when the box retired.</dd></div>
+      <div><dt>Verification</dt><dd>Public page per draw with the commitment hash and a Node.js snippet that, as published, hashes an empty message.</dd></div>
+    </dl>
+
+    <div class="table-wrap">
+    <table>
+      <caption>Published odds, captured 9 October 2026</caption>
+      <thead><tr><th>Box</th><th class="num">Price</th><th class="num">P(any physical prize)</th><th class="num">EV of physical prizes</th><th class="num">Expected credits</th><th class="num">Stated odds sum to</th></tr></thead>
+      <tbody>
+        <tr><td>Timepiece Suite</td><td class="num">$10</td><td class="num">1.65%</td><td class="num">$3.77 (37.7%)</td><td class="num">14.0</td><td class="num">100.15%</td></tr>
+        <tr><td>Penthouse</td><td class="num">$50</td><td class="num">1.59%</td><td class="num">$20.59 (41.2%)</td><td class="num">42.1</td><td class="num">100.09%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Top item in each box is a Rolex at 0.004% (1 in 24,691) and 0.0095% (1 in 10,553). 61% of opens pay the smallest credit bundle.</p>
+
+    <div class="callout">
+      <p><strong>The credits layer is where the edge hides.</strong> Credits are presented as entries "from $1", so nominally the $10 box returns $3.77 in goods plus $14 in credits, a 178% return. But a credit is a ticket in a draw whose expected value depends on sell-through: if the 100,000-ticket pool sells out at about $1, one ticket is worth $0.32, and the box's real return is about 82% for the Timepiece Suite and 68% for the Penthouse. Every published number is true. The valuation is the trick.</p>
+    </div>
+    <p><strong>Fairness notes.</strong> Odds sum slightly above 100%. That is rounding, but a licensed operator would be required to fix it. No individual open was verifiable at the time before 15 September 2026. The draw verifier uses the empty-message HMAC convention described in section 1.3; the box formula is unpublished.</p>
+  </div>
+</section>
+
+<section id="jemlit">
+  <div class="site">
+    <h3>2.2 Jemlit</h3>
+    <p class="who">jemlit.com · JLT Digital Media Ltd, Nicosia, Cyprus · terms "subject to the laws of the United Kingdom"</p>
+    <dl class="facts">
+      <div><dt>Legal framing</dt><dd>No licence or regulator named. The terms avoid "gambling" and "game of chance". "The User is aware of the risk of losing money when unboxing." Employees "cannot know the value of a winning product in advance." Age 18+.</dd></div>
+      <div><dt><a class="term" href="#g-cash-out">Cash-out</a></dt><dd>Items exchange for credits at item value less 0 to 30%. Credits "are not worth real money", cannot be withdrawn, expire after one year. No refunds.</dd></div>
+      <div><dt>Fairness mechanism</dt><dd>Fully published (section 1.3). The page HTML embeds the live drop table with <code>chance</code>, <code>outcome_from</code>, <code>outcome_to</code>, <code>price</code> and <code>cashback</code> per item, so the mapping can be audited offline.</dd></div>
+      <div><dt>Geography</dt><dd>No restricted countries in the terms. Third-party reviews say it <a class="term" href="#g-geo-block">geo-blocks</a> Belgium, the Netherlands, Denmark and Austria among others (unverified).</dd></div>
+    </dl>
+
+    <figure>
+      <div class="chart">
+      <svg viewBox="0 0 760 92" width="760" height="92" role="img" aria-label="Stacked bar showing where the probability goes in Jemlit's Apple eBox: 96.3 percent on items worth 15 dollars or less, 3.3 percent between 15 and 100 dollars, 0.43 percent on items worth 100 dollars or more">
+        <!-- 0..100% maps to x 10..746 (7.36 px per percent) with 2px surface gaps between segments -->
+        <g class="row"><title>Items worth $15 or less: 96.31%</title><rect class="seg1" x="10" y="20" width="708.8" height="28" rx="4"/><text class="l" x="24" y="39">Items worth $15 or less · 96.3%</text></g>
+        <g class="row"><title>Items worth between $15 and $100: 3.26%</title><rect class="seg2" x="720.8" y="20" width="24" height="28" rx="2"/></g>
+        <g class="row"><title>Items worth $100 or more: 0.43%, of which the ten headline items total 0.001%</title><rect class="seg3" x="746.8" y="20" width="3.2" height="28" rx="1"/></g>
+        <line class="axis" x1="732.8" y1="50" x2="732.8" y2="66"/><text class="v" x="736" y="80" text-anchor="end">$15 to $100 · 3.3%</text>
+        <line class="axis" x1="748.4" y1="16" x2="748.4" y2="19"/><text class="v" x="752" y="14" text-anchor="end">$100 or more · 0.43%</text>
+      </svg>
+      </div>
+      <div class="legend"><span><i class="s1"></i>$15 or less</span><span><i class="s2"></i>$15 to $100</span><span><i class="s3"></i>$100 or more</span></div>
+      <figcaption>Where 10,000 opens of the Apple eBox land, from the drop table embedded in the page on 9 October 2026 (29 items, chances sum to exactly 1.000000).</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+    <table>
+      <caption>Apple eBox drop table, key figures</caption>
+      <tbody>
+        <tr><td>Ten headline items (Apple Watch Hermès $2,300, iPhone 17s, MacBook, AirPods Max and others)</td><td class="num"><b>0.0001% each</b> (1 in 1,000,000)</td></tr>
+        <tr><td>P(item worth $100 or more)</td><td class="num">0.43%</td></tr>
+        <tr><td>P(item worth $15 or less)</td><td class="num">96.3%</td></tr>
+        <tr><td>Most likely outcomes</td><td class="num">$1.02 sticker 15.9% · $3.40 credit 15.4% · $4.07 case 15.2% · $5.44 cover 14.9% · $6.66 case 14.6%</td></tr>
+        <tr class="hl"><td>Expected value at Jemlit's listed prices</td><td class="num"><b>$6.78</b></td></tr>
+        <tr class="hl"><td>Expected value in cashback credits (what you can get without shipping)</td><td class="num"><b>$6.17</b></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The box price renders client-side and was not in the static HTML; it must be captured from the live page in the scraping phase before the return can be stated. The homepage lists boxes from €5.87. The site's <a class="term" href="#g-live-drops">live "drops" feed</a> in the same HTML shows recent wins dominated by "meb-credit" items worth $0.02 to $0.35.</p>
+    <p><strong>Fairness notes.</strong> The table is not committed, only the seed; ranges can change between seed rotations without breaking any verification. The default client seed is generated by the site's own JavaScript, so the player must change it to remove that trust. Verification requires retiring the seed and running PHP on a third-party website.</p>
+  </div>
+</section>
+
+<section id="casesgg">
+  <div class="site">
+    <h3>2.3 Cases.gg</h3>
+    <p class="who">cases.gg · CGG Entertainment Ltd, Nicosia, Cyprus · payments "may be processed by CasesGG US LLC", Dover, Delaware</p>
+    <dl class="facts">
+      <div><dt>Legal framing</dt><dd>"No purchase necessary. See the Free to Play page for methods of free entry" (US <a class="term" href="#g-sweepstakes">sweepstakes</a> structure). 18+. "Have a Gambling Problem? Reach out for help" in the footer. Ships to North America and the EU. No licence claimed on the site.</dd></div>
+      <div><dt>Disclosed <a class="term" href="#g-house-edge">house edge</a></dt><dd>Cases 10%, <a class="term" href="#g-battles">Battles</a> 10%, Upgrader 10%, Crash about 6.5%, Coinflip 0 to 10%.</dd></div>
+      <div><dt>Fairness mechanism</dt><dd>SHA-256 server hash, browser client seed, nonce from 1, automatic rotation every 1,000 bets. The function that turns the seeds into an item is not published for Cases or Upgrader. "Game modes can use their own nonces" is undocumented.</dd></div>
+      <div><dt>Licence claims elsewhere</dt><dd><a class="term" href="#g-affiliate">Affiliate reviews</a> citing "Curaçao 8048/JAZ" are stale: that master licence (Antillephone) expired 28 Nov 2024 and the new Curaçao LOK regime began 17 Dec 2024.</dd></div>
+    </dl>
+
+    <div class="table-wrap">
+    <table>
+      <caption>Pack Up box, $1,813.83, 22 items, odds sum to 100.00%</caption>
+      <tbody>
+        <tr class="hl"><td>Expected value at Cases.gg's listed values</td><td class="num"><b>$1,623.38 = 89.5%</b> of price (edge 10.5%, matching the disclosure)</td></tr>
+        <tr><td>P(item worth at least the box price)</td><td class="num">21.25%</td></tr>
+        <tr><td>P(lowest item, a $71 suitcase)</td><td class="num">61.25%</td></tr>
+        <tr><td>Top item (Louis Vuitton × Tyler trunk, $14,245)</td><td class="num">0.5%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Other boxes: the Welcome Case pays a US penny 80% of the time; the Level 10 Case pays a penny 90% of the time; the Entry Level box pays a "$0.01 voucher" 85% of the time; their top items sit at 0.001%.</p>
+    <p><strong>Fairness notes.</strong> The public fairness page describes the inputs but not the outcome function, which fails the documentation requirement in GLI-19 v4.0 draft §5.5.3. The disclosed return is measured against the site's own item prices; the <a class="term" href="#g-cash-out">"Quick Sell"</a> rate for converting items back to balance is not published on the box page. Trustpilot (3.7 to 3.9 of 5, about 390 reviews) carries withdrawal-block and "rigged" complaints and company denials; none of that is evidence either way.</p>
+  </div>
+</section>
+
+<section id="matrix">
+  <h3>2.4 Compliance matrix</h3>
+  <p>Each site measured against what a licensed operator would have to show under GLI-19 v4.0 draft §5.5 and the UK Gambling Commission's technical standards. None of the three is actually subject to either, which is the point.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Criterion</th><th>Misty</th><th>Jemlit</th><th>Cases.gg</th></tr></thead>
+    <tbody>
+      <tr><td><b><a class="term" href="#g-licence">Gambling licence</a></b></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None</span><span class="note">Free-draw and prize-competition exemptions</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None</span><span class="note">No regulator named</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None</span><span class="note">Sweepstakes "No purchase necessary" model</span></td></tr>
+      <tr><td><b>Server seed committed before play</b></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">Per open since 15 Sep 2026; per box before</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">SHA-512 shown before play</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">SHA-256 "Server Hash"</span></td></tr>
+      <tr><td><b>Client seed controlled by the player</b></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Settable; site-generated by default</span></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Changeable; browser-generated by default</span></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Changeable; browser-generated by default</span></td></tr>
+      <tr><td><b>Outcome algorithm fully documented</b> (draft §5.5.3)</td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Draw verifier published (empty-message HMAC convention, as at Packs.com); box formula not published</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">HMAC, scaling and range rule all published</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span><span class="note">Inputs described, function not published</span></td></tr>
+      <tr><td><b>Prize table committed or hashed</b></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">"Frozen onto your open", no public hash</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span></td></tr>
+      <tr><td><b>Odds shown per item before purchase</b> (RTS 3C)</td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">Sum to 100.15% and 100.09%</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">Via "Show chances"</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span></td></tr>
+      <tr><td><b>House edge or RTP disclosed</b> (RTS 3C)</td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span><span class="note">Credits presented at face value</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span></td>
+        <td><span class="chip good"><span class="ic">✓</span>Yes</span><span class="note">10% on cases, against its own valuations</span></td></tr>
+      <tr><td><b><a class="term" href="#g-audit">Independent RNG or fairness audit</a></b></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None found</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None found</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>None found</span></td></tr>
+      <tr><td><b>Winnings redeemable for money</b></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Goods shipped; credits are raffle entries</span></td>
+        <td><span class="chip bad"><span class="ic">✕</span>No</span><span class="note">Credits only, 0 to 30% haircut, expire in a year</span></td>
+        <td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Goods shipped; Quick Sell rate unpublished</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section id="second-wave">
+  <h3>2.5 Second-wave audit: IcyBox, StockX, Courtyard and five more</h3>
+  <p>Added 10 October 2026. Method: the operators' own pages, terms and help centres where reachable, the App Store listing for IcyBox, and third-party reviews only where marked. HypeDrop, PackDraw, Rillabox and Lootie block automated access, so their algorithm details come from reviews and from the help-centre articles of comparable operators (Packs.com, Razed.io), included here as reference implementations.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Operator</th><th>Randomness and commitment</th><th>Odds shown</th><th>Value basis</th><th>Cash-out</th><th>Verification</th></tr></thead>
+    <tbody>
+      <tr><td><b>IcyBox</b><span class="note">InfiniteEdge Inc.</span></td><td>Not documented anywhere public. Terms: the assets in an "Icebox" and "the probability of receiving a specific Asset" are shown in-app. Boxes are finite pools ("Drops: once they're gone, they're gone"), and the terms allow a box to be "terminated or removed at any time even before all Assets included in the Icebox are distributed (including any grail that had not yet been distributed)". Buying a box buys "the Icebox experience" with "no right or interest in any particular Icebox Asset" until delivered.</td><td>Per box, in app. Reviews cite a 3% "grail" chance on a $250 box</td><td>Retail-style catalogue values ($250k Royal Oak "Spider-Man")</td><td>Buyback "based on its estimated value", "determined solely by IcyBox", "We do not disclose how we calculate". Choose ship or sell within a "Buyback Period" or the item "will be automatically sold back to us". Sales tax, shipping and insurance extra. Authenticity not warranted in the terms.</td><td><span class="chip bad"><span class="ic">✕</span>None</span><span class="note">No seed, no hash, no public log. Trust rests on the App Store rating, 4.3 from 6.9K</span></td></tr>
+      <tr><td><b>StockX Mystery Boxes</b></td><td>Not provably fair. "Random selection process that pulls from a specific value tier"; the system "factors in your chosen size, available inventory, and pricing checks"; odds fixed and identical for every user; if a tier runs out the box is listed out of stock.</td><td>Per tier before purchase, 0.5% to 74%</td><td>Tiers set by "historical sales data and a pricing model". Floor: item list value at least the box price before processing fees</td><td>75 to 90% of list value as StockX Credit, not withdrawable, valid one year. 5-minute decision window, otherwise charged and shipped. Refunds capped at purchase price.</td><td><span class="chip bad"><span class="ic">✕</span>None</span><span class="note">Trust is StockX's data and brand</span></td></tr>
+      <tr><td><b>Courtyard.io</b></td><td>"Every single pull is publicly recorded on the blockchain so anyone can verify what's being pulled" (Polygon, per its partner). Exact odds per card. Pack price "reflects the average expected value you get out across all possible pulls".</td><td>Per card</td><td>Fair Market Value from "a proprietary pricing algorithm": recent sales, market trends, comparative data</td><td>Buyback at FMV, which "ignores what you paid", 7 days to accept. Peer marketplace at 0% fees. Vault free. "Guaranteed value" codes set a floor on the buyback. Watches: 95% of market value claimed by the partner.</td><td><span class="chip warn"><span class="ic">◐</span>Public log</span><span class="note">Randomness mechanism not named. A third party, PullValue, already tracks observed odds and expected value per pack</span></td></tr>
+      <tr><td><b>Packs.com</b><span class="note">Reference implementation</span></td><td>HMAC-SHA512 keyed by <code>serverSeed:clientSeed:nonce:openingNumber</code> over an empty message. First 8 hex characters give a ticket from 0 to 99,999,999. Each card owns a ticket range proportional to its chance. <b>The server seed rotates on every opening</b> and the previous seed is revealed into the history.</td><td>Per card</td><td>—</td><td>—</td><td><span class="chip good"><span class="ic">✓</span>Best seen</span><span class="note">Every open verifiable immediately; verifier published in a sandbox. One flaw: reducing 32 bits to 100,000,000 tickets cannot be uniform; about 5% of tickets are 2.4% rarer than stated (<a href="04-backend-blueprint.html#2-the-odds-engine-precisely">doc 4 §2.2</a>)</span></td></tr>
+      <tr><td><b>Razed.io</b><span class="note">Reference, battles</span></td><td>64-character server seed committed by SHA-256. After all players join, the system waits for an EOS block and <b>its block ID becomes the client seed</b>. SHA-512 of <code>server:client:nonce</code>; ticket from 1 to 100,000,000.</td><td>—</td><td>—</td><td>—</td><td><span class="chip good"><span class="ic">✓</span>External beacon</span><span class="note">Removes operator control of entropy</span></td></tr>
+      <tr><td><b>HypeDrop</b></td><td>Server-seed hash per box, client seed and "play count" (reviews). Algorithm "less publicly documented than competitors". Licence claims conflict: one review says MGA, another found none.</td><td>Per item</td><td>Retail</td><td>Exchange to balance</td><td><span class="chip warn"><span class="ic">◐</span>Partial</span></td></tr>
+      <tr><td><b>PackDraw</b></td><td>Server seed, client seed and nonce "anchored to the EOS blockchain" (review). Fairness page unreachable. Forge lets users build and list their own packs.</td><td>Per item</td><td>Retail</td><td>Physical items in the US and Canada, crypto elsewhere</td><td><span class="chip warn"><span class="ic">◐</span>Partial</span><span class="note">Users report odds tightening after updates</span></td></tr>
+      <tr><td><b>Rillabox</b></td><td>SHA-256 server-seed hash per box (operator replies on Trustpilot). Partial documentation. Site unreachable.</td><td>Per item</td><td>Retail</td><td>Balance</td><td><span class="chip warn"><span class="ic">◐</span>Partial</span></td></tr>
+      <tr><td><b>LuxDrop</b></td><td>A "Provably Fair" page exists but renders nothing outside the app. No details found.</td><td>Per item</td><td>Retail</td><td>Balance</td><td><span class="chip bad"><span class="ic">✕</span>Unknown</span></td></tr>
+      <tr><td><b>Lootie</b></td><td>SHA-256 hash of the server seed shown before the open (reviews). Site returned a server error at capture.</td><td>Per item</td><td>Retail</td><td>Reportedly cash</td><td><span class="chip bad"><span class="ic">✕</span>Unknown</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout">
+    <p><strong>What this adds to the first audit.</strong></p>
+    <p>1. Still nobody commits the drop table or the valuations. The best current practice is an external randomness beacon (the EOS block hash at Razed, PackDraw and Chicken.gg) plus per-open seed rotation (Packs.com). The Glass Box should adopt both on top of the manifest commitment.</p>
+    <p>2. IcyBox's finite boxes come with an operator exit: a box can be retired before its grail is distributed. A committed pool must bind the operator to distribute the grail, or draw it among the buyers, at retirement.</p>
+    <p>3. The two trusted brands use no cryptography at all. StockX and Courtyard substitute their own data and, at Courtyard, a public log. Buyback is credit at StockX and fair market value at Courtyard with a 7-day window, against StockX's 5 minutes and IcyBox's forced auto-buyback. A 7-day decision window and cash are differentiating on their own.</p>
+    <p>4. PullValue shows the comparison layer has demand: an independent expected-value and observed-odds tracker already exists for Courtyard alone.</p>
+    <p>5. Correction to section 1.3: Misty's draw verifier follows the same empty-message HMAC convention Packs.com documents, so it is reproducible; "defective" was too strong. The unpublished part is the box formula.</p>
+  </div>
+</section>
+
+<section id="loophole">
+  <h2>3 · Where the loophole actually is</h2>
+  <p>What a passing hash check proves: the server seed existed before the bet, and the roll is a deterministic function of (server seed, client seed, nonce). What it cannot prove, and where every documented abuse has lived:</p>
+  <ol>
+    <li><strong>The weight table is not committed.</strong> Only the seed is hashed. An operator can run a different table than the one displayed, or change ranges per account, and every verification still passes. Misty says it "freezes" the table onto each open, which is the right idea, but there is no published hash of the table to check against.</li>
+    <li><strong>Operator-controlled <a class="term" href="#g-entropy">entropy</a>.</strong> If the client seed is server-generated (the default on all three sites until the player changes it), the operator can <a class="term" href="#g-seed-grinding">grind seed pairs</a> offline and keep house-favourable ones. Audit finding Zealynx F-2026-0003 (Fair Casino, January 2026, severity HIGH) documents exactly this; F-2026-0004 documents the server choosing its seed after seeing the client seed. Both passed public verification until fixed.</li>
+    <li><strong><a class="term" href="#g-seed-rotation">Seed-rotation</a> timing and aborted rounds.</strong> Rotating or discarding seeds at times correlated with wins biases outcomes without touching any individual verifiable roll. UK <a class="term" href="#g-rts">RTS 7B</a> explicitly forbids discarding RNG output.</li>
+    <li><strong>Per-account flags.</strong> CSGO Diamonds admitted in 2016 that it gave sponsored streamer m0E advance knowledge of roll outcomes. Leaked CSGOShuffle logs (2016) showed the apparent owner asking the coder for roll percentages. A former case-site coder told Richard Lewis in 2017 that win rates are set manually, that sites run a mode paying the two cheapest skins every time, that weights can be entered then erased so they cannot be traced, and that advertised items are configured so they cannot drop: "Every site I've worked on does it this way and requests these features."</li>
+    <li><strong>The valuation layer.</strong> Return is computed against prices the operator sets. Cash-out is in credits at a haircut (Jemlit, 0 to 30%), in competition entries (Misty), or at an unpublished sell rate (Cases.gg).</li>
+    <li><strong>Presentation.</strong> One-in-a-million showcase items; "top open item $159" banners; spin animations with <a class="term" href="#g-near-miss">near-miss</a> placement, which New York's complaint against Valve makes a pleaded fact; "40% Guaranteed" boxes; odds that sum to more than 100%.</li>
+    <li><strong><a class="term" href="#g-power">Detectability</a>.</strong> An individual cannot statistically distinguish a 0.26% rate from a 0.18% rate without tens of thousands of paid opens (to be quantified in the simulation phase). Verification requires retiring the seed and running code on a third-party site; in practice almost nobody does it, and the sites know it.</li>
+  </ol>
+  <div class="callout">
+    <p><strong>Implication for the thesis.</strong> "All online gambling apps are rigged" is not provable and is likely false in the narrow sense of the roll. What is demonstrable, with these sites' own data, is that the design is negative-EV by construction and the edge is disguised through valuation and credits; that the "provably fair" guarantee is narrower than it is marketed to be and has been bypassed in documented cases through the gaps above; and that no independent party has audited any of these three operators against any standard. That is a stronger and more defensible claim than "the RNG is fake".</p>
+  </div>
+  <div class="callout warn">
+    <p><strong>Operator's-eye confirmation, added 10 Oct 2026.</strong> A B2B software vendor's sales demo (<a href="02-market-data-pricing-and-product.html#vendor">dossier 2 §3.5</a>) describes the same mechanics from the inside: 99.9% of pulls are sold back because "the economy is made in a way that most of the time you're getting something that is not really desirable"; withdrawals are allowed only "through items" after wagering; bots let a player "play against the house" in battles; RTP is defaulted to 90% and configurable; item prices are listed above acquisition cost. It is the clearest statement of design intent in this research and belongs in the thesis as primary evidence.</p>
+  </div>
+</section>
+
+<section id="regulation">
+  <h2>4 · Regulation and standards</h2>
+
+  <h3>4.1 United States</h3>
+  <ul>
+    <li><strong>Federal.</strong> No statute or FTC rule covers <a class="term" href="#g-loot-box">loot boxes or mystery boxes</a>. The FTC held "Inside the Game" on 7 August 2019 and issued a Staff Perspective paper in August 2020 calling for meaningful disclosures, research and self-regulation; panelists flagged dynamic odds that vary by player or time as a transparency concern. Deceptive odds claims fall under FTC Act §5. The FTC's 2022 report "Bringing Dark Patterns to Light" reaches gaming.</li>
+    <li><strong>State gambling law decides.</strong> Washington's definition (RCW 9.46.0237): risking something of value on a contest of chance with an understanding that something of value will be received on a given outcome. The Washington State Gambling Commission sent Valve a <a class="term" href="#g-cease">cease-and-desist</a> on 27 September 2016 over <a class="term" href="#g-skins">skins gambling</a>.</li>
+    <li><strong>New York v. Valve Corp.</strong> (Sup. Ct. N.Y. County, Index 450952/2026, filed 25 February 2026). Theory: "charging an individual for a chance to win something of value based on luck alone is quintessential gambling". It pleads Valve's disclosed case odds (Mil-Spec 79.92%, Restricted 15.98%, Classified 3.2%, Covert 0.64%, Exceedingly Rare 0.26%), the slot-like wheel and "near miss", the resale market ($4.3bn in skins), harm to minors, and seeks an injunction, <a class="term" href="#g-disgorgement">disgorgement, restitution and treble penalties</a>. The theory transfers directly to mystery-box sites with resale or cash-out.</li>
+    <li><strong>Sweepstakes casino bans 2025 to 2026</strong>, the structure Cases.gg uses: NJ A5447 (15 Aug 2025), CT PA 25-112 (effective 1 Oct 2025), MT SB 555 (1 Oct 2025), NV SB 256 (1 Oct 2025), NY S5935A (5 Dec 2025, fines $10k to $100k per violation), then 2026 laws in IN (HB 1052), IA (SF 2289), LA (HB 53 and HB 883), ME (LD 2007), OK (SB 1589) and TN (HB 1885). Most are drafted around <a class="term" href="#g-dual-currency">dual-currency systems</a> that simulate casino games; physical-goods mystery boxes are a grey zone that a court applying the New York theory could close.</li>
+    <li><strong>Sweepstakes law baseline</strong> a "No purchase necessary" site must meet: a <a class="term" href="#g-sweepstakes">free entry route</a> with equal odds; official rules disclosing sponsor, eligibility, prize value, odds and winner selection; New York and Florida registration and a bond when total prizes exceed $5,000; Rhode Island registration above $500 for retail promotions.</li>
+  </ul>
+
+  <h3>4.2 Technical standards a licensed operator must meet</h3>
+  <ul>
+    <li><strong><a class="term" href="#g-gli">GLI-19</a> v3.0 (17 July 2020).</strong> RNG seeding and re-seeding rules, no cycling or synchronisation, statistical testing (chi-square, Kolmogorov-Smirnov, DIEHARD-style batteries), background cycling, scaling that preserves uniformity.</li>
+    <li><strong>GLI-19 v4.0 draft (7 July 2026), new §5.5 "Provably Fair" RNGs.</strong> The server seed must be committed by hash before wager acceptance and never modified afterwards. The client seed must be provided by the player or generated on the player's device and not be modifiable by the platform. A nonce or counter is required where one seed covers many games. The commitment method, seed combination, every cryptographic primitive, all scaling and shuffling, and the conversion of intermediate values into outcomes must be documented "sufficiently detailed to enable an independent third party to reproduce and validate historical game outcomes". Device-generated hashes may be supplemental entropy but "not the sole entropy source". Measured against this draft: Jemlit documents its algorithm fully; Cases.gg does not document the outcome function; Misty documents the draw but not the box.</li>
+    <li><strong>UK Gambling Commission <a class="term" href="#g-rts">technical standards</a>.</strong> RTS 7A: outcomes must be "acceptably random", demonstrable by statistical testing; <a class="term" href="#g-compensated">adaptive or compensated games</a> are prohibited. RTS 7B: implement the rules "as described to the customer"; random numbers must be used in order and never discarded. RTS 7C: no designs that mislead about likelihood and no false near-miss displays. RTS 3C: before committing, the customer must be able to see how winners are determined and the house edge, the return to player, or the probability of each outcome.</li>
+    <li><strong>Belgian Gaming Commission (April 2018)</strong> recommended, beyond disclosure, that the regulator be given control over the random number generators and that spending ceilings be introduced.</li>
+  </ul>
+
+  <h3>4.3 United Kingdom</h3>
+  <ul>
+    <li>Loot boxes are not gambling under the Gambling Act 2005 (DCMS response 2022; White Paper 2023; 2024 follow-up). Industry self-regulation and the PEGI label since April 2020. Xiao, Henderson and Newall (PLOS ONE, 2023) found 64% compliance with the UK's voluntary odds disclosure versus 95.6% under China's legal rule.</li>
+    <li>Free draws and prize competitions (Schedules 1 and 2): the free route must be as prominent and convenient as the paid route and prizes must be allocated identically; products priced "well above" cost may be challenged as illegal lotteries. The Commission logged 549 complaints about 386 entities between January 2019 and April 2023 and said the subjective tests make prosecution difficult. A DCMS voluntary code for prize draws was due in November 2025.</li>
+    <li><strong>ASA rulings:</strong> EA, Miniclip and Jagex (20 March 2024) for ads omitting loot boxes; Hutch Games / F1 Clash (19 November 2025) for a spin wheel that did not make clear prizes had unequal odds; three further app rulings in 2025 following an academic complaint.</li>
+    <li><strong>DCMS "Rapid evidence review of skins gambling"</strong> (Harris, Griffiths and Gibson, Nottingham Trent University, published 25 September 2025): 54 sites identified, 6.9 million unique visits in February 2025, 44.9% of visitors aged 18 to 24; none of 20 audited sites verified age at the point of use; near-miss, losses disguised as wins, autoplay and free demo spins found across sites; only one site offered deposit limits. It recommends treating skins gambling as gambling and licensing operators, and describes case openings as simulating a slot machine.</li>
+    <li>The Commission said in 2019 it was "assessing" MysteryBrand, the Jake Paul and RiceGum promotion case with non-delivered and counterfeit prizes. No public outcome was found.</li>
+  </ul>
+
+  <h3>4.4 EU and elsewhere</h3>
+  <ul>
+    <li><strong>Belgium</strong> (2018): paid loot boxes in FIFA 18, CS:GO and Overwatch are games of chance; operators were told to remove them or face prosecution. <strong>Netherlands</strong>: the 2018 KSA ruling against EA was overturned by the Council of State in 2022.</li>
+    <li><strong>EU Digital Fairness Act</strong>: proposal expected Q4 2026 under the Commission's 2026 work programme. The Parliament's IMCO committee (late 2025) asked for a ban on loot boxes and pay-to-win mechanics in games likely to be accessed by minors; odds disclosure is the most consistently expected element. Not adopted as of 9 October 2026.</li>
+    <li><strong>Denmark</strong>: HypeDrop reported geo-blocked after the Danish Gambling Authority declined to accept the model (secondary source). <strong>China</strong>: mandatory probability disclosure since May 2017; a 2024 police case treated live-streamed mystery boxes as gambling. <strong>Brazil</strong>: paid loot boxes banned for under-18s from March 2026. <strong>Australia</strong>: chance-based purchases rated 15+ (secondary source). <strong>Curaçao</strong>: the master-licence and sub-licence regime ended in 2024, so "8048/JAZ" claims are obsolete.</li>
+  </ul>
+</section>
+
+<section id="literature">
+  <h2>5 · Literature to anchor the chapter</h2>
+  <ul>
+    <li>Drummond and Sauer (2018), <em>Nature Human Behaviour</em>: loot boxes meet psychological criteria for gambling.</li>
+    <li>Zendle and Cairns (2018, 2019), <em>PLOS ONE</em>; Zendle, Cairns, Barnett and McCall (2020), <em>Computers in Human Behavior</em> 102:181–191, link to problem gambling regardless of cash-out; Zendle (2020), <em>PeerJ</em> 8:e9466, "Beyond loot boxes".</li>
+    <li>Zendle, Petrovskaya, Xiao and Newall (2025), <em>Psychology of Addictive Behaviors</em>: loot box and card-pack spending both correlate with problem gambling, loot boxes most strongly.</li>
+    <li>Xiao, Henderson and Newall (2021, <em>Behavioural Public Policy</em>; 2023, <em>PLOS ONE</em>): disclosure compliance in China versus the UK.</li>
+    <li>Xiao and Henderson (2024): 21.8% of 165 Steam games contain transferable loot boxes; none labelled.</li>
+    <li>Newall (2025), <em>Addiction</em>: a taxonomy of deceptive design in online gambling platforms.</li>
+    <li>Greer, Rockloff and colleagues (2019, 2021, 2023): skins gambling; esports bettors scored 10.03 on the <a class="term" href="#g-pgsi">Problem Gambling Severity Index</a> against 3.70 for sports bettors; adolescents' past-month skin gambling uniquely predicts problem gambling.</li>
+    <li>Mechanisms: Reid (1986) on the <a class="term" href="#g-near-miss">near-miss</a>; Clark and colleagues (2009), <em>Neuron</em>; Dixon and colleagues (2010) on <a class="term" href="#g-ldw">losses disguised as wins</a>; Schüll (2012), <em>Addiction by Design</em>; Parke and Griffiths (2007) on <a class="term" href="#g-structural">structural characteristics</a>. Skinner's work on <a class="term" href="#g-variable-ratio">variable-ratio reinforcement</a> underlies all of it.</li>
+    <li>Harris, Griffiths and Gibson (2025), DCMS rapid evidence review of skins gambling.</li>
+  </ul>
+</section>
+
+<section id="simulations">
+  <h2>6 · What this changes in the simulation plan</h2>
+  <p>In addition to the seven experiments already proposed, the captured data suggests four more:</p>
+  <ul>
+    <li><strong>A return calculator over real drop tables.</strong> A scraper for Jemlit's embedded JSON, Cases.gg's rendered pages and Misty's HTML tables, reporting expected value at listed value, expected value at cash-out value, P(outcome worth at least the price), P(lowest outcome), and the showcase items' share of expected value.</li>
+    <li><strong>A credits model.</strong> Reproduce Misty's two-stage structure (box to credits to draw) to show how a nominally positive-EV box becomes a 68 to 82% return.</li>
+    <li><strong>Attack simulations against provably fair.</strong> Table swap between rotations, server-chosen client-seed grinding (F-2026-0003), commit-order inversion (F-2026-0004), per-account weight overrides, and seed rotation keyed to wins. For each, show that per-roll verification still passes and compute how many opens a watchdog would need to detect it.</li>
+    <li><strong>Detectability and power analysis</strong> for one-in-a-million and 0.26% items.</li>
+  </ul>
+  <p class="small muted">Companion tool: <code>tools/verify_roll.py</code> reproduces Jemlit's roll exactly and both readings of Misty's draw formula from revealed seeds.</p>
+</section>
+
+<section id="glossary" class="gloss">
+  <h2>Glossary in plain English</h2>
+  <p>Every dotted term on this page points here. Definitions are written for a reader with no casino, cryptography or legal background.</p>
+
+  <h3>Randomness and fairness</h3>
+  <dl>
+    <dt id="g-rng">Random number generator (RNG)</dt>
+    <dd>The piece of software that produces the dice roll for every box opening. Computers cannot be truly random, so an RNG starts from a seed and runs a formula that produces numbers that look random. If the formula is good, nobody can predict the next number without knowing the seed.</dd>
+    <dt id="g-seed">Seed</dt>
+    <dd>The starting value an RNG begins from. The same seed always produces the same sequence of numbers, the way the same shuffle always deals the same hands. That is why seeds matter: whoever controls the seed, and when it is chosen, controls the outcome. Provably fair systems split the seed into a server seed and a client seed so neither side controls it alone.</dd>
+    <dt id="g-server-seed">Server seed</dt>
+    <dd>The site's half of the seed: a long secret random string. The site must pick it before you play and must not change it afterwards. It stays secret until it is revealed, so you cannot predict outcomes, but its fingerprint (hash) is shown up front so the site cannot swap it later. "Server seed committed by SHA-256" means that fingerprint was published before you bet.</dd>
+    <dt id="g-client-seed">Client seed</dt>
+    <dd>Your half of the seed: a string generated in your browser that you can change at any time. Because the site cannot know it in advance, it cannot pre-cook outcomes from its own seed alone. If you leave the site's default in place, you are trusting that the site chose it honestly.</dd>
+    <dt id="g-nonce">Nonce</dt>
+    <dd>A counter: 1 for your first bet under a seed, 2 for the second, and so on. It makes each roll different even though the two seeds stay the same, the way the same deck deals different hands as you go through it.</dd>
+    <dt id="g-hash">Hash (SHA-256, SHA-512)</dt>
+    <dd>A fingerprint of a piece of data. Feed any text into SHA-256 and you get a fixed-length code. Change one character and the code changes completely, and you cannot work backwards from the code to the text. It is not encryption, because nothing is hidden to be unlocked later. It is a tamper-evident fingerprint. SHA-512 is the same idea with a longer code.</dd>
+    <dt id="g-commit">Commitment (commit-reveal)</dt>
+    <dd>The sealed-envelope trick. Before you play, the site shows you the hash of its server seed, which is like showing you a sealed envelope. After you play, it opens the envelope by revealing the seed. You hash the revealed seed yourself; if it matches the fingerprint shown earlier, the seed was not changed in between.</dd>
+    <dt id="g-hmac">HMAC</dt>
+    <dd>A way of hashing a message together with a secret key, so the result depends on both. Here the server seed is the key and your client seed plus the nonce is the message. The output looks random and is turned into the roll. Anyone holding the revealed seed can recompute it, which is what makes verification possible.</dd>
+    <dt id="g-entropy">Entropy</dt>
+    <dd>Genuine unpredictability. A seed with lots of entropy could have been any of a huge number of values; a seed chosen from a short list has little. When the site generates both seeds itself, it controls all the entropy, and "random" becomes "whatever the site picked".</dd>
+    <dt id="g-provably-fair">Provably fair</dt>
+    <dd>The marketing name for the commit-reveal scheme. It lets you prove, after the fact, that a specific roll was computed from seeds fixed before you bet. It proves nothing about the odds table, the item values, or whether the site picked favourable seeds for itself, which is why this dossier treats it as narrower than it sounds.</dd>
+    <dt id="g-seed-rotation">Seed rotation, retiring a seed</dt>
+    <dd>Replacing the server seed with a new one. The old seed is then revealed so you can check your past bets. Until a seed is retired you cannot verify anything played under it, and the site decides when rotation happens.</dd>
+    <dt id="g-seed-grinding">Seed grinding</dt>
+    <dd>An attack where whoever controls both seeds tries thousands of candidate seeds in private, keeps the one that produces the result they want, and only then "commits" to it. Verification still passes because the commitment was real; it was just chosen with the outcome already known.</dd>
+    <dt id="g-verification">Verification tool</dt>
+    <dd>A snippet of code the site publishes so you can recompute a roll from the revealed seeds. If the snippet is wrong or missing, you cannot check anything even when the seeds are revealed.</dd>
+    <dt id="g-hex">Hexadecimal (hex)</dt>
+    <dd>Base-16 numbers written with the digits 0 to 9 and the letters a to f. Hashes are written this way. "First 13 hex characters" means taking the first 13 of those symbols and reading them as a number.</dd>
+  </dl>
+
+  <h3>Odds and money</h3>
+  <dl>
+    <dt id="g-odds">Odds, probability, drop rate</dt>
+    <dd>Three names for the same thing: how often an outcome happens over many tries. 0.5% means 5 times in 1,000 opens on average. "1 in 200" is the same number written as a ratio. A low rate does not mean it will take you that many opens; it is an average over a very large number of players, and most of them never see it.</dd>
+    <dt id="g-drop-table">Drop table (weight table, prize table)</dt>
+    <dd>The list of everything a box can pay, each with its chance. The chances must add up to 100%. The "admin sets 0.5%" step is editing this table. A site can show one table and run another unless the table itself is locked into the commitment, and on these sites it is not.</dd>
+    <dt id="g-ev">Expected value (EV)</dt>
+    <dd>The average payout per open if you opened the box a huge number of times: each item's value multiplied by its chance, all added up. A $10 box with an EV of $8.20 loses $1.80 per open on average, however lucky any single open is.</dd>
+    <dt id="g-rtp">Return to player (RTP)</dt>
+    <dd>Expected value as a percentage of the price. 89.5% RTP means that for every $100 spent, players as a group get back $89.50 worth of items at the site's valuations. Casinos publish RTP for slot machines, and licensed online operators must publish it too.</dd>
+    <dt id="g-house-edge">House edge</dt>
+    <dd>The flip side of RTP: the share the site keeps on average, which is 100% minus RTP. A 10% house edge on a $1,814 box is $181 per open, expected.</dd>
+    <dt id="g-valuation">Listed value, valuation layer</dt>
+    <dd>The price a site assigns to each prize. RTP is calculated against these prices, so inflating them makes a box look better than it is. The honest test is what you can actually get: the cash-out credit, the resale price, or the raffle ticket's real worth.</dd>
+    <dt id="g-cash-out">Cash-out, cashback credits, Quick Sell, haircut</dt>
+    <dd>Ways to turn a won item into site balance instead of shipping it. The haircut is the percentage the site keeps on that conversion (Jemlit: 0 to 30%). Balance usually cannot be withdrawn as money, so it can only be spent on more boxes.</dd>
+    <dt id="g-showcase">Showcase (headline) items</dt>
+    <dd>The expensive prizes shown in the marketing. On these sites they sit at odds like 1 in 1,000,000, so they contribute almost nothing to the expected value while doing most of the selling.</dd>
+    <dt id="g-log-scale">Logarithmic scale</dt>
+    <dd>A chart axis where each step is ten times the last (100, 1,000, 10,000 and so on). It is the only way to show 1 in 200 and 1 in 1,000,000 on the same chart without the first one becoming invisible.</dd>
+    <dt id="g-power">Detectability (statistical power)</dt>
+    <dd>How many opens you would need before a shaved drop rate shows up as more than bad luck. For rare items the answer is tens of thousands of paid opens, which is why an individual player cannot catch rigging and only a regulator with the logs can.</dd>
+  </dl>
+
+  <h3>Game design and psychology</h3>
+  <dl>
+    <dt id="g-near-miss">Near miss</dt>
+    <dd>When the spinning wheel stops just next to the big prize. It feels like you almost won, but the outcome was decided by the RNG before the animation started, so the placement is theatre. Licensed operators are forbidden from faking it.</dd>
+    <dt id="g-ldw">Losses disguised as wins</dt>
+    <dd>Getting back less than you paid while the game celebrates with lights and sounds, for example a $4 item from a $10 box with a "You won!" animation.</dd>
+    <dt id="g-variable-ratio">Variable-ratio reinforcement</dt>
+    <dd>The reward schedule behind slot machines and loot boxes: wins arrive after an unpredictable number of tries, which produces the most persistent behaviour of any schedule psychologists have tested. Skinner found it in pigeons before casinos found it in people.</dd>
+    <dt id="g-compensated">Compensated (adaptive) game</dt>
+    <dd>A game that quietly changes the odds depending on what happened before, for example tightening after a big win or loosening for a new account. Banned under UK standards because the displayed odds would no longer be true for you.</dd>
+    <dt id="g-structural">Structural characteristics</dt>
+    <dd>The design features of a gambling product that make it more or less harmful: speed of play, bet size, near-misses, sound and light feedback, how easy it is to bet again. The term comes from Griffiths and Parke.</dd>
+  </dl>
+
+  <h3>Site mechanics</h3>
+  <dl>
+    <dt id="g-loot-box">Loot box, mystery box, case</dt>
+    <dd>A purchase whose contents are random. Loot boxes live inside video games; mystery boxes and cases are sold on standalone websites for real goods or game items. Mechanically they are identical.</dd>
+    <dt id="g-skins">Skins</dt>
+    <dd>Cosmetic items for games such as Counter-Strike that can be traded and sold for real money. They are the chips of skins gambling: won on third-party sites and converted to cash on marketplaces.</dd>
+    <dt id="g-battles">Battles, Upgrader, Crash, Coinflip</dt>
+    <dd>Other game modes on these sites. In a battle, two or more players open the same boxes and the highest total takes everything. Upgrader lets you stake an item for a chance at a pricier one. Crash is a rising multiplier you must cash out before it collapses. Coinflip is a 50/50 bet on items. All carry the site's edge.</dd>
+    <dt id="g-live-drops">Live drops feed</dt>
+    <dd>The scrolling list of recent wins on the homepage. It is real data, but it shows what people win, not what they paid, and sites choose which wins to feature.</dd>
+    <dt id="g-affiliate">Affiliate site</dt>
+    <dd>A review or ranking website paid a commission when readers sign up through its links. Its "best mystery box sites" lists are advertising, which is why this dossier does not treat them as evidence.</dd>
+    <dt id="g-geo-block">Geo-block</dt>
+    <dd>Refusing visitors from a country, usually by IP address, so the site does not have to comply with that country's gambling law.</dd>
+  </dl>
+
+  <h3>Law and regulation</h3>
+  <dl>
+    <dt id="g-licence">Gambling licence</dt>
+    <dd>Permission from a regulator (the UK Gambling Commission, a US state, Malta and others) to offer gambling. It comes with mandatory RNG testing, published RTP, age checks and deposit limits. None of the three sites has one, so none of those duties applies to them.</dd>
+    <dt id="g-audit">Independent audit, RNG certification</dt>
+    <dd>A testing lab (GLI, iTech Labs, eCOGRA) checking that an operator's RNG is random and that real payouts match the published odds. Licensed operators must have it. None of these three sites has been audited by anyone.</dd>
+    <dt id="g-gli">GLI-19</dt>
+    <dd>The most widely used technical standard for online gambling systems, written by Gaming Laboratories International. Version 4.0, in draft since July 2026, is the first to spell out what a provably-fair system must do to pass.</dd>
+    <dt id="g-rts">UK RTS</dt>
+    <dd>The Gambling Commission's Remote gambling and software Technical Standards, which every UK-licensed operator must follow. RTS 7 covers randomness; RTS 3 covers telling customers their chances.</dd>
+    <dt id="g-sweepstakes">Sweepstakes, "No purchase necessary", AMOE</dt>
+    <dd>In US law a promotion is not gambling if you can enter without paying. Sites offer an alternative method of entry (AMOE), usually a free box or a posted form, so the paid boxes can be framed as a promotion rather than a bet. Several states decided in 2025 and 2026 that the framing fails when the product simulates a casino.</dd>
+    <dt id="g-dual-currency">Dual-currency sweepstakes</dt>
+    <dd>The sweepstakes-casino model: you buy "gold coins" that cannot be cashed out and receive free "sweeps coins" that can. The 2025 and 2026 state bans are written around this structure.</dd>
+    <dt id="g-free-draw">Free draw, prize competition, free entry route (UK)</dt>
+    <dd>The UK exemptions Misty relies on. A draw is not a lottery if there is a free way to enter that is as easy and prominent as paying; a competition is not gambling if it needs skill. The postal entry route and the skill question exist to satisfy those two tests.</dd>
+    <dt id="g-skill-question">Skill question</dt>
+    <dd>A simple question, often trivially easy, that entrants must answer so a prize draw can be called a competition of skill rather than a lottery.</dd>
+    <dt id="g-cease">Cease and desist</dt>
+    <dd>A formal letter from a regulator or lawyer demanding that an activity stop, with legal action threatened if it does not.</dd>
+    <dt id="g-disgorgement">Disgorgement, restitution, treble damages</dt>
+    <dd>Remedies a court can order. Disgorgement makes the company hand over the profits it made; restitution pays money back to the people who lost it; treble damages multiply the penalty by three.</dd>
+    <dt id="g-pgsi">PGSI</dt>
+    <dd>The Problem Gambling Severity Index, a nine-question survey. A score of 8 or more indicates problem gambling. The esports bettors in the literature averaged 10.03.</dd>
+  </dl>
+</section>
+
+<section id="sources">
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><b>Misty</b> · <a href="https://themistybox.com/">themistybox.com</a> · <a href="https://themistybox.com/terms">/terms</a> · <a href="https://themistybox.com/free-entry">/free-entry</a> · <a href="https://themistybox.com/mystery/timepiece-suite">/mystery/timepiece-suite</a> · <a href="https://themistybox.com/mystery/penthouse">/mystery/penthouse</a> · <a href="https://themistybox.com/verify/suite-707">/verify/suite-707</a> · <a href="https://themistybox.com/campaigns/suite-707">/campaigns/suite-707</a></li>
+    <li><b>Jemlit</b> · <a href="https://jemlit.com/en/provably-fair/algorithm">/en/provably-fair/algorithm</a> · <a href="https://jemlit.com/en/terms-and-conditions">/en/terms-and-conditions</a> · <a href="https://jemlit.com/en/faqs">/en/faqs</a> · <a href="https://jemlit.com/en/box/apple-ebox">/en/box/apple-ebox</a> (embedded drop table)</li>
+    <li><b>Second-wave audit</b> · <a href="https://www.icybox.io/">IcyBox</a> · <a href="https://www.icybox.io/terms">IcyBox terms</a> · <a href="https://apps.apple.com/us/app/icybox/id6758816716">IcyBox App Store</a> · <a href="https://stockx.com/help/articles/what-is-a-stockx-mystery-box">StockX help</a> · <a href="https://help.courtyard.io/en/articles/11955231-understanding-buyback-offers">Courtyard buyback</a> · <a href="https://help.courtyard.io/en/articles/17222932-how-guaranteed-value-pack-codes-work">Courtyard guaranteed value</a> · <a href="https://intercom.help/packscom/en/articles/14469587-provably-fair">Packs.com provably fair</a> · <a href="https://intercom.help/razedio/en/articles/14756112-battles">Razed.io battles</a> · <a href="https://www.capterra.co.uk/software/1240722/PullValue">PullValue</a> · reviews (context only): <a href="https://www.thespike.gg/reviews/hypedrop">HypeDrop</a> · <a href="https://tech-insider.org/packdraw-review/">PackDraw</a> · <a href="https://www.track360.io/blog/is-rillabox-legit-2026-operator-trust-audit">Rillabox</a> · <a href="https://tech-insider.org/lootie-review/">Lootie</a></li>
+    <li><b>Cases.gg</b> · <a href="https://cases.gg/fairness">/fairness</a> · <a href="https://cases.gg/fairness/info">/fairness/info</a> · <a href="https://cases.gg/policies/faq">/policies/faq</a> · <a href="https://cases.gg/about">/about</a> · <a href="https://cases.gg/mystery-boxes/pack-up">/mystery-boxes/pack-up</a> · <a href="https://cases.gg/mystery-boxes/welcome-case">/mystery-boxes/welcome-case</a></li>
+    <li><b>New York v. Valve</b> · <a href="https://ag.ny.gov/press-release/2026/attorney-general-james-sues-game-developer-promoting-illegal-gambling-through">Press release, 25 Feb 2026</a> · <a href="https://ag.ny.gov/sites/default/files/court-filings/new-york-v-valve-corporation-complaint-2026.pdf">Complaint (PDF)</a></li>
+    <li><b>Washington</b> · <a href="https://app.leg.wa.gov/rcw/default.aspx?cite=9.46.0237">RCW 9.46.0237</a> · <a href="https://www.ifrahlaw.com/ifrah-on-igaming/shutting-the-valve-on-skin-betting">Ifrah Law on the 2016 Valve letter</a> · <a href="https://pcgamesn.com/counter-strike-global-offensive/washington-gambling-commission-demand-valve-end-skin-gambling">PCGamesN</a></li>
+    <li><b>FTC</b> · <a href="https://www.ftc.gov/reports/staff-perspective-paper-loot-box-workshop">Staff Perspective paper, Aug 2020</a> · <a href="https://www.ftc.gov/news-events/events/2019/08/inside-game-unlocking-consumer-issues-surrounding-loot-boxes">Inside the Game workshop, Aug 2019</a></li>
+    <li><b>GLI-19</b> · <a href="https://gaminglabs.com/wp-content/uploads/2024/06/GLI-19-Interactive-Gaming-Systems-v3.0.pdf">v3.0 (PDF)</a> · <a href="https://gaminglabs.com/wp-content/uploads/2026/07/EN-GLI-19-v4.0-DRAFT-2026-07-07.pdf">v4.0 draft, 7 Jul 2026 (PDF)</a></li>
+    <li><b>UK Gambling Commission</b> · <a href="https://www.gamblingcommission.gov.uk/manual/remote-gambling-and-software-technical-standards/rts-7-generation-of-random-outcomes">RTS 7</a> · <a href="https://www.gamblingcommission.gov.uk/manual/remote-gambling-and-software-technical-standards/rts-3-rules-game-descriptions-and-the-likelihood-of-winning">RTS 3</a></li>
+    <li><b>DCMS skins gambling review</b> · <a href="https://www.gov.uk/government/publications/a-rapid-evidence-review-of-skins-gambling/a-rapid-evidence-review-of-skins-gambling">gov.uk, 25 Sep 2025</a></li>
+    <li><b>Provably fair audit findings</b> · <a href="https://www.zealynx.io/audits/fair-casino/core-pentest-q1-2026/findings/F-2026-0003">Zealynx F-2026-0003</a> · <a href="https://www.zealynx.io/audits/fair-casino/core-pentest-q1-2026/findings/F-2026-0004">F-2026-0004</a></li>
+    <li><b>Sweepstakes bans</b> · <a href="https://www.infolawgroup.com/insights/2026/7/27/sweepstakes-casino-laws-in-2026-new-bans-proposed-legislation-and-regulatory-trends">InfoLawGroup, Jul 2026</a> · <a href="https://www.casinoreports.com/news/sweepstakes-ban-2026-state-roundup/">Casino Reports state roundup</a></li>
+    <li><b>Curaçao transition</b> · <a href="https://europeangaming.eu/portal/latest-news/2024/08/08/164851/gcb-announcement-master-license-expiry-dates/">GCB master licence expiry dates</a> · <a href="https://next.io/news/curacao-master-licences-extended-until-lok-enacted/">Next.io on the LOK</a></li>
+    <li><b>ASA rulings</b> · <a href="https://cms.law/en/gbr/legal-updates/asa-upholds-complaints-against-hutch-games-over-loot-boxes-and-prize-odds">Hutch Games, Nov 2025</a> · <a href="https://cms.law/en/gbr/legal-updates/three-not-so-randomised-rulings-from-the-asa">EA, Miniclip, Jagex, Mar 2024</a></li>
+    <li><b>UK free draws and prize competitions</b> · <a href="https://ramparts.gi/ukgc-white-paper-2025-prize-draws/">Ramparts on the White Paper</a> · <a href="https://cms.law/en/gbr/legal-updates/prize-competitions-and-free-prize-draws-new-guidance-1">CMS guidance note</a></li>
+    <li><b>Belgium 2018</b> · <a href="https://www.sheppard.com/insights/blogs/belgium-gaming-commission-loot-box-report">Sheppard summary of the report</a> · <a href="https://www.pcgamer.com/belgiums-gambling-commission-rules-against-loot-boxes-in-overwatch-fifa-18-and-csgo/">PC Gamer</a></li>
+    <li><b>Digital Fairness Act</b> · <a href="https://www.freshfields.com/en/our-thinking/blogs/technology-quotient/the-eus-proposed-digital-fairness-act-a-game-developers-guide-to-potential-imp-102ltio">Freshfields</a> · <a href="https://chambers.com/articles/digital-fairness-act-what-the-public-consultation-tells-the-video-game-industry">Chambers</a></li>
+    <li><b>Rigging cases</b> · <a href="https://www.thelines.com/csgo-diamonds-skin-betting-m0e/">CSGO Diamonds admission</a> · <a href="https://dotesports.com/counter-strike/news/csgo-gambling-scandal-explained-3545">CS:GO gambling scandal explained</a> · <a href="https://dotesports.com/counter-strike/news/rlewis-case-opening-report-15315">Richard Lewis case-opening report</a> · <a href="https://ggbmagazine.com/article/report-skins-betting-sites-use-deceptive-practices">GGB Magazine</a> · <a href="https://www.casino.org/news/skin-betting-rocked-new-controversy-rigged-games-alleged">CSGOShuffle logs</a></li>
+    <li><b>MysteryBrand</b> · <a href="https://www.worldtrademarkreview.com/article/brands-warned-over-legal-issues-alleged-scam-gambling-platform-mysterybrand">World Trademark Review, Jan 2019</a></li>
+    <li><b>Literature</b> · <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0206767">Zendle and Cairns 2018</a> · <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0213194">Zendle and Cairns 2019</a> · <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0286681">Xiao, Henderson and Newall 2023</a> · <a href="https://www.cambridge.org/core/journals/behavioural-public-policy/article/gaming-the-system-suboptimal-compliance-with-loot-box-probability-disclosure-regulations-in-china/B2642E2F8B7164236E5477D58D2B26DE">Xiao et al. 2021</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12426343/">Newall 2025</a> · <a href="https://www.sciencedaily.com/releases/2025/02/250219111302.htm">Zendle et al. 2025 summary</a> · <a href="https://onlinelibrary.wiley.com/doi/10.1111/add.15829">Xiao 2022, Addiction</a></li>
+    <li><b>Secondary and affiliate (context only, not evidence)</b> · lines.com, tech-insider.org, track360.io, betterchecked.com, Trustpilot pages for jemlit.com and cases.gg</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.rail a'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        if (current) current.classList.remove('active');
+        current = map[e.target.id]; if (current) current.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
+})();
+
+/* Glossary popovers: every a.term links to a glossary entry; with JS the entry appears as a popover
+   on hover, focus or tap, and the link itself still works as a jump to the glossary. */
+(function(){
+  var gloss = {};
+  Array.prototype.forEach.call(document.querySelectorAll('#glossary dt[id]'), function(dt){
+    var dd = dt.nextElementSibling;
+    gloss[dt.id] = { title: dt.textContent, body: dd ? dd.innerHTML : '' };
+  });
+  var tip = document.createElement('div');
+  tip.className = 'tip'; tip.setAttribute('role', 'tooltip'); tip.id = 'term-tip'; tip.hidden = true;
+  document.body.appendChild(tip);
+  var open = null, hideTimer = null;
+
+  function place(el){
+    var r = el.getBoundingClientRect();
+    var sx = window.pageXOffset, sy = window.pageYOffset;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(16, r.left), vw - tw - 16) + sx;
+    var top = r.bottom + 8 + sy;
+    if (r.bottom + 8 + th > vh && r.top - 8 - th > 0) top = r.top - 8 - th + sy;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function show(el){
+    var id = (el.getAttribute('href') || '').slice(1), g = gloss[id];
+    if (!g) return;
+    clearTimeout(hideTimer);
+    tip.innerHTML = '<b class="t"></b><p></p><a class="more" href="#' + id + '">See it in the glossary</a>';
+    tip.querySelector('b.t').textContent = g.title;
+    tip.querySelector('p').innerHTML = g.body;
+    tip.hidden = false; open = el; el.setAttribute('aria-describedby', 'term-tip');
+    place(el);
+  }
+  function hide(){
+    if (open) open.removeAttribute('aria-describedby');
+    tip.hidden = true; open = null;
+  }
+  function hideSoon(){ clearTimeout(hideTimer); hideTimer = setTimeout(hide, 180); }
+
+  Array.prototype.forEach.call(document.querySelectorAll('a.term'), function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('mouseleave', hideSoon);
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('blur', hideSoon);
+    el.addEventListener('click', function(ev){
+      ev.preventDefault();
+      if (open === el && !tip.hidden) hide(); else show(el);
+    });
+  });
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideSoon);
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') hide(); });
+  document.addEventListener('click', function(ev){
+    if (tip.hidden) return;
+    if (tip.contains(ev.target) || (open && open.contains(ev.target))) return;
+    hide();
+  });
+  window.addEventListener('resize', function(){ if (open && !tip.hidden) place(open); });
+})();
+</script>
+</body>
+</html>

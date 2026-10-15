@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luxury Data and Glass Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: same two-column dossier as the first page. Sticky contents rail at desktop widths, collapsible on
+   phones; running text near 68ch; tables, code and charts scroll inside their own boxes. */
+:root{
+  --bg:#F4F6F4; --surface:#FFFFFF; --ink:#16191D; --ink-2:#4A5560; --ink-3:#78838C; --line:#D6DDD8;
+  --accent:#0F6B6B; --accent-ink:#0A5252; --accent-soft:#DBECEA; --accent-2:#5FB3AE; --accent-3:#A9D6D2;
+  --good:#1E7A3C; --good-soft:#DCEFE1; --warn:#8F5A00; --warn-soft:#F7EBCF; --bad:#B0281F; --bad-soft:#F8DEDB;
+  --code-bg:#EBEFEC; --grid:#E1E6E2;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",Consolas,"Courier New",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1314; --surface:#161B1D; --ink:#E6EAE7; --ink-2:#B4BCB7; --ink-3:#848E89; --line:#2A3336;
+    --accent:#5EC3BD; --accent-ink:#8EDBD6; --accent-soft:#163A3A; --accent-2:#2F8C87; --accent-3:#1F5A57;
+    --good:#5CC47A; --good-soft:#14301E; --warn:#E6B44E; --warn-soft:#3A2C0E; --bad:#F28B82; --bad-soft:#3D1A17;
+    --code-bg:#1C2325; --grid:#243033; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1314; --surface:#161B1D; --ink:#E6EAE7; --ink-2:#B4BCB7; --ink-3:#848E89; --line:#2A3336;
+  --accent:#5EC3BD; --accent-ink:#8EDBD6; --accent-soft:#163A3A; --accent-2:#2F8C87; --accent-3:#1F5A57;
+  --good:#5CC47A; --good-soft:#14301E; --warn:#E6B44E; --warn-soft:#3A2C0E; --bad:#F28B82; --bad-soft:#3D1A17;
+  --code-bg:#1C2325; --grid:#243033; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(40px,6vw,64px);font-weight:700}
+h2{font-size:34px;font-weight:600;margin-top:56px;padding-top:20px;border-top:2px solid var(--ink)}
+h3{font-size:24px;font-weight:600;margin-top:36px}
+h4{font-size:19px;font-weight:600;margin-top:24px;color:var(--ink-2)}
+p{margin:14px 0;max-width:68ch}
+ul,ol{max-width:72ch;padding-left:1.3em}
+li{margin:8px 0}
+li::marker{color:var(--ink-3)}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--accent-ink)}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+main{min-width:0;padding-block:40px 96px}
+nav.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding-block:48px 24px}
+nav.rail .eyebrow{display:block;margin-bottom:10px}
+nav.rail ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+nav.rail li{margin:0}
+nav.rail a{display:block;padding:6px 0 6px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-family:var(--display);font-size:16px;line-height:1.2}
+nav.rail a:hover{color:var(--ink)}
+nav.rail a.active{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+nav.rail a.ext{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:var(--accent-ink)}
+details.toc{display:none;margin:24px 0 0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.toc summary{cursor:pointer;padding:12px 16px;font-family:var(--display);font-size:18px;font-weight:600}
+details.toc ol{margin:0;padding:0 16px 12px 36px}
+details.toc a{font-family:var(--display);font-size:17px;text-decoration:none;color:var(--ink-2)}
+@media (max-width:980px){.wrap{grid-template-columns:minmax(0,1fr);gap:0} nav.rail{display:none} details.toc{display:block}}
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:28px}
+header.masthead .eyebrow{display:block;margin-bottom:14px}
+header.masthead .lead{font-size:21px;line-height:1.45;max-width:62ch;margin-top:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:20px;font-family:var(--display);font-size:15px;color:var(--ink-2)}
+.meta b{color:var(--ink);font-weight:600}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:28px 0 8px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px;min-width:0}
+.tile .num{font-family:var(--display);font-size:36px;font-weight:700;line-height:1.05;color:var(--accent-ink);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tile .lbl{margin-top:8px;font-size:14px;color:var(--ink-2);line-height:1.35}
+.callout{background:var(--accent-soft);border-left:4px solid var(--accent);padding:16px 20px;margin:24px 0;border-radius:0 6px 6px 0;max-width:74ch}
+.callout p{margin:8px 0}
+.callout.warn{background:var(--warn-soft);border-left-color:var(--warn)}
+.table-wrap{overflow-x:auto;margin:18px 0;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;background:var(--bg)}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.hl td{background:var(--accent-soft)}
+caption{caption-side:top;text-align:left;font-family:var(--display);font-size:16px;color:var(--ink-2);padding:0 0 8px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-size:14px;font-weight:600;letter-spacing:.02em;padding:3px 9px;border-radius:999px;white-space:nowrap;line-height:1.3}
+.chip .ic{font-family:var(--mono);font-size:12px}
+.chip.good{background:var(--good-soft);color:var(--good)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+td .chip + .note{display:block;margin-top:5px;font-size:13px;color:var(--ink-2);white-space:normal}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;min-width:0}
+.card h4{margin:0 0 6px;color:var(--ink)}
+.card p{margin:6px 0;font-size:15px;max-width:none}
+.card .k{font-family:var(--display);text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--accent-ink);font-weight:600}
+.flag{background:var(--surface);border:2px solid var(--accent);border-radius:8px;padding:22px 24px;margin:22px 0}
+.flag h3{margin-top:0}
+.flag ol{margin-bottom:0}
+figure{margin:24px 0;max-width:100%;min-width:0}
+figure figcaption{font-family:var(--display);font-size:15px;color:var(--ink-2);margin-top:8px;max-width:70ch}
+figure .chart{overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;font-family:var(--display);font-size:14px}
+figure svg text{fill:var(--ink-2)}
+figure svg text.v{fill:var(--ink);font-family:var(--mono);font-size:12.5px}
+figure svg text.l{fill:var(--ink);font-size:14px}
+figure svg .grid{stroke:var(--grid);stroke-width:1}
+figure svg .axis{stroke:var(--line);stroke-width:1}
+figure svg .ref{stroke:var(--ink-2);stroke-width:1.5;stroke-dasharray:4 4}
+figure svg .bar{fill:var(--accent)}
+figure svg .bar.dim{fill:var(--accent-3)}
+figure svg .bar.ghost{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:3 3}
+figure svg g.row:hover .bar{opacity:.78}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-family:var(--display);font-size:14px;color:var(--ink-2);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:14px;height:10px;border-radius:2px;background:var(--accent)}
+.legend i.s1{background:var(--accent-3)} .legend i.ghost{background:none;border:1.5px dashed var(--accent)}
+.sources{font-size:14px;color:var(--ink-2)}
+.sources li{margin:6px 0;word-break:break-word}
+.sources b{color:var(--ink);font-family:var(--display);font-weight:600;font-size:15px}
+a.term{color:inherit;text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help}
+a.term:hover{color:var(--accent-ink)}
+.tip{position:absolute;z-index:20;max-width:350px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px 10px;font-family:var(--body);font-size:14.5px;line-height:1.45}
+.tip b.t{display:block;font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:4px}
+.tip p{margin:0 0 6px;max-width:none}
+.tip a.more{display:inline-block;margin-top:2px;font-family:var(--display);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:600px){.tip{max-width:calc(100vw - 32px)}}
+.howto{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:10px 14px;background:var(--surface);border:1px dashed var(--line);border-radius:6px;font-size:15px;max-width:68ch}
+.howto .i{font-family:var(--display);font-weight:700;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:50%;width:20px;height:20px;line-height:17px;text-align:center;font-size:13px;flex:none;margin-top:2px}
+.gloss h3{margin-top:30px}
+.gloss dl{margin:12px 0 0;max-width:76ch}
+.gloss dt{font-family:var(--display);font-size:19px;font-weight:600;margin-top:16px;scroll-margin-top:16px}
+.gloss dt:target{color:var(--accent-ink)}
+.gloss dd{margin:4px 0 0}
+@media print{nav.rail,details.toc,.tip{display:none} .wrap{display:block} body{background:#fff;color:#000} h2{break-before:page} a{color:inherit}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="rail" aria-label="Contents">
+  <span class="eyebrow">Contents</span>
+  <ol>
+    <li><a href="#answers">Short answers</a></li>
+    <li><a href="#data">1 · Data sources</a></li>
+    <li><a href="#pricing">2 · How luxury pricing works</a></li>
+    <li><a href="#market">3 · What boxes offer today</a></li>
+    <li><a href="#different">4 · How to be different</a></li>
+    <li><a href="#constraints">5 · Constraints checklist</a></li>
+    <li><a href="#next">6 · Next steps</a></li>
+    <li><a href="#brand">7 · Brand notes</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a class="ext" href="01-platform-audit-and-regulation.html">← Dossier 1: Odds audit</a></li>
+    <li><a class="ext" href="03-plan-and-alignment.html" style="margin-top:0;border-top:0;padding-top:6px">Plan: GrailNoir alignment →</a></li>
+    <li><a class="ext" href="04-backend-blueprint.html" style="margin-top:0;border-top:0;padding-top:6px">Doc 4: Backend blueprint →</a></li>
+<li><a class="ext" href="05-simulator-plan.html" style="margin-top:0;border-top:0;padding-top:6px">Doc 5: Simulator plan →</a></li>
+    <li><a class="ext" href="00-tracker.html" style="margin-top:0;border-top:0;padding-top:6px">Tracker: change log →</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<header class="masthead">
+  <span class="eyebrow">Research dossier 2 · product and market data</span>
+  <h1>Luxury Data and Glass Box</h1>
+  <p class="lead">Where to get pictures and realistic prices for watches and bags, how the resale market actually sets a price, what mystery box platforms offer today, and the one way an app can be different: a box you can audit, not just the dice.</p>
+  <div class="meta">
+    <span>Compiled <b>10 October 2026</b></span>
+    <span>Data sources assessed <b>18</b></span>
+    <span>Platforms and models compared <b>17</b></span>
+    <span>Companion to <b><a href="01-platform-audit-and-regulation.html">Dossier 1</a></b></span>
+  </div>
+  <p class="howto"><span class="i" aria-hidden="true">i</span><span>Terms with a dotted underline, <a class="term" href="#g-realized">like this one</a>, have plain-English explanations. Hover, tap or focus a term, or jump to the <a href="#glossary">glossary</a>.</span></p>
+</header>
+
+<details class="toc">
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#answers">Short answers</a></li>
+    <li><a href="#data">1 · Data sources</a></li>
+    <li><a href="#pricing">2 · How luxury pricing works</a></li>
+    <li><a href="#market">3 · What boxes offer today</a></li>
+    <li><a href="#different">4 · How to be different</a></li>
+    <li><a href="#constraints">5 · Constraints checklist</a></li>
+    <li><a href="#next">6 · Next steps</a></li>
+    <li><a href="#brand">7 · Brand notes</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#sources">Sources</a></li>
+    <li><a href="01-platform-audit-and-regulation.html">← Dossier 1: Odds audit</a></li>
+    <li><a href="03-plan-and-alignment.html">Plan: GrailNoir alignment →</a></li>
+  </ol>
+</details>
+
+<section id="answers">
+  <h2>Short answers</h2>
+  <div class="tiles">
+    <div class="tile"><div class="num">0</div><div class="lbl">Free APIs that give luxury watch and bag images with live, realistic prices. You assemble a stack instead.</div></div>
+    <div class="tile"><div class="num">$200</div><div class="lbl">WatchCharts pay-as-you-go for 2,500 credits, enough for a pilot of a few hundred references</div></div>
+    <div class="tile"><div class="num">80–85¢</div><div class="lbl">What a dealer pays on the dollar of market value. The gap between quoted value and cash is the hidden edge.</div></div>
+    <div class="tile"><div class="num">138%</div><div class="lbl">Hermès average value retention in 2025 because the boutique rations bags. Chanel sits near 75%.</div></div>
+  </div>
+  <ol>
+    <li><strong>No single API does it.</strong> The workable stack is WatchBase (catalogue, specs, thumbnails, licensed) plus WatchCharts (market price and history, paid, with a distribution licence to display) for watches. For bags there is no official data API at all, so you build a <a class="term" href="#g-comps">comps</a> engine on eBay's Buy APIs and calibrate it against Rebag's Clair tool. Everything else is enterprise-only (EveryWatch, Subdial) or a scraper that breaks the site's terms.</li>
+    <li><strong>Luxury pricing works on three layers</strong>: <a class="term" href="#g-retail">retail</a>, <a class="term" href="#g-asking">asking</a> and <a class="term" href="#g-realized">realized</a>. Card price guides (TCGplayer, PriceCharting, Card Ladder) compute a robust average of recent realized sales for a standardized item, which is the "last sold on eBay" method you described. Watches and bags work the same way with a messier identity, so spreads are wider.</li>
+    <li><strong>Every mystery box site values prizes at retail or asking and pays out at realized minus a haircut.</strong> That gap is the edge. The biggest way to be different is to run the box on the realized layer and prove it: commit the whole box, show the return at cash value before purchase, pay at the published rate.</li>
+    <li><strong>Constraints shape the app.</strong> Stripe's published list bans games of chance and "entry fees that promise a prize", yet IcyBox's terms name Stripe as its processor, so the framing matters more than the label: every open delivers an asset you own, bought as a marketplace purchase, with no in-app purchase. Apple lists IcyBox as a Shopping app with a "Contains Loot Boxes" label, so iOS is possible on that framing; Google Play is stricter and IcyBox is still "preparing" Android. eBay, TikTok Shop and Whatnot each restrict mystery listings; luxury brands litigate. A finite-inventory <a class="term" href="#g-kuji">kuji</a> format and honest valuation reduce these risks but do not remove them.</li>
+    <li><strong>The honest-box idea is being validated by big players, but not yet in luxury.</strong> StockX launched Mystery Boxes on 9 July 2026 with a guaranteed minimum value, published odds, pricing from its own sales data and up to 90% sell-back in credit. Courtyard sells $10,000 watch "discovery packs" with an $8,000 floor, 95% buyback and free vaulting. IcyBox (launched April 2026, New York, 6.9K App Store ratings at 4.3) proves demand for luxury-only boxes but keeps its buyback formula secret and disclaims authenticity in its terms. The open position: luxury category, StockX-grade honesty, cryptographic commitment of the whole box, cash rather than credit, and an independent market value shown next to the operator's value. See <a href="#luxury">section 3.4</a>.</li>
+  </ol>
+</section>
+
+<section id="data">
+  <h2>1 · Data sources for watches and bags</h2>
+  <p>Assessed 10 October 2026. "Price layer" says which of the three prices a source actually gives you, which matters more than how pretty the data is.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Source</th><th>What you get</th><th>Images</th><th>Price layer</th><th>Access and cost</th><th>Licence / risk</th></tr></thead>
+    <tbody>
+      <tr><td><b>WatchCharts API</b></td><td>Lookup, current market price, limited history (Level 1); retail prices, appraisals, historical listings (Level 2)</td><td>Not documented</td><td>Market model</td><td>Professional membership. Pay-as-you-go 2,500 credits for $200. Level 1 $600/mo or $5,000/yr (1,000 credits/day). Level 2 $1,000/mo or $8,000/yr (3,000/day). 1 call/sec.</td><td>Internal use by default. Showing data in your app needs a distribution licence: +50% attributed, +100% white label.</td></tr>
+      <tr><td><b>WatchBase Data Feed</b></td><td>280+ brands, families, references, specs, thumbnail URL, "updated since" sync</td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td>None (catalogue)</td><td>API key; pricing on request via the site's Data Feed page</td><td>Images usable under the feed licence</td></tr>
+      <tr><td><b>Chrono24</b></td><td>~500k listings, dealer asking prices, specs</td><td>Sellers' photos</td><td>Asking</td><td>No public API, Cloudflare-protected. Apify scrapers $1.25 to $22 per 1,000 results</td><td><span class="chip bad"><span class="ic">✕</span>Terms risk</span><span class="note">Not a basis for a commercial product. ChronoPulse index exists for dealers (14 brands, 140+ models).</span></td></tr>
+      <tr><td><b>EveryWatch</b></td><td>500k+ actual sale prices from 250 auction houses and 150 marketplaces, 35 years</td><td>Lot photos</td><td><b>Realized</b></td><td>Premium accounts; data licensing not published, contact sales</td><td>Best realized source for watches if a deal is possible</td></tr>
+      <tr><td><b>Subdial</b></td><td>Bloomberg Subdial Watch Index (50 most-traded), live pricing for traders</td><td>No</td><td>Realized</td><td>Trading platform; no public API found</td><td>—</td></tr>
+      <tr><td><b>WatchAnalytics, Bezel</b></td><td>App-level prices, 3,000 watches, 3-year history; Bezel price engine</td><td>No</td><td>Model</td><td>Consumer apps, no API</td><td>—</td></tr>
+      <tr><td><b>eBay Browse API</b></td><td>Active listings, images, asking prices, image search</td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td>Asking</td><td>Limited Release through the eBay Partner Network; free once approved</td><td>Must show Buy It Now price and shipping separately</td></tr>
+      <tr><td><b>eBay Marketplace Insights API</b></td><td>Sold prices, last 90 days, by category</td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><b>Realized</b></td><td>Limited Release "available only to select developers approved by business units"; categories whitelisted per partner</td><td><span class="chip warn"><span class="ic">◐</span>Hard to get</span><span class="note">The only official sold-price feed for luxury goods. Apply early, keep a fallback.</span></td></tr>
+      <tr><td><b>Rebag Clair</b></td><td>Resale value for 50+ brands and 10,000+ styles by colour and condition; the figure is what Rebag would pay</td><td>No</td><td>Realized (buy side)</td><td>Free web tool, no API</td><td>Use manually to calibrate; scraping breaks terms</td></tr>
+      <tr><td><b>Fashionphile, Rebag, Vestiaire, The RealReal</b></td><td>Listings, condition grades, prices</td><td>Listing photos</td><td>Asking</td><td>No public APIs. Affiliate feeds via Impact or Rakuten carry image, price, availability</td><td>Affiliate terms limit use to promotion; Apify scrapers from $10 per 1,000 break terms</td></tr>
+      <tr><td><b>Auction houses</b></td><td>Hammer prices (Sotheby's, Christie's, Phillips)</td><td>Yes</td><td>Realized</td><td>Results pages only</td><td>Manual comps for high-end pieces</td></tr>
+      <tr><td><b>Goldin</b> (eBay-owned)</td><td>High-end collectibles auctions: live lots, bids, sold results, grades; Weekly, Premium and Elite tiers; hundreds of thousands of completed sales</td><td>Lot photos</td><td><b>Realized</b></td><td>No official developer API found. Third-party wrappers (Crawlora) and Apify scrapers read its public search endpoint</td><td><span class="chip warn"><span class="ic">◐</span>Licence first</span><span class="note">Scrapers break terms for commercial use; ask eBay/Goldin for a licensed feed. Cards and memorabilia only, not watches or bags.</span></td></tr>
+      <tr><td><b>Entrupy</b></td><td>AI authentication for 20+ bag brands, footwear, apparel; certificates</td><td>—</td><td>—</td><td>$119 to $719/mo tiers; Hermès $119 per item; enterprise tier includes APIs; money-back if wrong</td><td>Partnered with TikTok Shop and LePrix</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Reference models from collectibles</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Source</th><th>How it prices</th><th>Access</th></tr></thead>
+    <tbody>
+      <tr><td><b>TCGplayer Market Price</b></td><td>Average of recent actual sales for the same card, condition and printing across thousands of sellers; outliers ignored; distinct from the Listed Median, which can sit far above it</td><td>Shown on site; API restricted</td></tr>
+      <tr><td><b>PriceCharting</b></td><td>Completed eBay sales on a rolling basis, updated daily; prices by condition and grade (loose, complete, new; PSA, CGC, BGS tiers); weak on thin-volume items</td><td>Paid subscription token; 1 call/sec; internal use only; commercial licence to share; no price history via API</td></tr>
+      <tr><td><b>Card Ladder</b> (Collectors Universe)</td><td>Vetted sales from 15 sources (eBay, Goldin, Heritage, Fanatics); publishes daily include and exclude lists and the method on each card; $300m tracked in March 2026, $240m of it eBay</td><td>eBay now uses the Card Ladder index in its own Price Guide, which uses accepted Best Offer prices and updates every 24 hours</td></tr>
+      <tr><td><b>pokemontcg.io</b></td><td>Card data with TCGplayer and Cardmarket price blocks and timestamps</td><td>Free key, 20,000 requests/day; lags fast moves</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Recommended stack</h3>
+  <div class="cards">
+    <div class="card"><span class="k">Watches</span><h4>WatchBase + WatchCharts</h4><p>WatchBase for identity, specs and images. WatchCharts pay-as-you-go for the pilot, then Level 1 plus a distribution licence once prices are shown to users. Pursue EveryWatch for realized auction data if the catalogue goes high-end.</p></div>
+    <div class="card"><span class="k">Bags</span><h4>Own photos + Entrupy + comps</h4><p>No shortcut exists. Photograph your inventory, authenticate each piece, and build a comps engine on eBay Marketplace Insights with Browse as the fallback. Calibrate the top 50 styles against Clair by hand each quarter.</p></div>
+    <div class="card"><span class="k">Your own data</span><h4>Log every sale</h4><p>Every cash-out and resale you execute is a realized price nobody else has. It becomes the most defensible number on the platform.</p></div>
+    <div class="card"><span class="k">Images and brands</span><h4>Nominative use only</h4><p>Use WatchBase thumbnails under licence and your own photographs. Brand names may describe genuine goods (the <a class="term" href="#g-nominative">nominative fair use</a> principle), but brand-named boxes, logos in the UI and any counterfeit exposure are where resellers get sued.</p></div>
+  </div>
+</section>
+
+<section id="pricing">
+  <h2>2 · How luxury pricing actually works</h2>
+
+  <h3>2.1 Three price layers</h3>
+  <figure>
+    <div class="chart">
+    <svg viewBox="0 0 800 220" width="800" height="220" role="img" aria-label="Bar chart of one Rolex GMT-Master II at four price layers: certified pre-owned asking 24,500 dollars, dealer asking 19,950, market 16,481, dealer buy 13,200 to 14,000">
+      <!-- scale: $0..$26,000 maps to x 300..740 (0.016923 px per dollar) -->
+      <line class="grid" x1="300" y1="22" x2="300" y2="182"/>
+      <line class="grid" x1="469.2" y1="22" x2="469.2" y2="182"/>
+      <line class="grid" x1="638.5" y1="22" x2="638.5" y2="182"/>
+      <text x="300" y="202" text-anchor="middle">$0</text>
+      <text x="469.2" y="202" text-anchor="middle">$10,000</text>
+      <text x="638.5" y="202" text-anchor="middle">$20,000</text>
+      <g class="row"><title>Bucherer Rolex Certified Pre-Owned asking price: $24,500</title>
+        <text class="l" x="290" y="46" text-anchor="end">Certified Pre-Owned asking (Bucherer)</text>
+        <rect class="bar dim" x="300" y="34" width="414.6" height="18" rx="4"/><text class="v" x="720" y="47">$24,500</text></g>
+      <g class="row"><title>Authorised dealer asking price (The 1916 Company): $19,950</title>
+        <text class="l" x="290" y="82" text-anchor="end">Dealer asking (The 1916 Company)</text>
+        <rect class="bar dim" x="300" y="70" width="337.6" height="18" rx="4"/><text class="v" x="643" y="83">$19,950</text></g>
+      <g class="row"><title>Bloomberg Subdial market price: $16,481</title>
+        <text class="l" x="290" y="118" text-anchor="end">Market price (Bloomberg Subdial)</text>
+        <rect class="bar" x="300" y="106" width="278.9" height="18" rx="4"/><text class="v" x="585" y="119">$16,481</text></g>
+      <g class="row"><title>Dealer buy price at 80 to 85 cents on the market dollar: about $13,200 to $14,000</title>
+        <text class="l" x="290" y="154" text-anchor="end">Dealer buy, 80–85¢ on the dollar</text>
+        <rect class="bar" x="300" y="142" width="223.1" height="18" rx="4"/><rect class="bar ghost" x="524" y="142" width="13" height="18" rx="2"/><text class="v" x="543" y="155">≈ $13,200–14,000</text></g>
+      <line class="axis" x1="300" y1="182" x2="740" y2="182"/>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>Realized layer</span><span><i class="s1"></i>Asking layer</span><span><i class="ghost"></i>Range</span></div>
+    <figcaption>One reference, four prices. The asking and market figures are a WatchPro comparison of a GMT-Master II; the dealer buy range applies Hilco's 80 to 85 cent rule to the market price. Mystery box sites quote the top of this chart and pay out near the bottom.</figcaption>
+  </figure>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Layer</th><th>What it is</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><b><a class="term" href="#g-retail">Retail (MSRP)</a></b></td><td>Boutique price, set by the brand. Rolex raised prices again on 1 June 2026; the Birkin 30 is $14,900 in the US and €10,600 in Europe.</td><td>What mystery box sites usually call "value"</td></tr>
+      <tr><td><b><a class="term" href="#g-asking">Asking</a></b></td><td>Dealer and marketplace listings. Aspirational, often never transacted.</td><td>Chrono24 and Fashionphile listings</td></tr>
+      <tr><td><b><a class="term" href="#g-realized">Realized</a></b></td><td>Sold prices, hammer prices, dealer buy prices. The only layer that is money.</td><td>Dealers buy at 80 to 85¢; a forced cash sale of a $50,000 watch clears $38,000 to $42,000</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Asking and realized diverge by 25% or more even on liquid references; an EveryWatch check found four hammer prices about 25% below a tracker estimate for the same watch. Any product that quotes value at the asking or retail layer and pays at the realized layer is taking that spread.</p>
+
+  <h3>2.2 How a price guide computes "market price"</h3>
+  <p>This is the method behind TCGplayer, PriceCharting and Card Ladder, and the one to copy.</p>
+  <ol>
+    <li><strong>Standardize identity.</strong> Cards: set, number, printing, grade. Watches: reference, dial, metal, year, box and papers, service state. Bags: Clair assigns a product code per style, then colour and condition.</li>
+    <li><strong>Collect realized comps only.</strong> Sold listings, accepted Best Offers (eBay's Price Guide uses the accepted offer, not the struck-through list price), hammer prices, your own transactions.</li>
+    <li><strong>Clean.</strong> Remove <a class="term" href="#g-outlier">outliers</a>, drop lots and bundles, drop unverified sellers. Card Ladder publishes its daily include and exclude lists for exactly this reason.</li>
+    <li><strong>Average with recency.</strong> TCGplayer averages recent sales; PriceCharting rolls daily. A sensible rule is a <a class="term" href="#g-recency">recency-weighted median</a> with a 30 to 90 day half-life.</li>
+    <li><strong>Adjust for condition.</strong> Watches: documented sets +10 to 30%, undocumented −15 to 25% against comparable documented pieces, unserviced pieces effectively illiquid. Bags: grade, size, leather, hardware and colour each move price.</li>
+    <li><strong>Attach a confidence figure.</strong> Number of comps, days to sell, spread between asking and realized. Guides are reliable for high-volume items and unreliable for thin ones. Say so on the item.</li>
+    <li><strong>Publish three numbers</strong> per item and pay out on the third.</li>
+  </ol>
+
+  <h3>2.3 Watches</h3>
+  <ul>
+    <li>Prices are set at <strong>reference level</strong>, not brand level. Steel sport Rolex is the most liquid; gold references and independents need specialist appraisal; Breitling trades weakest.</li>
+    <li>The market peaked in March 2022 (average Rolex resale about $17,206, up from about $7,185 pre-pandemic), bottomed late 2024 to early 2025, and was up 8.2% over the twelve months to February 2026 on the WatchCharts Overall Market Index (Patek +16.2%, Rolex +7.9%, Audemars Piguet +3.4%, Breitling −1.1%).</li>
+    <li><strong>Rolex Certified Pre-Owned</strong>, sold through Bucherer, which Rolex bought in 2023, carries a premium of roughly 25 to 30% over the open market for the factory service and warranty; The 1916 Company ran about 17%, Watches of Switzerland 33 to 39%. Rolex does not set the prices.</li>
+    <li>Retail increases compress the gap between new and used; waitlisted sport models still trade above retail.</li>
+  </ul>
+
+  <h3>2.4 Bags</h3>
+  <figure>
+    <div class="chart">
+    <svg viewBox="0 0 800 330" width="800" height="330" role="img" aria-label="Bar chart of resale value retention by brand with a reference at 100 percent of retail">
+      <!-- scale: 0..150% maps to x 300..740 (2.933 px per percent) -->
+      <line class="grid" x1="300" y1="22" x2="300" y2="292"/>
+      <line class="grid" x1="446.7" y1="22" x2="446.7" y2="292"/>
+      <line class="ref" x1="593.3" y1="22" x2="593.3" y2="292"/>
+      <text x="300" y="312" text-anchor="middle">0%</text>
+      <text x="446.7" y="312" text-anchor="middle">50%</text>
+      <text x="593.3" y="312" text-anchor="middle" class="l">100% of retail</text>
+      <text x="740" y="312" text-anchor="middle">150%</text>
+      <g class="row"><title>Hermès: 138% average value retention, Rebag Clair Report 2025</title><text class="l" x="290" y="46" text-anchor="end">Hermès</text><rect class="bar" x="300" y="34" width="404.8" height="18" rx="4"/><text class="v" x="710" y="47">138%</text></g>
+      <g class="row"><title>Goyard: 132%, Clair Report 2025</title><text class="l" x="290" y="82" text-anchor="end">Goyard</text><rect class="bar" x="300" y="70" width="387.2" height="18" rx="4"/><text class="v" x="693" y="83">132%</text></g>
+      <g class="row"><title>Van Cleef &amp; Arpels: 112%, Clair Report 2025</title><text class="l" x="290" y="118" text-anchor="end">Van Cleef &amp; Arpels</text><rect class="bar" x="300" y="106" width="328.5" height="18" rx="4"/><text class="v" x="634" y="119">112%</text></g>
+      <g class="row"><title>Miu Miu: 104%, Clair Report 2025</title><text class="l" x="290" y="154" text-anchor="end">Miu Miu</text><rect class="bar" x="300" y="142" width="305.1" height="18" rx="4"/><text class="v" x="611" y="155">104%</text></g>
+      <g class="row"><title>Rolex: 104%, Clair Report 2025</title><text class="l" x="290" y="190" text-anchor="end">Rolex</text><rect class="bar" x="300" y="178" width="305.1" height="18" rx="4"/><text class="v" x="611" y="191">104%</text></g>
+      <g class="row"><title>The Row: 97%, Clair Report 2025</title><text class="l" x="290" y="226" text-anchor="end">The Row</text><rect class="bar" x="300" y="214" width="284.5" height="18" rx="4"/><text class="v" x="590" y="227">97%</text></g>
+      <g class="row"><title>Louis Vuitton: about 80%, earlier Clair edition</title><text class="l" x="290" y="262" text-anchor="end">Louis Vuitton (older edition)</text><rect class="bar dim" x="300" y="250" width="234.7" height="18" rx="4"/><text class="v" x="540" y="263">≈80%</text></g>
+      <g class="row"><title>Chanel Classic Flap and 22 Bag: about 75%, myGemma 2026 index</title><text class="l" x="290" y="286" text-anchor="end">Chanel (myGemma 2026)</text><rect class="bar dim" x="300" y="274" width="220" height="18" rx="4"/><text class="v" x="526" y="287">≈75%</text></g>
+      <line class="axis" x1="300" y1="292" x2="740" y2="292"/>
+    </svg>
+    </div>
+    <div class="legend"><span><i></i>Rebag Clair Report, Dec 2025</span><span><i class="s1"></i>Other or older source</span></div>
+    <figcaption>Average resale value as a share of retail. Brands that ration supply sit above the line; brands that do not sit below it. Sources differ in method, so compare within a source rather than across.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Hermès rations supply</strong>: two <a class="term" href="#g-quota">quota bags</a> a year per client and an unofficial pre-spend on other goods before a bag is offered. Resale therefore sits above retail: 138% retention in 2025, up 38 points; Birkin resale up 92% in ten years against a 43% rise in retail; the Mini Kelly at a 210% premium.</li>
+    <li>Houses that do not ration retain less: Chanel's Classic Flap and 22 Bag about 75% of retail, Louis Vuitton about 80% in an earlier Clair edition.</li>
+    <li>Analysts disagree on direction. Bernstein described the Birkin premium falling from 2.2× to 1.4× as the market normalizes; resellers report softening in regular leathers in 2024 and 2025 but values still above retail.</li>
+    <li><strong>Authenticity is the price floor.</strong> Counterfeit exposure destroys value and creates liability. Certification per item is table stakes for a luxury box.</li>
+  </ul>
+
+  <h3>2.5 Why cards price cleanly and luxury does not</h3>
+  <p>A PSA 10 Charizard from a given set is identical to every other one, so a last-sold median is nearly perfect. A Rolex 126610 with box, papers, a 2023 card and a polished case is not identical to the next one. The method is the same; the spreads are wider and the confidence figure matters more. Design the app to show a range, not a point.</p>
+
+  <div class="callout">
+    <p><strong>The implication for a mystery box.</strong> The "value" a box displays is a choice of layer. Showing retail makes every box look generous (Misty's credits at $1, Jemlit's $2,300 Apple Watch). Showing realized cash-out value makes the return honest and usually lower. A product that chooses the honest layer gives up the illusion and gains the only credibility in the category.</p>
+  </div>
+</section>
+
+<section id="market">
+  <h2>3 · What mystery boxes offer today</h2>
+  <div class="table-wrap">
+  <table>
+    <caption>Feature inventory, from the platforms' own pages and affiliate reviews (reviews marked in dossier 1 as context, not evidence)</caption>
+    <thead><tr><th>Feature</th><th>HypeDrop</th><th>Jemlit</th><th>Cases.gg</th><th>Misty</th><th>Pop Mart</th><th>Ichiban Kuji</th></tr></thead>
+    <tbody>
+      <tr><td><b>Displayed odds per item</b></td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><span class="chip warn"><span class="ic">◐</span>Series ratio</span><span class="note">Secret edition about 1 in 72 to 1 in 144</span></td><td><span class="chip good"><span class="ic">✓</span>Inventory</span><span class="note">Odds are the remaining tickets</span></td></tr>
+      <tr><td><b>Provably fair seeds</b></td><td><span class="chip warn"><span class="ic">◐</span>Seed only</span></td><td><span class="chip warn"><span class="ic">◐</span>Seed only</span></td><td><span class="chip warn"><span class="ic">◐</span>Seed only</span></td><td><span class="chip warn"><span class="ic">◐</span>Seed only</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td><td><span class="chip good"><span class="ic">✓</span>Physical pool</span></td></tr>
+      <tr><td><b>Battles, Upgrader, Crash, Coinflip</b></td><td><span class="chip good"><span class="ic">✓</span>Battles, Deals</span></td><td><span class="chip good"><span class="ic">✓</span>All</span></td><td><span class="chip good"><span class="ic">✓</span>All</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td></tr>
+      <tr><td><b>Sell-back</b></td><td><span class="chip warn"><span class="ic">◐</span>Credits</span></td><td><span class="chip warn"><span class="ic">◐</span>Credits, 0–30% haircut</span></td><td><span class="chip warn"><span class="ic">◐</span>Quick Sell, rate unpublished</span></td><td><span class="chip bad"><span class="ic">✕</span>Raffle entries</span></td><td><span class="chip warn"><span class="ic">◐</span>Secondary market</span></td><td><span class="chip warn"><span class="ic">◐</span>Secondary market</span></td></tr>
+      <tr><td><b>Physical shipping</b></td><td><span class="chip good"><span class="ic">✓</span>NA, EU</span></td><td><span class="chip good"><span class="ic">✓</span>Yes</span></td><td><span class="chip good"><span class="ic">✓</span>NA, EU</span></td><td><span class="chip good"><span class="ic">✓</span>Worldwide</span></td><td><span class="chip good"><span class="ic">✓</span>In hand</span></td><td><span class="chip good"><span class="ic">✓</span>In hand</span></td></tr>
+      <tr><td><b>Free entry route</b></td><td><span class="chip warn"><span class="ic">◐</span>Free boxes</span></td><td><span class="chip warn"><span class="ic">◐</span>Daily free boxes</span></td><td><span class="chip good"><span class="ic">✓</span>"No purchase necessary"</span></td><td><span class="chip good"><span class="ic">✓</span>Postcard</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td></tr>
+      <tr><td><b>Retention loops</b> (levels, races, missions)</td><td><span class="chip good"><span class="ic">✓</span>Races</span></td><td><span class="chip good"><span class="ic">✓</span>$500/day leaderboard</span></td><td><span class="chip good"><span class="ic">✓</span>Race, Missions, Vault</span></td><td><span class="chip bad"><span class="ic">✕</span>No</span></td><td><span class="chip warn"><span class="ic">◐</span>Collecting</span></td><td><span class="chip good"><span class="ic">✓</span>Last One prize</span></td></tr>
+      <tr><td><b>Every purchase wins something</b></td><td><span class="chip good"><span class="ic">✓</span></span></td><td><span class="chip good"><span class="ic">✓</span></span></td><td><span class="chip good"><span class="ic">✓</span></span><span class="note">Often a penny</span></td><td><span class="chip good"><span class="ic">✓</span></span><span class="note">Credits</span></td><td><span class="chip good"><span class="ic">✓</span></span></td><td><span class="chip good"><span class="ic">✓</span></span></td></tr>
+      <tr><td><b>Value shown at</b></td><td>Retail</td><td>Listed price</td><td>Listed price</td><td>Retail, credits at $1</td><td>Retail ($28 box)</td><td>Retail</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Adjacent models worth borrowing from</h3>
+  <div class="cards">
+    <div class="card"><span class="k">Collecting</span><h4>Pop Mart blind boxes</h4><p>2025 revenue 37.12bn yuan ($5.38bn), up 185%; profit up 308%. A fixed series, a secret edition at 1 in 72 to 1 in 144, sealed physical product and a huge secondary market. It sells on collecting, not cash value.</p></div>
+    <div class="card"><span class="k">Provable by inventory</span><h4>Ichiban Kuji</h4><p>A finite ticket pool per shop. Every ticket wins a lettered prize, the pool shrinks as tickets sell so the remaining odds are visible, and the last ticket wins the "Last One" prize. There is no table to manipulate.</p></div>
+    <div class="card"><span class="k">Positive EV</span><h4>Fukubukuro lucky bags</h4><p>Contents worth two to five times the price at retail (Disney Japan claims three). Profitable because they clear slow stock and drive traffic. The retailer's margin comes from inventory, not from player losses.</p></div>
+    <div class="card"><span class="k">Live and social</span><h4>Whatnot breaks, TikTok Shop</h4><p>Sealed product only on Whatnot since 3 Nov 2025. TikTok Shop (June 2026): boxes at $100 or less, exact item counts, disclosed odds, real photos, no lucky spins or raffles. Pick-your-slot formats survive.</p></div>
+    <div class="card"><span class="k">Free entry done right</span><h4>Omaze</h4><p>Equal-prominence free entry, a £500 monthly cap per account, 17% of ticket sales to charity, £197m revenue in 2024. Its US version beat a lottery lawsuit because the free route was adequate.</p></div>
+    <div class="card"><span class="k">Player protection</span><h4>Japanese gacha rules</h4><p>JOGA guidelines: display item types and probabilities, a 1% minimum payout, a ¥50,000 per-player cap; "complete gacha" is illegal. Hard <a class="term" href="#g-pity">pity</a> ceilings are standard and players rate them as appropriate.</p></div>
+  </div>
+  <p class="small muted">Business model as the industry describes it (vendor figures, unverified): gross margin is the spread between box price and sourcing cost, 15 to 60% depending on category; users reinvest 40 to 65% of item value; about $15 per depositing user. The profit levers are the sell-back haircut, credits that cannot leave, and battles.</p>
+
+  <h3 id="luxury">3.4 Luxury-first operators and the StockX signal</h3>
+  <p>Checked 10 October 2026 against the operators' own sites, the App Store and press releases. Monthly-traffic figures quoted in third-party brainstorms (Similarweb-style visits for PackDraw, HypeDrop and LuxDrop) could not be verified and are not repeated here.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Operator</th><th>Scope</th><th>Verified facts</th><th>Watch-outs</th></tr></thead>
+    <tbody>
+      <tr><td><b>IcyBox</b><span class="note">InfiniteEdge Inc.; registered address 251 Little Falls Drive, Wilmington, Delaware; team in New York</span></td><td><span class="chip good"><span class="ic">✓</span>Luxury only</span><span class="note">Watches, then handbags from 1 Oct 2026</span></td><td>Launched April 2026. iOS app in the App Store <b>Shopping</b> category, 18+, "Contains Loot Boxes" label, 4.3 from 6.9K ratings. Site claims 75K+ "grails pulled" and 3,500+ products (self-reported). "Pick a box, open it, keep it or sell it back"; items can be held "for a limited amount of time". US only; Android "in preparation". Terms (3 Mar 2026) name Stripe as the payment processor.</td><td>Buyback offers are "determined solely by IcyBox ... We do not disclose how we calculate". Terms: "we do not offer any guarantee or warranty, express or implied, on the authenticity of any Asset", despite "Authentic watches and bags" on the homepage. Condition not guaranteed new. Reviews cite sales tax, insurance and premium shipping fees when keeping an item. Catalogue values are retail-style ($250k Royal Oak "Spider-Man").</td></tr>
+      <tr><td><b>MISTY</b><span class="note">VGT Ventures Ltd, London</span></td><td><span class="chip good"><span class="ic">✓</span>Luxury-first</span><span class="note">Boxes plus prize competitions</span></td><td>Audited in dossier 1</td><td>Tiny; draw verifier published but box formula not; credits valued at face</td></tr>
+      <tr><td><b>LuxDrop</b></td><td><span class="chip warn"><span class="ic">◐</span>Luxury-led, mixed</span><span class="note">Streetwear, sneakers, watches, tech, cards</span></td><td>Trustpilot about 3.1 of 5 from about 108 reviews (regional pages)</td><td>Launch date and the "$50m paid out" claim unverified</td></tr>
+      <tr><td><b>PackDraw</b></td><td><span class="chip bad"><span class="ic">✕</span>General</span><span class="note">Packs that include luxury items</span></td><td>Packs, Battles and <b>Forge</b> (users build and list their own packs); provably fair anchored to the EOS chain; physical items in the US and Canada, crypto elsewhere; Trustpilot about 3.9 from 300+</td><td>No licence; users report odds tightening after updates</td></tr>
+      <tr><td><b>Courtyard.io</b><span class="note">Launched 2023, cards; "over a million dollars in sales per day" per its partner</span></td><td><span class="chip warn"><span class="ic">◐</span>Collectibles, now watches</span><span class="note">Via Luxury Bazaar from 4 Mar 2026</span></td><td>$10,000 "discovery pack" containing one watch "guaranteed to be worth between $8,000-$90,000"; vaulted with no storage fee; instant buyback at 95% of market value; or list for sale; ship on request; Polygon ownership record; pay by card or USDC</td><td>Figures come from the partner's promotional post; allocation method and odds not disclosed</td></tr>
+      <tr><td><b>StockX Mystery Boxes</b><span class="note">Launched 9 Jul 2026</span></td><td><span class="chip bad"><span class="ic">✕</span>Not luxury</span><span class="note">Sneakers, apparel, accessories, collectibles, cards</span></td><td>"Every item is worth at least the purchase price of the box" before processing fees; odds shown upfront (0.5% to 74%); tiers $25 to $200; pricing from StockX sales data; verified inventory; sell back instantly for up to 90% of market value as StockX Credit; US only, web and iOS. CEO Greg Schwartz: clarity over excitement</td><td>Credit, not cash; StockX sets the "market value" it pays against</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout">
+    <p><strong>What this means for positioning.</strong> StockX and Courtyard have taken the "no-loss floor plus instant buyback" idea mainstream, and IcyBox has shown that a luxury-only box app can get App Store traction within months. What nobody has combined is: luxury watches and bags; a floor and buyback on StockX's terms; the whole box committed cryptographically; cash rather than store credit; and an independent market value displayed next to the operator's value. That last point is the comparison idea from the brainstorm ("we don't tell you what the operator says the prize is worth, we tell you what the market says") and it is the same thing as the three-price display in the Glass Box.</p>
+  </div>
+
+  <h3 id="vendor">3.5 Inside the B2B software: what a vendor demo revealed</h3>
+  <p>Source: transcript of a sales demo by a B2B mystery-box platform vendor, shared on 10 October 2026. The vendor sells the software behind several live operators (it would not name them on the call) and also sells crypto-casino source code. Participants are anonymized. Claims are the vendor's own unless marked verified.</p>
+  <div class="table-wrap">
+  <table>
+    <caption>The product as sold</caption>
+    <thead><tr><th>Area</th><th>What the vendor said</th></tr></thead>
+    <tbody>
+      <tr><td><b>Boxes</b></td><td>Operator-created in a back office; items uploaded one by one or in bulk with the operator's own photos and prices; odds and item prices published on the box; a themed box can be built "in a couple of minutes"</td></tr>
+      <tr><td><b>Sell-back</b></td><td>The pulled item goes to a cart; "sell it back, which happens in 99.9%", and the money returns to the balance "so that I can regamble them again"</td></tr>
+      <tr><td><b>Battles</b></td><td>Multiplayer openings. The creator pays for every box in the battle, others join at the entry cost, or the creator can "call the bots and basically play against the house"; winner takes all loot. "90% of the wager and GGR on this platform is done through battles" because the average bet is the sum of all boxes</td></tr>
+      <tr><td><b>Deals</b></td><td>Pick an item from the database, choose a hit zone up to a maximum 80% chance, the bet price scales with the chance (a watch priced near $50K costs $44K at 80%); 90% RTP</td></tr>
+      <tr><td><b>RTP</b></td><td>"All the boxes have 90% RTP and deals have 90% RTP"; the default, configurable in the back office on request; "kind of an industry standard"</td></tr>
+      <tr><td><b>Retention</b></td><td>Wager races (daily, weekly, monthly leaderboards with tiered prizes); tiered daily free boxes that expire after 24 hours "so it incentivizes users to visit the platform daily"; built-in affiliate codes (3 free boxes for referred users, commission on their deposits); Intercom chat; Customer.io CRM; country-restriction module; configurable KYC levels</td></tr>
+      <tr><td><b>Withdrawals</b></td><td>"You cannot cash out balance directly ... you can only withdraw money through items ... you need to wager first", then the item's monetary value is sent to a crypto wallet. Shipping is requested per item; an order can be cancelled only while pending</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="cards">
+    <div class="card"><span class="k">Economics as stated</span><h4>Almost nothing leaves as goods</h4><ul>
+      <li>99.9% of pulls sold back "because the economy is made in a way that most of the time you're getting something that is not really desirable to have as a physical item"</li>
+      <li>Operators "doing tens of millions in GGR" receive "up to 200 orders per month"; items are drop-shipped</li>
+      <li>Hold "between 15% to 30% of deposits" as net revenue, lower than casino because of bonuses and streamer deals</li>
+      <li>A $100 free box "costs you not $100 but $20"; US lifetime value "more than $200 per player"</li>
+      <li>"You list a Rolex for $11K on your website, but you know that you're gonna buy it for $10K"</li>
+      <li>€35K setup plus 10% of GGR; processing near 0% crypto, up to 3% fiat; no fulfilment or support service</li></ul></div>
+    <div class="card"><span class="k">Legal and payments as stated</span><h4>"Not iGaming, e-commerce"</h4><ul>
+      <li>"Something like sweepstakes in the US." A legal opinion, "around $15K", one per operation, used to unlock Facebook and other ad platforms</li>
+      <li>Operator sets up its own entity (Delaware) and contracts processors directly. "Stripe doesn't like it"; Coinflow for fiat; Fireblocks or "CT Payment" for crypto</li>
+      <li>Verified: Coinflow is a card-to-stablecoin processor that lists Courtyard as a client; Fireblocks is custody and settlement infrastructure with an iGaming offering; "CT Payment" is probably CTFpay (Poland), unverified</li>
+      <li>Tension with IcyBox, whose terms name Stripe: tolerance depends on framing and on who is asking</li></ul></div>
+    <div class="card"><span class="k">Market claims, checked</span><h4>One overstated, one missed</h4><ul>
+      <li>"Industry leader did around $34 million in crypto deposits in 30 days", crypto to fiat "50 to 50": unverified, no public tracker found</li>
+      <li>"Coinbase launched Pokémon packs": corrected. Coinbase teased it on 28 September 2026 with no launch date</li>
+      <li>Not mentioned by the vendor: GameStop's Power Packs launched 15 April 2026 at $25 to $2,500 per digital pack of PSA-graded cards</li>
+      <li>Traffic is US and Europe, English-speaking, "mainly advertised through influencers and streamers" on Kick</li></ul></div>
+  </div>
+  <div class="callout">
+    <p><strong>What it means for the thesis.</strong> This is the operator's-eye confirmation of dossier 1 §3: an economy designed so that pulls are undesirable and sold back, a wagering requirement disguised as "withdraw through items", bots standing in for the house in battles, item prices set above cost, configurable RTP, and streamer-driven acquisition. It also prices the "legal opinion" layer that lets the product advertise as e-commerce.</p>
+  </div>
+  <div class="callout warn">
+    <p><strong>What it means for GrailNoir.</strong> Build versus buy is now a real decision: the vendor's platform delivers boxes, battles, deals, affiliates, back office and processor integrations in weeks for €35K plus 10% of GGR, but its defaults are exactly the features we have ruled out, and its architecture lacks manifest commitment, three price layers and cash buyback. The extractive model holds 15 to 30% of deposits because almost nothing leaves as goods; ours gives up the sell-back loop and earns on buyback spread, fees and sourcing, the StockX and Courtyard model. Never ship: withdraw-only-through-items, undisclosed bots, listed prices above acquisition cost presented as "value", expiring daily boxes. Adopt with disclosure: battles with a published edge and labelled bots bound to the same odds, wager-neutral leaderboards, affiliate codes, bulk upload, Intercom.</p>
+  </div>
+</section>
+
+<section id="different">
+  <h2>4 · How to be different</h2>
+  <p>The market competes on catalogue size, bonuses and streamers. Nobody competes on being checkable. Since July 2026 StockX competes on a value floor and Courtyard on a 95% buyback, so the open ground is narrower than it was and sits in luxury, in cryptographic commitment, in cash, and in independent valuation. The recommendation is one flagship and a short list of features that reinforce it.</p>
+
+  <div class="flag">
+    <span class="eyebrow">Flagship</span>
+    <h3>The Glass Box: a box you can audit, not just the dice</h3>
+    <ol>
+      <li><strong>Commit the whole box.</strong> Before any open, publish the hash of a <a class="term" href="#g-manifest">manifest</a> containing the drop table, each item's three prices, the cash-out rate and the server seed. Reveal the manifest with the seed. Publish a daily <a class="term" href="#g-merkle">Merkle root</a> of all opens so anyone can prove their open is in the log. Ship an open-source verifier. This closes loopholes 1 to 3 from dossier 1 and matches GLI-19 v4.0 draft §5.5 point for point.</li>
+      <li><strong>Honest value, shown before purchase.</strong> Every item displays retail, asking and realized price with a confidence band. The box page shows return at cash value and the probability of an outcome worth at least the price, which is what UK RTS 3C demands of licensed operators. Where the same item is sold by other operators, show their quoted value beside the market value: "Operator value $85,000. Latest Goldin sale $72,000. Difference +18%." That comparison layer is a product in itself and can launch before any box does.</li>
+      <li><strong>Cash-out at the published realized price, in money.</strong> No credits trap, no undisclosed haircut. Or hold the item in an authenticated vault with live valuation and sell it with one click through partner marketplaces, so the vault becomes a small portfolio rather than store credit.</li>
+      <li><strong>Kuji-style finite pools</strong> for flagship drops: a real inventory of N authenticated items, the remaining pool visible to everyone, odds equal to remaining counts, a Last One bonus, closure when sold out. Nothing exists to tamper with, and the live countdown is a social hook spin wheels cannot match.</li>
+    </ol>
+  </div>
+
+  <h3>Supporting features</h3>
+  <div class="cards">
+    <div class="card"><h4>Bad-luck protection with public math</h4><p>Hard pity ceilings, spend caps (Omaze's £500 a month), a cooling-off switch, and a personal ledger on the account page: spent $X, received $Y at cash value.</p></div>
+    <div class="card"><h4>Fukubukuro mode</h4><p>Positive-EV clearance bags sourced from retail and resale partners' slow stock, with the "worth at least the price" claim backed by your realized-price engine rather than the retailer's say-so.</p></div>
+    <div class="card"><h4>Group opens and sealed live breaks</h4><p>Pick-your-slot formats that Whatnot and TikTok Shop already permit, with the pool visible on screen.</p></div>
+    <div class="card"><h4>Pooled top prize, transparent draw</h4><p>Misty's competition model done correctly: fixed pool, disclosed expected value per ticket, a working verifier, free-entry parity, optional charity split.</p></div>
+    <div class="card"><h4>Collector tooling</h4><p>Set completion bonuses, duplicate protection, trade-in at published rates, wishlist-targeted boxes, a certificate of authenticity on every item.</p></div>
+    <div class="card"><h4>Research mode</h4><p>A public simulator showing the expected loss curve for any box on the platform. For the thesis it is the demonstration; for the product it is the trust page competitors cannot copy without changing their economics.</p></div>
+  </div>
+
+  <div class="callout warn">
+    <p><strong>What not to copy.</strong> One-in-a-million showcase items, odds that sum above 100%, credits-only cash-out, near-miss animations, and "value" quoted at retail.</p>
+  </div>
+  <p><strong>Positioning in one line:</strong> "The only mystery box where you can check the box, not just the dice."</p>
+</section>
+
+<section id="constraints">
+  <h2>5 · Constraints checklist</h2>
+  <ul>
+    <li><strong>Payments.</strong> Stripe's prohibited list includes "games of chance including gambling, internet gambling, casino games, sweepstakes and contests", "payments of an entry or player fee that promise the entrant or player will win a prize of value", lotteries and bidding-fee auctions; only charity raffles are "restricted" rather than banned. Yet IcyBox's terms name Stripe as its processor, which shows the model can be onboarded when framed as a marketplace purchase of an asset the buyer owns, with buyback as a separate offer. Other sites use specialist processors (Jemlit lists ZEN Payments) and crypto. Get the framing reviewed by counsel before applying; approval is per business and revocable.</li>
+    <li><strong>App stores.</strong> Apple 3.1.1 requires odds for randomized virtual items; 5.3.4 requires licences and geo-fencing for real-money gaming; 3.1.3(e) requires non-IAP payment for physical goods. IcyBox is live in the App Store as a Shopping app with the "Contains Loot Boxes" label, so a luxury box app can pass review on that framing with card payments outside IAP. Google Play's Real-Money Gambling policy prohibits "games that accept money in exchange for an opportunity to win a physical or monetary prize" outside licensed gambling or compliant loyalty programs, and IcyBox has not shipped on Android. Build web-first with a <a class="term" href="#g-pwa">PWA</a>, ship iOS on the IcyBox framing, treat Android as uncertain.</li>
+    <li><strong>Marketplaces.</strong> eBay allows grab bags only if the listing does not single out valuable items unless every box contains them, and bans chance listings outright. TikTok Shop caps mystery boxes at $100 with exact counts and odds. Whatnot allows only professionally sealed products on its approved list.</li>
+    <li><strong>Trademarks and authenticity.</strong> Nominative use of brand names for genuine goods is allowed; brand-named boxes, brand logos, boutique photography and any counterfeit are not. Chanel v. What Goes Around Comes Around (2024, $4m jury verdict); Rolex v. BeckerTime (5th Cir. 2024, modified Rolexes infringe). Authenticate everything and keep the certificates.</li>
+    <li><strong>Regulation beyond the US and UK.</strong> China's SAMR blind-box rules (June 2023): disclose contents value, draw rules and probabilities; no sales to under-8s; guardian consent for 8 and over; no disguised gambling. Japan: ¥50,000 cap and probability display; complete gacha illegal. Korea: triple damages for mislabelled odds. Brazil: paid loot boxes banned for under-18s from March 2026. See dossier 1 for the US, UK and EU picture.</li>
+  </ul>
+</section>
+
+<section id="next">
+  <h2>6 · Next steps</h2>
+  <ol>
+    <li>Decide what the app is: a research demonstrator for the thesis, a commercial product, or both. The Glass Box works for either; the payments and legal work only matter for the second.</li>
+    <li>Apply for the eBay Partner Network and the Buy APIs now; buy WatchCharts pay-as-you-go for the pilot; request a WatchBase feed quote; open an Entrupy account if bags are in scope.</li>
+    <li>Build the comps engine (identity, comps, cleaning, recency median, condition adjustment, confidence) as the first backend service. It feeds both the simulations and the product.</li>
+    <li>Extend <code>tools/verify_roll.py</code> into a manifest-commitment verifier (table + prices + seed) as the reference implementation for the Glass Box.</li>
+    <li>Get a one-page legal read in the launch market on the kuji format and on payment acceptance before writing any payment code.</li>
+  </ol>
+</section>
+
+<section id="brand">
+  <h2>7 · Brand notes: GrailNoir</h2>
+  <p>From the brainstorm: the working name is GrailNoir (grailnoir.com, reported available), alternatives in the Grail family (GrailPrime, GrailRoyal, GrailMetric, GrailInsight), a dark royal-blue identity, and the slogan direction "Life is too short. Go Noir." Three checks before committing.</p>
+  <div class="cards">
+    <div class="card"><span class="k">Check 1</span><h4>Trademark proximity</h4><p>Grailed is a large fashion-resale marketplace owned by GOAT Group since 2022, and "grail" is the community's own word for a top-tier watch or card. A name built on "Grail" in the resale category invites an opposition from Grailed and is weak to register on its own. Run USPTO and EUIPO searches on "GrailNoir" and on the slogan before buying more domains, and decide whether the brand can live without "Grail".</p></div>
+    <div class="card"><span class="k">Check 2</span><h4>Tone versus regulators and the thesis</h4><p>"The dark side of luxury" and "Go Noir" are good consumer copy, but a product whose whole point is to be the honest one in a gambling-adjacent category should not look like it sells the thrill of the dark. Keep the provocation in the campaign line and the transparency in the product.</p></div>
+    <div class="card"><span class="k">Check 3</span><h4>Name the proposition, not just the mood</h4><p>"Track the Rare. Find the Grail." says what the platform does: market intelligence plus discovery. "Life is too short. Go Noir." says how it feels. One is the tagline, the other the campaign line. They can coexist.</p></div>
+  </div>
+  <div class="callout">
+    <p><strong>Where the brainstorm and this dossier agree:</strong> luxury-only scope; independent market value shown against the operator's value as the core differentiator; WatchCharts, eBay and Goldin as the data authorities (Goldin by licensed feed, not scraping); live drops; US first.</p>
+    <p><strong>What this dossier adds:</strong> commit the whole box cryptographically, pay in cash at the published realized price, use finite pools for flagship drops, and build the comps engine as the first backend service, because the comparison layer, the boxes and the thesis simulations all depend on it.</p>
+  </div>
+</section>
+
+<section id="glossary" class="gloss">
+  <h2>Glossary</h2>
+  <p>Terms introduced on this page. The randomness, odds and regulation terms are defined in <a href="01-platform-audit-and-regulation.html#glossary">dossier 1's glossary</a>.</p>
+  <dl>
+    <dt id="g-retail">Retail price (MSRP)</dt>
+    <dd>What the brand's own boutique charges for a new item. Brands raise it by decree, and for rationed goods it is often lower than what the item sells for second-hand.</dd>
+    <dt id="g-asking">Asking price</dt>
+    <dd>What a seller lists an item for. It is an opening position, not a transaction, and on luxury marketplaces it commonly sits 25% or more above what the item finally sells for.</dd>
+    <dt id="g-realized">Realized price</dt>
+    <dd>What an item actually sold for: a completed sale, an auction hammer price, or what a dealer paid. It is the only one of the three layers that is money, and the one an honest product should value prizes at.</dd>
+    <dt id="g-comps">Comps (comparable sales)</dt>
+    <dd>Recent realized sales of the same or near-identical item, used to estimate what the next one is worth. "Checking last sold on eBay" is building comps by hand; a comps engine does it automatically for every item in the catalogue.</dd>
+    <dt id="g-outlier">Outlier</dt>
+    <dd>A sale far outside the normal range: a mis-listed price, a bundle, a fake. Price guides remove them with a rule (for example anything beyond 1.5 times the middle 50% range) before averaging, otherwise one bad sale moves the price.</dd>
+    <dt id="g-recency">Recency-weighted median</dt>
+    <dd>Take the middle value of recent sales, but let newer sales count for more than older ones. A 30-day half-life means a sale from a month ago counts half as much as one from today. It follows the market without being dragged by stale data.</dd>
+    <dt id="g-quota">Quota bag</dt>
+    <dd>Hermès limits how many Birkin and Kelly bags a client may buy per year (two) and offers them only to clients with a purchase history. The scarcity this creates is why those bags resell above retail.</dd>
+    <dt id="g-nominative">Nominative fair use</dt>
+    <dd>The legal principle that you may use a brand's name to truthfully describe genuine goods you are selling ("a pre-owned Rolex Submariner"). It does not cover using the brand's logos as your own branding, naming your products after the brand, or selling fakes.</dd>
+    <dt id="g-kuji">Kuji (Ichiban Kuji)</dt>
+    <dd>A Japanese ticket lottery with a finite physical pool: every ticket wins a prize from a lettered tier, the pool shrinks as tickets sell so the remaining odds are visible, and the last ticket wins a bonus prize. Fairness comes from the inventory itself rather than from a random number generator.</dd>
+    <dt id="g-pity">Pity system (hard pity)</dt>
+    <dd>A guarantee that after a fixed number of unsuccessful tries the rare outcome is awarded. "Soft pity" raises the odds gradually instead. Standard in Japanese and Chinese gacha games; players consider it fair.</dd>
+    <dt id="g-manifest">Manifest</dt>
+    <dd>A single file describing everything about a box that could be manipulated: the drop table, each item's prices, the cash-out rate and the seed. Hashing the manifest before play commits the operator to all of it at once, not just the seed.</dd>
+    <dt id="g-merkle">Merkle root</dt>
+    <dd>One hash that summarizes a whole list of records (every open of the day). Publishing it lets any player prove their own open is in the list without the operator revealing everyone else's, and makes it impossible to delete or alter an open afterwards.</dd>
+    <dt id="g-pwa">PWA (progressive web app)</dt>
+    <dd>A website that installs to the phone's home screen and works like an app, without going through Apple's or Google's store review. The practical route for a prize product that the stores would reject.</dd>
+  </dl>
+</section>
+
+<section id="sources">
+  <h2>Sources</h2>
+  <ul class="sources">
+    <li><b>WatchCharts</b> · <a href="https://watchcharts.com/api">API</a> · <a href="https://watchcharts.com/api/license">licence types</a> · <a href="https://watchcharts.com/subscribe">subscription pricing</a></li>
+    <li><b>WatchBase</b> · <a href="https://watchbase.com">watchbase.com</a> · <a href="https://glama.ai/mcp/servers/@watchdealer-pavel/watchbase-mcp-server">community API notes</a></li>
+    <li><b>eBay</b> · <a href="https://developer.ebay.com/api-docs/buy/static/buy-requirements.html">Buy API requirements</a> · <a href="https://developer.ebay.com/api-docs/buy/marketplace-insights/overview.html">Marketplace Insights</a> · <a href="https://developer.ebay.com/api-docs/buy/browse/static/overview.html">Browse</a> · <a href="https://pages.ebay.com/price-guide/">eBay Price Guide</a> · <a href="https://www.ebay.com/help/policies/prohibited-restricted-items/chance-listings-policy?id=4311">Chance listings policy</a></li>
+    <li><b>Chrono24 (absence of an API)</b> · <a href="https://apify.com/memo23/chrono24-scraper">Apify scraper</a> · <a href="https://www.scrapingbee.com/scrapers/chrono24-api/">ScrapingBee</a></li>
+    <li><b>Watch market data</b> · <a href="https://everywatch.com">EveryWatch</a> · <a href="https://usa.watchpro.com/?p=85804">WatchPro on tracker vs hammer prices</a> · <a href="https://app.dealroom.co/companies/subdial">Subdial</a> · <a href="https://infinitebreguet.substack.com/p/watch-price-data-providers-and-the">Data providers overview</a> · <a href="https://hilcoglobal.com/perspective/collateral-in-question-a-mid-2026-assessment-of-the-luxury-watch-segment-for-asset-based-lenders/">Hilco Global mid-2026 assessment</a></li>
+    <li><b>Rolex CPO</b> · <a href="https://usa.watchpro.com/?p=105940">WatchPro</a> · <a href="https://coron.et/new-1minute-reads/premium-prices-for-rolex-cpo-watches-top-30">Coronet</a> · <a href="https://bqwatches.com/what-does-rolexs-move-in-to-the-pre-owned-market-mean-for-grey-market-dealers">BQ Watches</a></li>
+    <li><b>Rebag Clair</b> · <a href="https://www.glossy.co/fashion/resale-platform-rebag-launches-kelley-blue-book-for-bags">Glossy</a> · <a href="https://fashionunited.com/news/fashion/rebag-launches-luxury-appraisal-tool-clair-to-evolve-resale-market/2019102430569">FashionUnited</a> · 2025 report coverage: <a href="https://retailboss.co/hermes-resale-values">RetailBoss</a> · <a href="https://robbreport.com.sg/birkin-bags-resale-appreciation/">Robb Report</a> · <a href="https://www.chainstoreage.com/luxury-brands-highest-resale-value-are">Chain Store Age</a></li>
+    <li><b>Hermès pricing</b> · <a href="https://madisonavenuecouture.com/blogs/news/retail-vs-resale-hermes-pricing">Madison Avenue Couture</a> · <a href="https://www.purseblog.com/hermes/hermes-retail-vs-resale-why-the-big-difference">PurseBlog</a> · <a href="https://www.sothebys.com/en/articles/hermes-raises-the-birkin-bag-price-what-you-need-to-know">Sotheby's</a> · <a href="https://saclab.com/hermes-investment-report/">SACLÀB</a> · <a href="https://mygemma.com/blogs/news/luxury-resale-index-2026">myGemma index</a></li>
+    <li><b>Card price guides</b> · <a href="https://help.tcgplayer.com/hc/en-us/articles/213588017">TCGplayer Market Price</a> · <a href="https://help.tcgplayer.com/hc/en-us/articles/222376867-What-do-the-different-price-points-on-TCGplayer-com-mean">TCGplayer price points</a> · <a href="https://www.pricecharting.com/api-documentation">PriceCharting API</a> · <a href="https://cardladder.com/about">Card Ladder</a> · <a href="https://www.cllct.com/sports-collectibles/memorabilia/ebay-to-add-card-ladder-data-to-its-price-guide">eBay adopts Card Ladder</a> · <a href="https://www.scrapingbee.com/blog/pokemon-card-api/">Pokémon card APIs</a></li>
+    <li><b>Entrupy</b> · <a href="https://www.entrupy.com/luxury-authentication">luxury authentication</a> · <a href="https://entrupy.com/?p=194">pricing</a></li>
+    <li><b>Payments and stores</b> · <a href="https://stripe.com/legal/restricted-businesses">Stripe restricted businesses</a> · <a href="https://developer.apple.com/app-store/review/guidelines/">Apple review guidelines</a> · <a href="https://support.google.com/googleplay/android-developer/answer/9877032">Google Play real-money gambling policy</a> · <a href="https://support.google.com/googleplay/android-developer/answer/9858738">Google Play monetization policy</a></li>
+    <li><b>Marketplace rules</b> · <a href="https://www.digitalapplied.com/blog/tiktok-shop-gambling-policy-mystery-box-ban-seller-2026">TikTok Shop (secondary)</a> · <a href="https://ppc.land/tiktok-shops-gambling-policy-bans-raffles-and-lucky-spins-sellers-beware/">PPC Land</a> · <a href="https://listperfectly.com/?p=11101">Whatnot sealed-products policy (secondary)</a></li>
+    <li><b>Trademark cases</b> · <a href="https://www.kelleydrye.com/viewpoints/blogs/ad-law-access/what-comes-around-how-chanels-win-may-help-brands-protect-their-rights-in-the-resale-market">Kelley Drye on Chanel v. WGACA</a> · <a href="https://www.thefashionlaw.com/chanel-wgaca-squabble-over-how-to-police-a-market-full-of-superfakes/">The Fashion Law</a></li>
+    <li><b>Adjacent models</b> · <a href="https://interaksyon.philstar.com/business/2026/04/02/311143/labubu-maker-pop-mart-meets-2025-revenue-expectations/">Pop Mart 2025 results</a> · <a href="https://technode.com/2025/06/06/pop-marts-labubu-craze-drives-13-blind-boxes-to-resell-for-over-417-empty-box-recycling-takes-off/">TechNode on Labubu resale</a> · <a href="https://qikify.com/blogs/all-articles/ichiban-kuji-explained">Ichiban Kuji explained</a> · <a href="https://yugipedia.com/wiki/Ichiban_Kuji">Yugipedia</a> · <a href="https://www.tokyoweekender.com/?p=280212">Fukubukuro</a> · <a href="https://committees.parliament.uk/writtenevidence/118440/html/">Omaze evidence to Parliament</a> · <a href="https://www.ifrahlaw.com/ftc-beat/federal-court-dismisses-illegal-lottery-claims-against-omaze-emphasizing-adequacy-of-fundraisers-alternative-means-of-sweepstakes-entry/">Omaze US ruling</a> · <a href="https://www.gamedeveloper.com/business/why-quot-kompu-gacha-quot-was-banned">Kompu gacha ban</a> · <a href="https://link.springer.com/article/10.1007/s10899-022-10148-0">Pity system research</a> · <a href="https://startupticker.ch/en/news/elephants-raises-chf-500-000-and-launches-luxury-watches-co-ownership-platform">Fractional watch ownership</a></li>
+    <li><b>China blind box rules</b> · <a href="https://english.www.gov.cn/news/202306/16/content_WS648bb0f8c6d0868f4e8dce88.html">gov.cn</a> · <a href="https://www.thestandard.com.hk/china/article/204927/China-issues-rules-on-mystery-boxes-regulates-sales-to-children">The Standard</a></li>
+    <li><b>IcyBox</b> · <a href="https://apps.apple.com/us/app/icybox/id6758816716">App Store listing</a> · <a href="https://www.icybox.io/">icybox.io</a> · <a href="https://www.icybox.io/terms">terms of service</a> · <a href="https://www.globenewswire.com/news-release/2026/10/01/3372943/0/en/icybox-expands-from-luxury-watches-into-handbags.html">press release, 1 Oct 2026</a></li>
+    <li><b>StockX Mystery Boxes</b> · <a href="https://stockx.com/about/stockx-introduces-mystery-boxes-with-guaranteed-minimum-values-market-based-pricing-and-verified-inventory/">StockX announcement, 9 Jul 2026</a> · <a href="https://www.complex.com/sneakers/a/victor-deng/stockx-releases-mystery-boxes">Complex</a> · <a href="https://fashionunited.com/news/retail/stockx-launches-mystery-boxes-with-verified-inventory/2026071073444">FashionUnited</a></li>
+    <li><b>Courtyard watch packs</b> · <a href="https://www.luxurybazaar.com/grey-market/luxury-bazaar-x-courtyard-io/">Luxury Bazaar announcement, 4 Mar 2026</a> · <a href="https://courtyard.io/">courtyard.io</a></li>
+    <li><b>PackDraw and LuxDrop (affiliate and review sources, context only)</b> · <a href="https://tech-insider.org/packdraw-review/">PackDraw review</a> · <a href="https://www.thespike.gg/reviews/packdraw">TheSpike</a> · <a href="https://se.trustpilot.com/review/luxdrop.com">LuxDrop Trustpilot</a></li>
+    <li><b>Goldin (absence of an API)</b> · <a href="https://apify.com/crawloop/goldin-scraper">Apify scraper</a> · <a href="https://apify.com/lulzasaur/goldin-scraper">second scraper</a></li>
+    <li><b>Grailed and GOAT Group</b> · <a href="https://en.wikipedia.org/wiki/GOAT_Group">GOAT Group</a> · <a href="https://www.complex.com/style/goat-group-deal-acquire-grailed">Complex on the acquisition</a></li>
+    <li><b>Affiliate and vendor sources (context only)</b> · <a href="https://www.lines.com/mistery-boxes">Lines mystery box comparison</a> · <a href="https://bestmysteryboxwebsites.com/reviews/">bestmysteryboxwebsites.com</a> · <a href="https://track360.io/learn/mystery-box-affiliate-program-operations/mystery-box-business-model">Track360 business model</a></li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.rail a[href^="#"]'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var map = {}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) { if (current) current.classList.remove('active'); current = map[e.target.id]; if (current) current.classList.add('active'); } });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
+})();
+(function(){
+  var gloss = {};
+  Array.prototype.forEach.call(document.querySelectorAll('#glossary dt[id]'), function(dt){ var dd = dt.nextElementSibling; gloss[dt.id] = { title: dt.textContent, body: dd ? dd.innerHTML : '' }; });
+  var tip = document.createElement('div'); tip.className = 'tip'; tip.setAttribute('role', 'tooltip'); tip.id = 'term-tip'; tip.hidden = true; document.body.appendChild(tip);
+  var open = null, hideTimer = null;
+  function place(el){
+    var r = el.getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(16, r.left), vw - tw - 16) + sx, top = r.bottom + 8 + sy;
+    if (r.bottom + 8 + th > vh && r.top - 8 - th > 0) top = r.top - 8 - th + sy;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function show(el){
+    var id = (el.getAttribute('href') || '').slice(1), g = gloss[id]; if (!g) return;
+    clearTimeout(hideTimer);
+    tip.innerHTML = '<b class="t"></b><p></p><a class="more" href="#' + id + '">See it in the glossary</a>';
+    tip.querySelector('b.t').textContent = g.title; tip.querySelector('p').innerHTML = g.body;
+    tip.hidden = false; open = el; el.setAttribute('aria-describedby', 'term-tip'); place(el);
+  }
+  function hide(){ if (open) open.removeAttribute('aria-describedby'); tip.hidden = true; open = null; }
+  function hideSoon(){ clearTimeout(hideTimer); hideTimer = setTimeout(hide, 180); }
+  Array.prototype.forEach.call(document.querySelectorAll('a.term'), function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('mouseleave', hideSoon);
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('blur', hideSoon);
+    el.addEventListener('click', function(ev){ ev.preventDefault(); if (open === el && !tip.hidden) hide(); else show(el); });
+  });
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideSoon);
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') hide(); });
+  document.addEventListener('click', function(ev){ if (tip.hidden) return; if (tip.contains(ev.target) || (open && open.contains(ev.target))) return; hide(); });
+  window.addEventListener('resize', function(){ if (open && !tip.hidden) place(open); });
+})();
+</script>
+</body>
+</html>

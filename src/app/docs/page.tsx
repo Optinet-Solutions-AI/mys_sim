@@ -3,6 +3,7 @@ import { RIGS } from "@/engine/rigs";
 import { BATTLE_MODES } from "@/engine/labs/battles";
 import { OPERATORS } from "@/lib/operators";
 import { Badge, Card } from "@/components/ui";
+import { RESEARCH_DOCS } from "@/lib/researchDocs.generated";
 
 function Entry({ d }: { d: DocEntry }) {
   return (
@@ -49,8 +50,9 @@ export default function DocsPage() {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-semibold">Docs</h1>
-        <p className="mt-1 max-w-3xl text-sm text-ink-2">Every selectable algorithm, mapping, randomness source, odds model, agent policy, battle mode and rig has an entry here, generated from the same metadata the labs use. The research dossiers (documents 01 to 05) are in the repository&apos;s research folder.</p>
+        <p className="mt-1 max-w-3xl text-sm text-ink-2">Every selectable algorithm, mapping, randomness source, odds model, agent policy, battle mode and rig has an entry here, generated from the same metadata the labs use. The research documents are published below as pages.</p>
         <nav className="mt-2 flex flex-wrap gap-2 text-xs">
+          <a href="#research">Research documents</a>
           <a href="#labs">Labs</a>
           {sections.map((s) => (
             <a key={s.id} href={`#${s.id}`}>
@@ -62,6 +64,27 @@ export default function DocsPage() {
           <a href="#principles">Principles</a>
         </nav>
       </header>
+
+      <section id="research" className="space-y-3">
+        <h2 className="text-lg font-semibold">Research documents</h2>
+        <p className="max-w-3xl text-sm text-ink-2">
+          The dossiers, plans and mechanism explanations, as pages. The same files live in the repository&apos;s research folder; <a href="/research/index.html">the index page</a> lists them with the tracker.
+        </p>
+        <div className="grid gap-2 md:grid-cols-2">
+          {RESEARCH_DOCS.map((d) => (
+            <a key={d.id} href={d.file} className="block rounded-lg border border-line bg-paper p-3 text-sm no-underline hover:border-accent">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-ink-3">{d.id}</span>
+                <span className="font-medium text-ink">{d.title}</span>
+              </div>
+              <div className="mt-1 text-xs text-ink-2">{d.scope}</div>
+              <div className="mt-1 text-[11px] text-ink-3">
+                {d.status} · updated {d.updated}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <Card title={<span id="labs">Sources and their features</span>}>
         <div className="space-y-4">

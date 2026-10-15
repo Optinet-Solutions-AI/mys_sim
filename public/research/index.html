@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Research documents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#F4F6F4;--surface:#FFFFFF;--ink:#16191D;--ink-2:#4A5560;--ink-3:#78838C;--line:#D6DDD8;--accent:#0F6B6B;--accent-ink:#0A5252;--accent-soft:#DBECEA;--good:#1E7A3C;--good-soft:#DCEFE1;--warn:#8F5A00;--warn-soft:#F7EBCF;--bad:#B0281F;--bad-soft:#F8DEDB;--code-bg:#EBEFEC;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Serif 4",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",Consolas,"Courier New",monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(40px,6vw,60px);font-weight:700}
+h2{font-size:33px;font-weight:600;margin-top:52px;padding-top:18px;border-top:2px solid var(--ink);scroll-margin-top:12px}
+h3{font-size:24px;font-weight:600;margin-top:34px}
+h4{font-size:19px;font-weight:600;margin-top:24px;color:var(--ink-2)}
+p{margin:14px 0;max-width:70ch}
+ul,ol{max-width:74ch;padding-left:1.3em}
+li{margin:8px 0}
+li::marker{color:var(--ink-3)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--code-bg);border-left:3px solid var(--accent);padding:14px 16px;overflow-x:auto;margin:16px 0;max-width:100%}
+pre code{background:none;padding:0;font-size:inherit}
+blockquote{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 18px;margin:20px 0;border-radius:0 6px 6px 0;max-width:74ch}
+blockquote p{margin:6px 0;max-width:none}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--accent-ink)}
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+main{min-width:0;padding-block:40px 96px}
+nav.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding-block:48px 24px}
+nav.rail .eyebrow{display:block;margin-bottom:10px}
+nav.rail ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+nav.rail li{margin:0}
+nav.rail a{display:block;padding:6px 0 6px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-family:var(--display);font-size:16px;line-height:1.2}
+nav.rail a:hover{color:var(--ink)}
+nav.rail a.active{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+nav.rail li.sep a{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:var(--accent-ink)}
+nav.rail li.ext a{color:var(--accent-ink)}
+details.toc{display:none;margin:24px 0 0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.toc summary{cursor:pointer;padding:12px 16px;font-family:var(--display);font-size:18px;font-weight:600}
+details.toc ol{margin:0;padding:0 16px 12px 36px}
+details.toc a{font-family:var(--display);font-size:17px;text-decoration:none;color:var(--ink-2)}
+@media (max-width:980px){.wrap{grid-template-columns:minmax(0,1fr);gap:0} nav.rail{display:none} details.toc{display:block}}
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:28px}
+header.masthead .eyebrow{display:block;margin-bottom:14px}
+header.masthead .lead{font-size:20px;line-height:1.45;max-width:66ch;margin-top:18px}
+.table-wrap{overflow-x:auto;margin:18px 0;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;background:var(--bg)}
+details.appendix{margin-top:52px;border-top:2px solid var(--ink);padding-top:18px}
+details.appendix summary{cursor:pointer;font-family:var(--display);font-size:33px;font-weight:600;list-style:none}
+details.appendix summary::before{content:"▸ ";color:var(--ink-3);font-size:24px}
+details.appendix[open] summary::before{content:"▾ "}
+details.appendix .note{font-family:var(--display);font-size:15px;color:var(--ink-2);margin:6px 0 0}
+a.term{color:inherit;text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help}
+a.term:hover{color:var(--accent-ink)}
+.tip{position:absolute;z-index:20;max-width:350px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px 10px;font-family:var(--body);font-size:14.5px;line-height:1.45}
+.tip b.t{display:block;font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:4px}
+.tip p{margin:0 0 6px;max-width:none}
+.tip a.more{display:inline-block;margin-top:2px;font-family:var(--display);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:600px){.tip{max-width:calc(100vw - 32px)}}
+.howto{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:10px 14px;background:var(--surface);border:1px dashed var(--line);border-radius:6px;font-size:15px;max-width:70ch}
+.howto .i{font-family:var(--display);font-weight:700;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:50%;width:20px;height:20px;line-height:17px;text-align:center;font-size:13px;flex:none;margin-top:2px}
+.gloss dl{margin:12px 0 0;max-width:76ch}
+.gloss dt{font-family:var(--display);font-size:19px;font-weight:600;margin-top:16px;scroll-margin-top:16px}
+.gloss dt:target{color:var(--accent-ink)}
+.gloss dd{margin:4px 0 0}
+.gen{font-family:var(--display);font-size:14px;color:var(--ink-3);margin-top:48px}
+@media print{nav.rail,details.toc,.tip{display:none} .wrap{display:block} body{background:#fff;color:#000} h2{break-before:page} a{color:inherit} details.appendix{display:block} details.appendix summary::before{content:""}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#documents">Documents</a></li><li><a href="#also-here">Also here</a></li><li class="sep"><a href="https://mys-sim.vercel.app">Simulator (live)</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></nav>
+<main>
+<header class="masthead"><span class="eyebrow">Research · generated from index.md</span><h1>Research documents</h1><p class="lead">Every document in this folder, one click away. The tracker holds the change log; the simulator at https://mys-sim.vercel.app is the live companion. Generated by <code>tools/publish_research.py</code>; do not edit by hand.</p></header>
+<details class="toc"><summary>Contents</summary><ol><li><a href="#documents">Documents</a></li><li><a href="#also-here">Also here</a></li><li class="sep"><a href="https://mys-sim.vercel.app">Simulator (live)</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></details>
+<section id="documents"><h2>Documents</h2><div class="table-wrap"><table><thead><tr><th>Id</th><th>Document</th><th>Status</th><th>Updated</th><th>What it covers</th></tr></thead><tbody><tr><td>00</td><td><a href="00-tracker.html">Research tracker</a></td><td>Live</td><td>2026-10-12</td><td>This file: index, change log, deltas, inputs, carried-forward items</td></tr><tr><td>01</td><td><a href="01-platform-audit-and-regulation.html">Platform audit: Misty, Jemlit, Cases.gg, and the regulatory landscape</a></td><td>Stable, v3</td><td>2026-10-10</td><td>Audit of Misty, Jemlit, Cases.gg; algorithms; expected value; loopholes; regulation; second-wave audit of eight more operators</td></tr><tr><td>02</td><td><a href="02-market-data-pricing-and-product.html">Market data, luxury pricing mechanics, and how a mystery box app can be different</a></td><td>Stable, v4</td><td>2026-10-10</td><td>Data sources, luxury pricing mechanics, market landscape, luxury-first operators, vendor demo, Glass Box, constraints, brand notes</td></tr><tr><td>03</td><td><a href="03-plan-and-alignment.html">GrailNoir: plan and alignment (v4)</a></td><td>Live plan, v4; open for comments</td><td>2026-10-10</td><td>GrailNoir plan, research phase: what changed, positioning, decisions with sources, answers to comments round 1, glossary; roadmap, risks and next steps parked in the appendix</td></tr><tr><td>04</td><td><a href="04-backend-blueprint.html">Backend blueprint: the odds engine and what is still missing</a></td><td>Draft v1; open for comments</td><td>2026-10-10</td><td>Backend components, the odds algorithm done correctly (integer tickets, no modulo bias, manifest commitment, beacon, pools, battles), data model, complications to expect, what is missing before a spec, next documents</td></tr><tr><td>05</td><td><a href="05-simulator-plan.html">Simulator plan (v1.2, in development)</a></td><td>v1.2; approved, in development (phase 1 built)</td><td>2026-10-12</td><td>Feature-hub simulator plan: waves by source (vendor first, then IcyBox, StockX, Courtyard, Jemlit, Cases.gg, Misty, ours, adjacent models), decision scorecard; purpose, four labs, agents, Next.js + Supabase architecture, data model, isolation contract, catalogue and icons, algorithm registry, white-hat rigging toolkit with detector, lab specs, run lifecycle, docs, milestones, questions</td></tr><tr><td>06</td><td><a href="06-misty-box-mechanism.html">Misty's mystery box, explained simply</a></td><td>v1.0</td><td>2026-10-12</td><td>Misty mystery box explained simply: the thirteen live boxes with names, prices and odds, one open step by step, a toy example, the real Timepiece table with cost per open, why the price is $10, what a Mistee is worth, what the proof does and does not prove, the back office in the simulator, glossary</td></tr><tr><td>07</td><td><a href="07-feature-comparison.html">Feature and mechanic comparison across sources</a></td><td>v1.0</td><td>2026-10-13</td><td>Feature and mechanic comparison across all sources: 24 mechanics in six families (crash, mines, collectible packs and borrowing added 14 October), which are the same, similar or unique, most used, the matrix, source by source, takeaways; charts live in the simulator at /docs/features</td></tr><tr><td>08</td><td><a href="08-jemlit-box-mechanism.html">Jemlit's mystery box, explained simply</a></td><td>v1.1</td><td>2026-10-14</td><td>Jemlit explained simply: all 348 live boxes (333 plus 15 collectible packs), one open step by step, the Apple eBox sums, the 80% rule, what a Credit is worth, the big prize, the check, platform settings, the other games (Packs, Battles, Upgrader, Mines, Crash) with their rules and sums, sources, critique; live sums and the back office in the simulator at /operators/jemlit and /docs/jemlit</td></tr><tr><td>09</td><td><a href="09-icybox-mechanism.html">IcyBox, explained simply: what is known, what is reported, what is reconstructed</a></td><td>v1.0</td><td>2026-10-14</td><td>IcyBox explained simply from public sources (iOS-only, no API): what the operator says (site, terms, App Store, press), the five boxes and six bands with a reconstruction fitted to 85% at listed values, one open step by step, the buyback loop, limited drops and the operator exit, the proof that is not there, reviews and reports, back office, sources, critique; every number tagged known, reported or assumed; simulator at /operators/icybox, /docs/icybox and /simulate?src=icybox</td></tr><tr><td>10</td><td><a href="10-mystery-box-as-a-service-market.html">Mystery box as a service: is there a market for selling the software?</a></td><td>v1.0</td><td>2026-10-14</td><td>Market assessment: is there a market for selling mystery box software? Two ideas compared (the all-in-one MysteryOS platform from the 14 October brainstorm, and mystery box as a service for existing shops where the merchant sets prices and odds); demand evidence, the merchant apps already selling it and their prices, the operator platforms, the platform and payment rules that split the market (Stripe, Shopify Payments, TikTok Shop, eBay, Whatnot, Apple, US, UK, China), the competitive gap, economics of three ways to sell, forces, why MysteryOS fails, recommendation and a 30-day validation, risks, sources</td></tr></tbody></table></div></section>
+<section id="also-here"><h2>Also here</h2><ul><li><a href="00-tracker.html">The tracker</a>: index, change log, deltas, inputs, open items.</li><li><code>captures/</code>: the pages, JSON and client code captured from Misty, Jemlit and IcyBox, dated.</li><li><code>03-plan-and-alignment-notes.md</code> and <code>vendor-feature-inventory.md</code>: Markdown only.</li><li>The simulator: <a href="https://mys-sim.vercel.app">live site</a>, <a href="https://mys-sim.vercel.app/docs/misty">Misty explained</a>, <a href="https://mys-sim.vercel.app/docs/jemlit">Jemlit explained</a>, <a href="https://mys-sim.vercel.app/docs/icybox">IcyBox explained</a>, <a href="https://mys-sim.vercel.app/docs/features">feature report</a>, <a href="https://mys-sim.vercel.app/docs/misty/dev">developer kit</a>.</li></ul></section>
+<p class="gen">Generated from index.md by tools/build_page.py. Edit the Markdown, then rebuild.</p>
+</main>
+</div>
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.rail a[href^="#"]'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var map = {}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) { if (current) current.classList.remove('active'); current = map[e.target.id]; if (current) current.classList.add('active'); } });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
+})();
+(function(){
+  var gloss = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.gloss dt[id]'), function(dt){ var dd = dt.nextElementSibling; gloss[dt.id] = { title: dt.textContent, body: dd ? dd.innerHTML : '' }; });
+  if (!Object.keys(gloss).length) return;
+  var tip = document.createElement('div'); tip.className = 'tip'; tip.setAttribute('role', 'tooltip'); tip.id = 'term-tip'; tip.hidden = true; document.body.appendChild(tip);
+  var open = null, hideTimer = null;
+  function place(el){
+    var r = el.getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(16, r.left), vw - tw - 16) + sx, top = r.bottom + 8 + sy;
+    if (r.bottom + 8 + th > vh && r.top - 8 - th > 0) top = r.top - 8 - th + sy;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function show(el){
+    var id = (el.getAttribute('href') || '').slice(1), g = gloss[id]; if (!g) return;
+    clearTimeout(hideTimer);
+    tip.innerHTML = '<b class="t"></b><p></p><a class="more" href="#' + id + '">See it in the glossary</a>';
+    tip.querySelector('b.t').textContent = g.title; tip.querySelector('p').innerHTML = g.body;
+    tip.hidden = false; open = el; el.setAttribute('aria-describedby', 'term-tip'); place(el);
+  }
+  function hide(){ if (open) open.removeAttribute('aria-describedby'); tip.hidden = true; open = null; }
+  function hideSoon(){ clearTimeout(hideTimer); hideTimer = setTimeout(hide, 180); }
+  Array.prototype.forEach.call(document.querySelectorAll('a.term'), function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('mouseleave', hideSoon);
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('blur', hideSoon);
+    el.addEventListener('click', function(ev){ ev.preventDefault(); if (open === el && !tip.hidden) hide(); else show(el); });
+  });
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideSoon);
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') hide(); });
+  document.addEventListener('click', function(ev){ if (tip.hidden) return; if (tip.contains(ev.target) || (open && open.contains(ev.target))) return; hide(); });
+  window.addEventListener('resize', function(){ if (open && !tip.hidden) place(open); });
+})();
+</script>
+
+</body>
+</html>

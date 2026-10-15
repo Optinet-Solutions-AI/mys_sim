@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feature and mechanic comparison across sources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#F4F6F4;--surface:#FFFFFF;--ink:#16191D;--ink-2:#4A5560;--ink-3:#78838C;--line:#D6DDD8;--accent:#0F6B6B;--accent-ink:#0A5252;--accent-soft:#DBECEA;--good:#1E7A3C;--good-soft:#DCEFE1;--warn:#8F5A00;--warn-soft:#F7EBCF;--bad:#B0281F;--bad-soft:#F8DEDB;--code-bg:#EBEFEC;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Serif 4",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",Consolas,"Courier New",monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(40px,6vw,60px);font-weight:700}
+h2{font-size:33px;font-weight:600;margin-top:52px;padding-top:18px;border-top:2px solid var(--ink);scroll-margin-top:12px}
+h3{font-size:24px;font-weight:600;margin-top:34px}
+h4{font-size:19px;font-weight:600;margin-top:24px;color:var(--ink-2)}
+p{margin:14px 0;max-width:70ch}
+ul,ol{max-width:74ch;padding-left:1.3em}
+li{margin:8px 0}
+li::marker{color:var(--ink-3)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--code-bg);border-left:3px solid var(--accent);padding:14px 16px;overflow-x:auto;margin:16px 0;max-width:100%}
+pre code{background:none;padding:0;font-size:inherit}
+blockquote{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 18px;margin:20px 0;border-radius:0 6px 6px 0;max-width:74ch}
+blockquote p{margin:6px 0;max-width:none}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--accent-ink)}
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+main{min-width:0;padding-block:40px 96px}
+nav.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding-block:48px 24px}
+nav.rail .eyebrow{display:block;margin-bottom:10px}
+nav.rail ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+nav.rail li{margin:0}
+nav.rail a{display:block;padding:6px 0 6px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-family:var(--display);font-size:16px;line-height:1.2}
+nav.rail a:hover{color:var(--ink)}
+nav.rail a.active{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+nav.rail li.sep a{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:var(--accent-ink)}
+nav.rail li.ext a{color:var(--accent-ink)}
+details.toc{display:none;margin:24px 0 0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.toc summary{cursor:pointer;padding:12px 16px;font-family:var(--display);font-size:18px;font-weight:600}
+details.toc ol{margin:0;padding:0 16px 12px 36px}
+details.toc a{font-family:var(--display);font-size:17px;text-decoration:none;color:var(--ink-2)}
+@media (max-width:980px){.wrap{grid-template-columns:minmax(0,1fr);gap:0} nav.rail{display:none} details.toc{display:block}}
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:28px}
+header.masthead .eyebrow{display:block;margin-bottom:14px}
+header.masthead .lead{font-size:20px;line-height:1.45;max-width:66ch;margin-top:18px}
+.table-wrap{overflow-x:auto;margin:18px 0;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;background:var(--bg)}
+details.appendix{margin-top:52px;border-top:2px solid var(--ink);padding-top:18px}
+details.appendix summary{cursor:pointer;font-family:var(--display);font-size:33px;font-weight:600;list-style:none}
+details.appendix summary::before{content:"▸ ";color:var(--ink-3);font-size:24px}
+details.appendix[open] summary::before{content:"▾ "}
+details.appendix .note{font-family:var(--display);font-size:15px;color:var(--ink-2);margin:6px 0 0}
+a.term{color:inherit;text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help}
+a.term:hover{color:var(--accent-ink)}
+.tip{position:absolute;z-index:20;max-width:350px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px 10px;font-family:var(--body);font-size:14.5px;line-height:1.45}
+.tip b.t{display:block;font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:4px}
+.tip p{margin:0 0 6px;max-width:none}
+.tip a.more{display:inline-block;margin-top:2px;font-family:var(--display);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:600px){.tip{max-width:calc(100vw - 32px)}}
+.howto{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:10px 14px;background:var(--surface);border:1px dashed var(--line);border-radius:6px;font-size:15px;max-width:70ch}
+.howto .i{font-family:var(--display);font-weight:700;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:50%;width:20px;height:20px;line-height:17px;text-align:center;font-size:13px;flex:none;margin-top:2px}
+.gloss dl{margin:12px 0 0;max-width:76ch}
+.gloss dt{font-family:var(--display);font-size:19px;font-weight:600;margin-top:16px;scroll-margin-top:16px}
+.gloss dt:target{color:var(--accent-ink)}
+.gloss dd{margin:4px 0 0}
+.gen{font-family:var(--display);font-size:14px;color:var(--ink-3);margin-top:48px}
+@media print{nav.rail,details.toc,.tip{display:none} .wrap{display:block} body{background:#fff;color:#000} h2{break-before:page} a{color:inherit} details.appendix{display:block} details.appendix summary::before{content:""}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-summary">1. Summary</a></li><li><a href="#2-most-used-mechanics">2. Most used mechanics</a></li><li><a href="#3-same-similar-unique">3. Same, similar, unique</a></li><li><a href="#4-the-matrix">4. The matrix</a></li><li><a href="#5-source-by-source">5. Source by source</a></li><li><a href="#6-takeaways-for-our-build">6. Takeaways for our build</a></li><li><a href="#glossary">Glossary</a></li><li class="sep"><a href="https://mys-sim.vercel.app/docs/features">Feature report with charts (simulator)</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></nav>
+<main>
+<header class="masthead"><span class="eyebrow">Research · generated from 07-feature-comparison.md</span><h1>Feature and mechanic comparison across sources</h1><p class="lead">Version 1.0, 13 October 2026. 24 mechanics across 7 operators, our Glass Box and the adjacent formats, hand-curated from dossiers 1 and 2 and the captures of 12 and 13 October. The same matrix drives the charts at /docs/features in the simulator; this file is generated from it by <code>simulator/scripts/feature-report.ts</code>. Legend: ✓ has it as described · ~ a close variant · – absent · ? not visible from outside.</p><p class="howto"><span class="i" aria-hidden="true">i</span><span>Dotted terms have plain-English explanations: hover, tap or focus one, or jump to the glossary.</span></p></header>
+<details class="toc"><summary>Contents</summary><ol><li><a href="#1-summary">1. Summary</a></li><li><a href="#2-most-used-mechanics">2. Most used mechanics</a></li><li><a href="#3-same-similar-unique">3. Same, similar, unique</a></li><li><a href="#4-the-matrix">4. The matrix</a></li><li><a href="#5-source-by-source">5. Source by source</a></li><li><a href="#6-takeaways-for-our-build">6. Takeaways for our build</a></li><li><a href="#glossary">Glossary</a></li><li class="sep"><a href="https://mys-sim.vercel.app/docs/features">Feature report with charts (simulator)</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></details>
+<section id="1-summary"><h2>1. Summary</h2><ul><li>7 mechanics are the <a class="term" href="#g-same">same</a> across operators, 8 <a class="term" href="#g-similar">similar</a>, 9 <a class="term" href="#g-unique">unique</a>.</li><li>Everyone shares the core: a weighted odds table with independent opens, published odds, a sell-back into balance.</li><li>The case sites (Jemlit, Cases.gg, Misty) form one <a class="term" href="#g-family">family</a>: committed secret, player seed, verifier. Evo Verse, IcyBox, StockX and Courtyard have no proof.</li><li>Battles and the upgrader appear on Evo Verse, Jemlit and Cases.gg only.</li><li>The unique mechanics are where margin or honesty lives: Misty's credit-only payouts, free spins and frozen table; IcyBox's early retirement; StockX's tiers; Courtyard's price-from-contents; our market value.</li><li>Evo Verse has 8 of 24 mechanics: 5 shared, 3 similar, 0 unique. Its gap is the proof family.</li></ul></section>
+<section id="2-most-used-mechanics"><h2>2. Most used mechanics</h2><div class="table-wrap"><table><thead><tr><th><a class="term" href="#g-mechanic">Mechanic</a></th><th><a class="term" href="#g-family">Family</a></th><th>Has it</th><th>Variant</th><th>Total of 7</th><th>Spread</th></tr></thead><tbody><tr><td>Sell an item back for balance</td><td>Payout and money</td><td>5</td><td>2</td><td>7</td><td><a class="term" href="#g-same">same</a></td></tr><tr><td>Exact odds published per outcome</td><td>Fairness proof</td><td>4</td><td>3</td><td>7</td><td>same</td></tr><tr><td>Weighted odds table, independent opens</td><td>Draw model</td><td>4</td><td>2</td><td>6</td><td>same</td></tr><tr><td>Public page that recomputes an open</td><td>Fairness proof</td><td>2</td><td>3</td><td>5</td><td><a class="term" href="#g-similar">similar</a></td></tr><tr><td>Missions, streaks, free box, spend caps</td><td>Retention and marketing</td><td>1</td><td>4</td><td>5</td><td>similar</td></tr><tr><td>Money leaves only as shipped items</td><td>Payout and money</td><td>2</td><td>2</td><td>4</td><td>similar</td></tr><tr><td>Most opens pay site credit</td><td>Payout and money</td><td>1</td><td>3</td><td>4</td><td>similar</td></tr><tr><td>Secret committed before the open</td><td>Fairness proof</td><td>3</td><td>0</td><td>3</td><td>same</td></tr><tr><td>Player sets a seed</td><td>Fairness proof</td><td>3</td><td>0</td><td>3</td><td>same</td></tr><tr><td>Case battles</td><td>Side games</td><td>3</td><td>0</td><td>3</td><td>same</td></tr><tr><td>Upgrader or Deals</td><td>Side games</td><td>3</td><td>0</td><td>3</td><td>same</td></tr><tr><td>Fresh secret for every open</td><td>Fairness proof</td><td>1</td><td>2</td><td>3</td><td>similar</td></tr><tr><td>Collectible card packs</td><td>Side games</td><td>2</td><td>0</td><td>2</td><td>similar</td></tr><tr><td>Finite pool, drawn without replacement</td><td>Draw model</td><td>1</td><td>1</td><td>2</td><td>similar</td></tr><tr><td>Independent market value shown</td><td>Pricing and valuation</td><td>0</td><td>2</td><td>2</td><td>similar</td></tr><tr><td>Tier first, then an item inside the tier</td><td>Draw model</td><td>1</td><td>0</td><td>1</td><td><a class="term" href="#g-unique">unique</a></td></tr><tr><td>Operator may retire a finite box early</td><td>Draw model</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Odds table hashed and frozen onto the open</td><td>Fairness proof</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Bonus spins inside an open</td><td>Side games</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Crash game</td><td>Side games</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Mines game</td><td>Side games</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Borrowing against play</td><td>Retention and marketing</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Prize competitions with a free postal entry</td><td>Side games</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr><tr><td>Price derived from the contents</td><td>Pricing and valuation</td><td>1</td><td>0</td><td>1</td><td>unique</td></tr></tbody></table></div></section>
+<section id="3-same-similar-unique"><h2>3. Same, similar, unique</h2><h3 id="same-across-operators-three-or-more-have-it"><a class="term" href="#g-same">Same</a> across operators (three or more have it)</h3>
+<ul><li><strong>Sell an item back for balance.</strong> Convert a won item into balance instead of shipping it. Found at: Evo Verse, IcyBox, StockX (~), Courtyard, Jemlit, Cases.gg, Misty (~).</li><li><strong>Exact odds published per outcome.</strong> The player can see the chance of every row before paying. Found at: Evo Verse (~), IcyBox (~), StockX, Courtyard (~), Jemlit, Cases.gg, Misty.</li><li><strong>Weighted odds table, independent opens.</strong> Every open is its own roll against a fixed table; nothing is remembered between opens. Found at: Evo Verse, StockX (~), Courtyard (~), Jemlit, Cases.gg, Misty.</li><li><strong>Secret committed before the open.</strong> A server seed is chosen and its hash shown before payment; the seed is revealed after. Found at: Jemlit, Cases.gg, Misty.</li><li><strong>Player sets a seed.</strong> A word of the player's goes into the roll so the site cannot pick it alone. Found at: Jemlit, Cases.gg, Misty.</li><li><strong>Case battles.</strong> Several players open the same boxes; the highest total takes all. Found at: Evo Verse, Jemlit, Cases.gg.</li><li><strong>Upgrader or Deals.</strong> Stake money or an item for a chance at a better item. Found at: Evo Verse, Jemlit, Cases.gg.</li></ul>
+<h3 id="similar-two-or-more-with-variants"><a class="term" href="#g-similar">Similar</a> (two or more, with variants)</h3>
+<ul><li><strong>Public page that recomputes an open.</strong> Anyone can paste the seeds and get the same result. Found at: StockX (~), Courtyard (~), Jemlit, Cases.gg, Misty (~).</li><li><strong>Missions, streaks, free box, spend caps.</strong> Mechanics that bring the player back or slow them down. Found at: Evo Verse, IcyBox (~), Jemlit (~), Cases.gg (~), Misty (~).</li><li><strong>Money leaves only as shipped items.</strong> No cash withdrawal; balance turns into money only by shipping an item. Found at: Evo Verse, Jemlit (~), Cases.gg (~), Misty.</li><li><strong>Most opens pay site credit.</strong> Losing opens hand back credit that only buys more boxes. Found at: Evo Verse (~), Jemlit (~), Cases.gg (~), Misty.</li><li><strong>Fresh secret for every open.</strong> The seed changes every open, so a revealed seed never explains another open. Found at: Jemlit (~), Cases.gg (~), Misty.</li><li><strong>Collectible card packs.</strong> Boxes whose items are trading cards; the same draw as a box. Found at: Courtyard, Jemlit.</li><li><strong>Finite pool, drawn without replacement.</strong> A fixed stock of copies; each win removes one; the box can run out. Found at: IcyBox, StockX (~).</li><li><strong>Independent market value shown.</strong> A value next to the operator's own figure. Found at: StockX (~), Courtyard (~).</li></ul>
+<h3 id="unique-to-one-operator"><a class="term" href="#g-unique">Unique</a> to one operator</h3>
+<ul><li><strong>Tier first, then an item inside the tier.</strong> The roll picks a tier; the item inside comes from inventory. Found at: StockX.</li><li><strong>Operator may retire a finite box early.</strong> A pool box can be withdrawn before its top prize has been drawn. Found at: IcyBox.</li><li><strong>Odds table hashed and frozen onto the open.</strong> The check shows which table the roll was read against. Found at: Misty.</li><li><strong>Bonus spins inside an open.</strong> Some outcomes trigger extra rolls on a small credit table. Found at: Misty.</li><li><strong>Crash game.</strong> A multiplier climbs until it crashes; cash out before it does. Found at: Jemlit.</li><li><strong>Mines game.</strong> Reveal tiles on a grid, avoid the mines, cash out before you hit one. Found at: Jemlit.</li><li><strong>Borrowing against play.</strong> The site lends balance to keep a player playing. Found at: Jemlit.</li><li><strong>Prize competitions with a free postal entry.</strong> Numbered entries, a draw date, a free route at equal odds. Found at: Misty.</li><li><strong>Price derived from the contents.</strong> The price is computed from what is inside, not fixed first. Found at: Courtyard.</li></ul></section>
+<section id="4-the-matrix"><h2>4. The matrix</h2><div class="table-wrap"><table><thead><tr><th><a class="term" href="#g-mechanic">Mechanic</a></th><th>Evo Verse</th><th>IcyBox</th><th>StockX</th><th>Courtyard</th><th>Jemlit</th><th>Cases.gg</th><th>Misty</th><th>Glass Box</th><th>Adjacent formats</th></tr></thead><tbody><tr><td><strong>Draw model</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Weighted odds table, independent opens</td><td>✓</td><td>–</td><td>~</td><td>~</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>~</td></tr><tr><td>Finite pool, drawn without replacement</td><td>–</td><td>✓</td><td>~</td><td>–</td><td>–</td><td>–</td><td>–</td><td>~</td><td>✓</td></tr><tr><td>Tier first, then an item inside the tier</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>~</td></tr><tr><td>Operator may retire a finite box early</td><td>–</td><td>✓</td><td>?</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>~</td></tr><tr><td><strong>Fairness proof</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Exact odds published per outcome</td><td>~</td><td>~</td><td>✓</td><td>~</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>~</td></tr><tr><td>Secret committed before the open</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>–</td></tr><tr><td>Player sets a seed</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>–</td></tr><tr><td>Fresh secret for every open</td><td>–</td><td>–</td><td>–</td><td>–</td><td>~</td><td>~</td><td>✓</td><td>✓</td><td>–</td></tr><tr><td>Odds table hashed and frozen onto the open</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>–</td></tr><tr><td>Public page that recomputes an open</td><td>–</td><td>–</td><td>~</td><td>~</td><td>✓</td><td>✓</td><td>~</td><td>✓</td><td>–</td></tr><tr><td><strong>Payout and money</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Most opens pay site credit</td><td>~</td><td>–</td><td>–</td><td>–</td><td>~</td><td>~</td><td>✓</td><td>–</td><td>–</td></tr><tr><td>Sell an item back for balance</td><td>✓</td><td>✓</td><td>~</td><td>✓</td><td>✓</td><td>✓</td><td>~</td><td>✓</td><td>–</td></tr><tr><td>Money leaves only as shipped items</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>~</td><td>~</td><td>✓</td><td>–</td><td>✓</td></tr><tr><td><strong>Side games</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Bonus spins inside an open</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>–</td></tr><tr><td>Case battles</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td></tr><tr><td>Upgrader or Deals</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td></tr><tr><td>Crash game</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>?</td><td>–</td><td>–</td><td>–</td></tr><tr><td>Mines game</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>?</td><td>–</td><td>–</td><td>–</td></tr><tr><td>Collectible card packs</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>~</td></tr><tr><td>Prize competitions with a free postal entry</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>✓</td></tr><tr><td><strong>Retention and marketing</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Borrowing against play</td><td>–</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>?</td><td>–</td><td>–</td><td>–</td></tr><tr><td>Missions, streaks, free box, spend caps</td><td>✓</td><td>~</td><td>–</td><td>–</td><td>~</td><td>~</td><td>~</td><td>~</td><td>–</td></tr><tr><td><strong>Pricing and valuation</strong></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Price derived from the contents</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>~</td></tr><tr><td>Independent market value shown</td><td>–</td><td>–</td><td>~</td><td>~</td><td>–</td><td>–</td><td>–</td><td>✓</td><td>–</td></tr></tbody></table></div></section>
+<section id="5-source-by-source"><h2>5. Source by source</h2><h3 id="evo-verse">Evo Verse</h3>
+<p>The B2B platform from the demo: boxes, battles, deals, retention, sell-back and cart.</p>
+<ul><li>8 mechanics: 5 <a class="term" href="#g-same">same</a>, 3 <a class="term" href="#g-similar">similar</a>, 0 <a class="term" href="#g-unique">unique</a>.</li><li>Notes: Weighted odds table, independent opens: Operator sets a target payout; the software sets the weights. · Exact odds published per outcome: The operator decides; the demo showed per-item odds. · Most opens pay site credit: Sell-back lands in balance; opens pay items. · Sell an item back for balance: At displayed value, into balance. · Money leaves only as shipped items: Withdraw only through items. · Case battles: Normal, crazy, group, terminal, jackpot. · Upgrader or Deals: Deals: choose the chance, pay the price; capped at 80%. · Missions, streaks, free box, spend caps: Retention module: missions, free entry, spend cap.</li></ul>
+<h3 id="icybox">IcyBox</h3>
+<p>Luxury-only, finite drops, no fairness scheme, buyback on its own terms.</p>
+<ul><li>5 mechanics: 2 same, 2 similar, 1 unique.</li><li>Only here: Operator may retire a finite box early.</li><li>Notes: Finite pool, drawn without replacement: Limited-edition boxes: 'once they're gone, they're gone' (site); stock not published. · Operator may retire a finite box early: Allowed by the terms; the grail may never ship. · Exact odds published per outcome: Chance and value range per rarity band (six bands) before buying; no per-item odds, no hash. · Sell an item back for balance: Buyback set solely by IcyBox, formula undisclosed (reported about 90%); sold back automatically after the buyback period. · Missions, streaks, free box, spend caps: Referral earnings, leaderboard, collection, gifting, limited-time boxes (App Store notes, support index).</li></ul>
+<h3 id="stockx">StockX</h3>
+<p>Tiered boxes over a sneaker marketplace; items valued on its own market.</p>
+<ul><li>7 mechanics: 3 same, 3 similar, 1 unique.</li><li>Only here: Tier first, then an item inside the tier.</li><li>Notes: Weighted odds table, independent opens: Tier first, then an item inside the tier. · Finite pool, drawn without replacement: Finite editions exist alongside open ones. · Tier first, then an item inside the tier: Published tier odds; floor of 1× price. · Exact odds published per outcome: Tier odds published. · Public page that recomputes an open: Public drop log, no recomputation. · Sell an item back for balance: Resell on the marketplace. · Independent market value shown: Its own marketplace prices.</li></ul>
+<h3 id="courtyard">Courtyard</h3>
+<p>Collectible packs priced from their contents; sell back to the house.</p>
+<ul><li>7 mechanics: 3 same, 3 similar, 1 unique.</li><li>Only here: Price derived from the contents.</li><li>Notes: Weighted odds table, independent opens: A pack of items; odds follow the pack's contents. · Exact odds published per outcome: Contents listed; the pack is the odds. · Public page that recomputes an open: Public pack log. · Sell an item back for balance: Sell to Courtyard. · Collectible card packs: Collectible packs are the product. · Price derived from the contents: Pack price follows the market value of the cards. · Independent market value shown: Its own sales data.</li></ul>
+<h3 id="jemlit">Jemlit</h3>
+<p>Case site: published odds, commit-reveal, upgrader, battles.</p>
+<ul><li>16 mechanics: 7 same, 6 similar, 3 unique.</li><li>Only here: Crash game; Mines game; Borrowing against play.</li><li>Notes: Weighted odds table, independent opens: Published per-item chances. · Exact odds published per outcome: Per-item chances in the page JSON. · Secret committed before the open: HMAC scheme, published example. · Fresh secret for every open: Rotates on request or retirement. · Most opens pay site credit: Small credit outcomes in the table. · Upgrader or Deals: Upgrader. · Crash game: House edge 8% in the page settings; max multiplier 1,000,000; max win 250,000. · Mines game: Grid, mine count and wager chosen by the player; the API also lets a win be taken as an item. · Collectible card packs: 15 collectible boxes (Pokémon, One Piece, Yu-Gi-Oh) in the collectibles listing, same mechanism as a box. · Borrowing against play: borrow_enabled with a 90% cap in the page settings; terms not captured. · Missions, streaks, free box, spend caps: Rewards and daily cases.</li></ul>
+<h3 id="casesgg">Cases.gg</h3>
+<p>Case site: published odds, commit-reveal with rotation, battles, upgrader, coins.</p>
+<ul><li>12 mechanics: 7 same, 5 similar, 0 unique.</li><li>Notes: Weighted odds table, independent opens: Published per-item chances. · Exact odds published per outcome: Per-item chances. · Secret committed before the open: Rotation every 1,000 opens. · Fresh secret for every open: Every 1,000 opens. · Most opens pay site credit: Coins as outcomes. · Money leaves only as shipped items: Cash withdrawal exists. · Case battles: Plus coinflip and break modes. · Upgrader or Deals: Upgrader with a disclosed 10% edge. · Crash game: Not captured. · Mines game: Not captured. · Missions, streaks, free box, spend caps: Rewards and rakeback.</li></ul>
+<h3 id="misty">Misty</h3>
+<p>Luxury boxes paying site credit; secret per open; competitions with free postal entry.</p>
+<ul><li>13 mechanics: 5 same, 5 similar, 3 unique.</li><li>Only here: Odds table hashed and frozen onto the open; Bonus spins inside an open; Prize competitions with a free postal entry.</li><li>Notes: Weighted odds table, independent opens: Exact weights in the page data, sum 100. · Exact odds published per outcome: Exact weights, sum 100. · Secret committed before the open: Per open. · Odds table hashed and frozen onto the open: 'The odds table is frozen onto your open.' · Public page that recomputes an open: Competition verifier public; box verifier not captured. · Most opens pay site credit: About 98% of opens pay Mistees. · Sell an item back for balance: Trade in for Mistees. · Money leaves only as shipped items: Mistees never become money. · Bonus spins inside an open: Free spin + 1, 2 free spins + 2. · Prize competitions with a free postal entry: UK prize-competition format. · Missions, streaks, free box, spend caps: Free welcome box.</li></ul>
+<h3 id="glass-box-ours">Glass Box (ours)</h3>
+<p>Our design: full manifest hash, market value shown, cash at realized value.</p>
+<ul><li>12 mechanics: 5 same, 5 similar, 2 unique.</li><li>Only here: Odds table hashed and frozen onto the open; Price derived from the contents.</li><li>Notes: Weighted odds table, independent opens: Same model, table committed in full. · Finite pool, drawn without replacement: Optional kuji-style finite drops. · Exact odds published per outcome: Full manifest. · Secret committed before the open: Per open, plus a beacon. · Odds table hashed and frozen onto the open: Manifest hash, public log of tables. · Sell an item back for balance: Cash at realized value. · Missions, streaks, free box, spend caps: Spend caps and cooling-off. · Price derived from the contents: Price from expected value, shown. · Independent market value shown: WatchCharts, eBay sold.</li></ul>
+<h3 id="adjacent-formats">Adjacent formats</h3>
+<p>Kuji, fukubukuro, Pop Mart blind boxes, gacha, Omaze-style draws.</p>
+<ul><li>9 mechanics: 2 same, 3 similar, 4 unique.</li><li>Only here: Prize competitions with a free postal entry.</li><li>Notes: Weighted odds table, independent opens: Gacha is weighted; kuji and fukubukuro are pools. · Finite pool, drawn without replacement: Kuji, fukubukuro: physical stock. · Tier first, then an item inside the tier: Kuji prize grades A to E. · Operator may retire a finite box early: Kuji sells out physically; no early retirement. · Exact odds published per outcome: Kuji prints counts per grade; Pop Mart prints secret odds. · Money leaves only as shipped items: Physical goods. · Collectible card packs: Physical card packs and kuji. · Prize competitions with a free postal entry: Omaze-style draws. · Price derived from the contents: Kuji is priced per draw against a known stock.</li></ul></section>
+<section id="6-takeaways-for-our-build"><h2>6. Takeaways for our build</h2><ul><li>Table stakes: weighted table, published odds, sell-back.</li><li>Proof is the dividing line: three operators commit a secret, four do not. Per-open commitment with a frozen table (Misty, Glass Box) is the strongest version and costs nothing to run.</li><li>Credit-only payouts are Misty's margin engine and <a class="term" href="#g-unique">unique</a>. Copy the mechanism only with a published rate.</li><li>Battles and upgrader are expected on a case site and absent on luxury boxes; Evo Verse already ships both.</li><li>Nobody shows an independent market value except our design: the cheapest visible difference.</li><li>Price from contents (Courtyard, Glass Box) is rare and honest; price first is the industry habit.</li></ul></section>
+<section id="glossary" class="gloss"><h2>Glossary</h2><dl><dt id="g-mechanic">Mechanic</dt><dd>One rule of the product that can be present or absent on its own: a draw model, a proof step, a payout rule, a side game.</dd><dt id="g-same">Same</dt><dd>Three or more operators have the mechanic as described.</dd><dt id="g-similar">Similar</dt><dd>Two or more operators have it or a close relative.</dd><dt id="g-unique">Unique</dt><dd>Exactly one operator has it.</dd><dt id="g-family">Family</dt><dd>A group of mechanics with the same purpose: draw model, fairness proof, payout and money, side games, retention and marketing, pricing and valuation.</dd></dl></section>
+<p class="gen">Generated from 07-feature-comparison.md by tools/build_page.py. Edit the Markdown, then rebuild.</p>
+</main>
+</div>
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.rail a[href^="#"]'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var map = {}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) { if (current) current.classList.remove('active'); current = map[e.target.id]; if (current) current.classList.add('active'); } });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
+})();
+(function(){
+  var gloss = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.gloss dt[id]'), function(dt){ var dd = dt.nextElementSibling; gloss[dt.id] = { title: dt.textContent, body: dd ? dd.innerHTML : '' }; });
+  if (!Object.keys(gloss).length) return;
+  var tip = document.createElement('div'); tip.className = 'tip'; tip.setAttribute('role', 'tooltip'); tip.id = 'term-tip'; tip.hidden = true; document.body.appendChild(tip);
+  var open = null, hideTimer = null;
+  function place(el){
+    var r = el.getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(16, r.left), vw - tw - 16) + sx, top = r.bottom + 8 + sy;
+    if (r.bottom + 8 + th > vh && r.top - 8 - th > 0) top = r.top - 8 - th + sy;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function show(el){
+    var id = (el.getAttribute('href') || '').slice(1), g = gloss[id]; if (!g) return;
+    clearTimeout(hideTimer);
+    tip.innerHTML = '<b class="t"></b><p></p><a class="more" href="#' + id + '">See it in the glossary</a>';
+    tip.querySelector('b.t').textContent = g.title; tip.querySelector('p').innerHTML = g.body;
+    tip.hidden = false; open = el; el.setAttribute('aria-describedby', 'term-tip'); place(el);
+  }
+  function hide(){ if (open) open.removeAttribute('aria-describedby'); tip.hidden = true; open = null; }
+  function hideSoon(){ clearTimeout(hideTimer); hideTimer = setTimeout(hide, 180); }
+  Array.prototype.forEach.call(document.querySelectorAll('a.term'), function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('mouseleave', hideSoon);
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('blur', hideSoon);
+    el.addEventListener('click', function(ev){ ev.preventDefault(); if (open === el && !tip.hidden) hide(); else show(el); });
+  });
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideSoon);
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') hide(); });
+  document.addEventListener('click', function(ev){ if (tip.hidden) return; if (tip.contains(ev.target) || (open && open.contains(ev.target))) return; hide(); });
+  window.addEventListener('resize', function(){ if (open && !tip.hidden) place(open); });
+})();
+</script>
+
+</body>
+</html>

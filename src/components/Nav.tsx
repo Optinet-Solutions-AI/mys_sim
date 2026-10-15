@@ -21,7 +21,7 @@ const NAV_ICON: Record<string, string> = {
 const ORDER = ["misty", "jemlit", "icybox", "vendor"];
 const rank = (id: string) => (ORDER.includes(id) ? ORDER.indexOf(id) : ORDER.length);
 
-const groups: { label: string; items: { href: string; label: string; icon: string }[] }[] = [
+const groups: { label: string; items: { href: string; label: string; icon: string; external?: boolean }[] }[] = [
   {
     label: "Hub",
     items: [
@@ -50,6 +50,7 @@ const groups: { label: string; items: { href: string; label: string; icon: strin
       { href: "/docs/jemlit", label: "Jemlit, explained", icon: "ph:book-open-text" },
       { href: "/docs/icybox", label: "IcyBox, explained", icon: "ph:book-open-text" },
       { href: "/docs", label: "Docs", icon: "ph:book-open-text" },
+      { href: "/research/index.html", label: "Research documents", icon: "ph:folders", external: true },
     ],
   },
 ];
@@ -82,10 +83,17 @@ export function Nav() {
           const active = isActive(it.href);
           return (
             <li key={it.href}>
-              <Link href={it.href} className={`flex min-h-10 items-center gap-2 rounded-lg px-2 py-1.5 text-sm no-underline ${active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-paper"}`}>
-                <Icon name={it.icon} size={18} className={active ? "text-accent-ink" : "text-ink-3"} />
-                {it.label}
-              </Link>
+              {it.external ? (
+                <a href={it.href} className={`flex min-h-10 items-center gap-2 rounded-lg px-2 py-1.5 text-sm no-underline ${active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-paper"}`}>
+                  <Icon name={it.icon} size={18} className={active ? "text-accent-ink" : "text-ink-3"} />
+                  {it.label}
+                </a>
+              ) : (
+                <Link href={it.href} className={`flex min-h-10 items-center gap-2 rounded-lg px-2 py-1.5 text-sm no-underline ${active ? "bg-accent-soft font-medium text-accent-ink" : "text-ink-2 hover:bg-paper"}`}>
+                  <Icon name={it.icon} size={18} className={active ? "text-accent-ink" : "text-ink-3"} />
+                  {it.label}
+                </Link>
+              )}
             </li>
           );
         })}
