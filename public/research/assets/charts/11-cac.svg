@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" width="760" height="260" role="img" aria-label="Cost to acquire one paying customer: welcome box subsidy against online shop and online casino benchmarks" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12">
+<line x1="290.0" x2="290.0" y1="24.0" y2="224.0" class="grid"/>
+<text x="290.0" y="240.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$0</text>
+<line x1="373.3" x2="373.3" y1="24.0" y2="224.0" class="grid"/>
+<text x="373.3" y="240.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$100</text>
+<line x1="456.7" x2="456.7" y1="24.0" y2="224.0" class="grid"/>
+<text x="456.7" y="240.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$200</text>
+<line x1="540.0" x2="540.0" y1="24.0" y2="224.0" class="grid"/>
+<text x="540.0" y="240.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$300</text>
+<line x1="623.3" x2="623.3" y1="24.0" y2="224.0" class="grid"/>
+<text x="623.3" y="240.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$400</text>
+<line x1="290.0" x2="290.0" y1="24.0" y2="224.0" class="axis"/>
+<text x="280.0" y="61.3" class="ink2" text-anchor="end" font-size="11" font-weight="normal">Welcome box sold at cost (subsidy per first open)</text>
+<path class="s1" d="M290.0 47.3 L295.2 47.3 Q299.2 47.3 299.2 51.3 L299.2 63.3 Q299.2 67.3 295.2 67.3 L290.0 67.3 Z"/>
+<line x1="295.8" x2="302.5" y1="57.3" y2="57.3" class="whisker"/>
+<line x1="295.8" x2="295.8" y1="51.3" y2="63.3" class="whisker"/>
+<line x1="302.5" x2="302.5" y1="51.3" y2="63.3" class="whisker"/>
+<text x="310.5" y="61.3" class="ink" text-anchor="start" font-size="11" font-weight="600">$7 to $15</text>
+<text x="280.0" y="128.0" class="ink2" text-anchor="end" font-size="11" font-weight="normal">Online shop, paid acquisition per customer</text>
+<path class="s1" d="M290.0 114.0 L349.3 114.0 Q353.3 114.0 353.3 118.0 L353.3 130.0 Q353.3 134.0 349.3 134.0 L290.0 134.0 Z"/>
+<line x1="346.7" x2="360.0" y1="124.0" y2="124.0" class="whisker"/>
+<line x1="346.7" x2="346.7" y1="118.0" y2="130.0" class="whisker"/>
+<line x1="360.0" x2="360.0" y1="118.0" y2="130.0" class="whisker"/>
+<text x="368.0" y="128.0" class="ink" text-anchor="start" font-size="11" font-weight="600">$68 to $84</text>
+<text x="280.0" y="194.7" class="ink2" text-anchor="end" font-size="11" font-weight="normal">Online casino, cost per first depositor, US</text>
+<path class="s1" d="M290.0 180.7 L536.0 180.7 Q540.0 180.7 540.0 184.7 L540.0 196.7 Q540.0 200.7 536.0 200.7 L290.0 200.7 Z"/>
+<line x1="415.0" x2="665.0" y1="190.7" y2="190.7" class="whisker"/>
+<line x1="415.0" x2="415.0" y1="184.7" y2="196.7" class="whisker"/>
+<line x1="665.0" x2="665.0" y1="184.7" y2="196.7" class="whisker"/>
+<text x="673.0" y="194.7" class="ink" text-anchor="start" font-size="11" font-weight="600">$150 to $450</text>
+<text x="290.0" y="254.0" class="muted" text-anchor="start" font-size="10" font-weight="normal">bar: midpoint; whisker: the range reported in 2025 and 2026 benchmarks (sources in section 10)</text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" width="760" height="230" role="img" aria-label="Where the money of a 100 dollar box goes under three payout settings" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12">
+<text x="226.0" y="60.7" class="ink2" text-anchor="end" font-size="11" font-weight="normal">85% return, cash buyback at 90%</text>
+<rect x="236.0" y="46.7" width="306.0" height="20" class="s2"/>
+<text x="389.0" y="60.7" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$61</text>
+<rect x="544.0" y="46.7" width="70.5" height="20" class="s3"/>
+<text x="579.2" y="60.7" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$14</text>
+<rect x="616.5" y="46.7" width="32.0" height="20" class="s4"/>
+<path class="s1" d="M650.5 46.7 L732.0 46.7 Q736.0 46.7 736.0 50.7 L736.0 62.7 Q736.0 66.7 732.0 66.7 L650.5 66.7 Z"/>
+<text x="693.2" y="60.7" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$18</text>
+<text x="226.0" y="114.0" class="ink2" text-anchor="end" font-size="11" font-weight="normal">95% return, cash buyback (welcome box)</text>
+<rect x="236.0" y="100.0" width="342.0" height="20" class="s2"/>
+<text x="407.0" y="114.0" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$68</text>
+<rect x="580.0" y="100.0" width="79.0" height="20" class="s3"/>
+<text x="619.5" y="114.0" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$16</text>
+<rect x="661.0" y="100.0" width="36.0" height="20" class="s4"/>
+<text x="679.0" y="114.0" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$8</text>
+<path class="s1" d="M699.0 100.0 L732.0 100.0 Q736.0 100.0 736.0 104.0 L736.0 116.0 Q736.0 120.0 732.0 120.0 L699.0 120.0 Z"/>
+<text x="717.5" y="114.0" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$8</text>
+<text x="226.0" y="167.3" class="ink2" text-anchor="end" font-size="11" font-weight="normal">85% return, credit-only payout</text>
+<rect x="236.0" y="153.3" width="187.0" height="20" class="s2"/>
+<text x="329.5" y="167.3" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$37</text>
+<rect x="425.0" y="153.3" width="70.5" height="20" class="s3"/>
+<text x="460.2" y="167.3" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$14</text>
+<rect x="497.5" y="153.3" width="151.0" height="20" class="s4"/>
+<text x="573.0" y="167.3" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$31</text>
+<path class="s1" d="M650.5 153.3 L732.0 153.3 Q736.0 153.3 736.0 157.3 L736.0 169.3 Q736.0 173.3 732.0 173.3 L650.5 173.3 Z"/>
+<text x="693.2" y="167.3" class="onfill" text-anchor="middle" font-size="11" font-weight="600">$18</text>
+<text x="236.0" y="206.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$0</text>
+<text x="736.0" y="206.0" class="muted" text-anchor="middle" font-size="11" font-weight="normal">$100</text>
+<rect x="236.0" y="213.0" width="10" height="10" rx="2" class="s2"/>
+<text x="251.0" y="222.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">leaves to players</text>
+<rect x="388.0" y="213.0" width="10" height="10" rx="2" class="s3"/>
+<text x="403.0" y="222.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">kept items at cost</text>
+<rect x="547.0" y="213.0" width="10" height="10" rx="2" class="s4"/>
+<text x="562.0" y="222.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">stays because of the payout rule</text>
+<rect x="804.0" y="213.0" width="10" height="10" rx="2" class="s1"/>
+<text x="819.0" y="222.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">house margin before fees</text>
+</svg>

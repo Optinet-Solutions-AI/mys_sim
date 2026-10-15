@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 250" width="760" height="250" role="img" aria-label="Owned stock against consignment: cash before the first sale, cost per 100,000 dollars sold, stock risk" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="12">
+<path class="s1" d="M139.3 190.0 L139.3 64.0 Q139.3 60.0 143.3 60.0 L159.3 60.0 Q163.3 60.0 163.3 64.0 L163.3 190.0 Z"/>
+<text x="151.3" y="54.0" class="ink" text-anchor="middle" font-size="11" font-weight="600">$75k</text>
+<text x="183.3" y="184.0" class="ink" text-anchor="middle" font-size="11" font-weight="600">$0</text>
+<text x="169.3" y="208.0" class="ink2" text-anchor="middle" font-size="11" font-weight="normal">Cash tied up before the first sale</text>
+<path class="s1" d="M366.0 190.0 L366.0 64.0 Q366.0 60.0 370.0 60.0 L386.0 60.0 Q390.0 60.0 390.0 64.0 L390.0 190.0 Z"/>
+<text x="378.0" y="54.0" class="ink" text-anchor="middle" font-size="11" font-weight="600">$75k</text>
+<path class="s3" d="M398.0 190.0 L398.0 159.3 Q398.0 155.3 402.0 155.3 L418.0 155.3 Q422.0 155.3 422.0 159.3 L422.0 190.0 Z"/>
+<text x="410.0" y="149.3" class="ink" text-anchor="middle" font-size="11" font-weight="600">$20k</text>
+<text x="396.0" y="208.0" class="ink2" text-anchor="middle" font-size="11" font-weight="normal">Cost per $100,000 sold, paid to the supplier</text>
+<path class="s1" d="M592.7 190.0 L592.7 64.0 Q592.7 60.0 596.7 60.0 L612.7 60.0 Q616.7 60.0 616.7 64.0 L616.7 190.0 Z"/>
+<text x="604.7" y="54.0" class="ink" text-anchor="middle" font-size="11" font-weight="600">6</text>
+<text x="636.7" y="184.0" class="ink" text-anchor="middle" font-size="11" font-weight="600">0</text>
+<text x="622.7" y="208.0" class="ink2" text-anchor="middle" font-size="11" font-weight="normal">Months of stock risk carried by GrailNoir</text>
+<line x1="56.0" x2="736.0" y1="190.0" y2="190.0" class="axis"/>
+<rect x="56.0" y="17.0" width="10" height="10" rx="2" class="s1"/>
+<text x="71.0" y="26.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">owned stock (buy at 65 to 85% of market)</text>
+<rect x="369.0" y="17.0" width="10" height="10" rx="2" class="s3"/>
+<text x="384.0" y="26.0" class="ink2" text-anchor="start" font-size="11" font-weight="normal">consignment (pay 15 to 25% at sale)</text>
+<text x="56.0" y="240.0" class="muted" text-anchor="start" font-size="10" font-weight="normal">owned: stock bought at 75% of market; consignment: 20% commission paid only when an item sells; risk months: time stock sits before it sells</text>
+</svg>
