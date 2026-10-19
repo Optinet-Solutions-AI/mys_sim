@@ -1,6 +1,6 @@
 # Misty-style mystery box: backend implementation kit
 
-Version 1.1, 14 October 2026. For the developers of the main site (separate repo, separate front end).
+Version 1.2, 19 October 2026 (1.2 adds battles; 1.1 answered the front end). For the developers of the main site (separate repo, separate front end).
 This kit is the backend half of the Misty mechanism as copied in the research simulator, packaged so it can be
 dropped into a Node/TypeScript service. Everything here is deterministic and covered by test vectors.
 
@@ -59,6 +59,7 @@ but no carrier integration. Hooks are marked.
 | `openapi.yaml` | The HTTP API: player endpoints, public verify, admin (back office), errors. |
 | `FRONTEND_PROMPT.md` | A ready prompt to paste into a Claude session in the front-end repo: mechanic, API order, hard rules, screens, copy rules, questions. |
 | `test-vectors.json` | Known inputs and the exact outputs your implementation must reproduce, in engine and API vocabulary, with the exact strings that were hashed. |
+| `BATTLES.md`, `battleKit.ts`, `battles-reference.ts`, `schema-battles.sql`, `test-vectors-battles.json`, `BATTLES_PROMPT.md` | Battles: rule book, pure resolver, server flow with the state machine, tables, vectors, and the prompt for the main repository. |
 | `misty-boxes-2026-10-12.json` | The raw capture the generated data came from, with the page strings. |
 
 Dependencies: `@noble/hashes` (^2.4). Node 20+. Nothing else.
@@ -326,3 +327,15 @@ Still open for the main site:
 - Whether to publish the table hash in the box page before payment (recommended: yes).
 - Shipping: carrier, fee policy, address validation, insurance. The endpoint takes the request; fulfilment is yours.
 - Whether the Analysis section (the box's own maths) is shown to players.
+
+## 13. Battles (1.2)
+
+Battles run on the same engine: one committed server seed per battle, a client seed per seat, every pull a normal
+open with a nonce fixed by its position (`round × seats + seat + 1`), one extra roll for ties, jackpot and coinflip.
+The rule book is `BATTLES.md`; the state machine (`open → full → in_progress → settling → finished`, plus
+`cancelled` and `expired`) is enforced with a status-and-version guard on every transition; the reference flow is
+`battles-reference.ts`; the tables are `schema-battles.sql`; the API is under `/v1/battles` in `openapi.yaml`.
+Configuration (modes, seats, rounds, eligible boxes, fee, bots, timers) lives in the admin panel; players only create,
+join, watch, ask bots to join when the admin allows it, and verify. Sponsored battles (the house pays the entries),
+game history and the GGR-per-mode report are in the rule book too. Reproduce `test-vectors-battles.json` before
+anything else.

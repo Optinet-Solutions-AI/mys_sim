@@ -6,6 +6,7 @@ import { Badge, Card, Td, Th } from "@/components/ui";
 import { DevSandbox } from "@/components/DevSandbox";
 import { CopyBlock } from "@/components/CopyBlock";
 import { FRONTEND_PROMPT } from "@/lib/frontendPrompt";
+import { BATTLES_PROMPT } from "@/lib/battlesPrompt";
 
 export const metadata = { title: "Misty for developers · Simulator" };
 
@@ -47,6 +48,7 @@ const TOC = [
   ["decisions", "11. Decisions for the main site"],
   ["frontend-prompt", "12. Prompt for the front end"],
   ["changes", "13. What changed in 1.1"],
+  ["battles", "14. Battles: backend and prompt"],
   ["sandbox", "API sandbox"],
 ] as const;
 
@@ -437,7 +439,7 @@ export default function MistyDevPage() {
           <li>Whether to show the table hash on the box page before payment (recommended: yes).</li>
         </ul>
         <div className="pt-1">
-          <Badge>Kit v1.1 · 14 October 2026</Badge>
+          <Badge>Kit v1.2 · 19 October 2026</Badge>
         </div>
       </section>
 
@@ -487,6 +489,50 @@ export default function MistyDevPage() {
           </table></div>
         </Card>
         <P>Still open for the main site: segments (if yes, the publication log is mandatory), spend limits and a paid-in / got-back counter, publishing the table hash before payment, shipping fees and carrier, and whether the Analysis section is shown to players.</P>
+      </section>
+
+      <section className="space-y-3">
+        <H2 id="battles">14. Battles: backend and prompt</H2>
+        <P>Battles run on the same committed-seed engine. One server seed per battle, a client seed per seat, every pull a normal open with a nonce fixed by its position, one extra roll for ties, jackpot and coinflip. Configuration lives in the admin panel; players only create, join, watch and verify. The status of every battle is in the database and moves through a guarded state machine.</P>
+        <Card>
+          <div className="tbl"><table className="w-full text-xs">
+            <thead>
+              <tr>
+                <Th>Status</Th>
+                <Th>Meaning</Th>
+                <Th>Allowed next</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["open", "created, seats free, credit held for taken seats", "full, cancelled, expired"],
+                ["full", "every seat taken, countdown running on the server", "in_progress, open (a seat left), cancelled"],
+                ["in_progress", "the server resolves every round from the committed inputs and writes the pulls", "settling"],
+                ["settling", "awards and ledger entries being committed", "finished"],
+                ["finished", "settled, seed revealed, verifiable", "none"],
+                ["cancelled", "creator or admin cancelled before the start, holds refunded", "none"],
+                ["expired", "never filled in the admin's window, holds refunded", "none"],
+              ].map(([a, b, c]) => (
+                <tr key={a} className="border-t border-line align-top">
+                  <Td mono>{a}</Td>
+                  <Td>{b}</Td>
+                  <Td>{c}</Td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </Card>
+        <ul className="max-w-[78ch] list-disc space-y-1 pl-5 text-sm leading-6 text-ink-2">
+          <li>Every transition is one UPDATE guarded by the current status and a version counter. The resolution is deterministic, so a crash between in_progress and finished is resumed, never re-rolled.</li>
+          <li>Join takes the seat and the credit hold in one transaction; one seat per player; idempotency keys on create, join, leave, cancel.</li>
+          <li>Start is a server timer, not an endpoint. Expiry too. Clients display what the server says.</li>
+          <li>Bots are off by default. If on, the creator of a waiting battle can press Ask bots to join; the server fills the free seats with bots from the admin&apos;s list (a name and a picture, nothing else), same odds, same seed, winnings to the house. Labelled everywhere.</li>
+          <li>Sponsored battles: the admin creates them, the house pays the entries, players join free, the winner is paid as usual.</li>
+          <li>Screens say Waiting, Ongoing and Settled; the codes stay in the API. Game history and the GGR-per-mode report read two views in the schema.</li>
+          <li>Files in the kit: BATTLES.md (rule book), battleKit.ts (pure resolver), battles-reference.ts (server flow), schema-battles.sql, test-vectors-battles.json, and the API under /v1/battles in openapi.yaml.</li>
+        </ul>
+        <P>The prompt below is for the Claude session in the main repository. It carries the mechanic, the state machine, the admin settings, the player screens, the security rules and the tests.</P>
+        <CopyBlock text={BATTLES_PROMPT} filename="battles-prompt.txt" />
       </section>
 
       <section className="space-y-3">

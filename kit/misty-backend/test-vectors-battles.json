@@ -1,0 +1,1230 @@
+{
+  "kit": "misty-backend 1.2, battles",
+  "generated": "2026-10-19",
+  "recipe": {
+    "serverHash": "sha256(serverSeedHex), shown when the battle is created",
+    "pullNonce": "round × seats + seat + 1 (round and seat from 0); pull order round-major, seat-minor",
+    "pullKey": "DRAW-<box slug>-<serverSeed>-<seat clientSeed>-<nonce>; digest = HMAC-SHA256(key, ''); roll = first 13 hex / 2^52; band lookup on the round's frozen table",
+    "extraNonce": "rounds × seats + 1",
+    "extraKey": "DRAW-battle-<tiebreak|jackpot|coinflip>-<serverSeed>-<all seat clientSeeds joined by |, seat order>-<extraNonce>",
+    "tieBreak": "winner = tied[floor(roll × tied.length)] among the tied seats in seat order",
+    "jackpot": "position = roll × sum(totals); first seat whose cumulative total exceeds it; uniform when every total is 0",
+    "coinflip": "winner = floor(roll × seats); pot = entries × seats × (1 − edge)",
+    "values": "item = valueUsd × 100 cents; credit or bonus row = credits × 100 cents (creditFaceCents); free spins are not played in battles",
+    "group": "pot ÷ seats, odd cents to seat 0",
+    "break": "each seat keeps its own total"
+  },
+  "serverSeed": "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+  "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+  "tables": {
+    "timepiece-suite": {
+      "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+      "priceCents": 1000,
+      "entries": [
+        {
+          "id": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+          "label": "2 Mistees",
+          "percent": 30.83042011764706
+        },
+        {
+          "id": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+          "label": "3 Mistees",
+          "percent": 20.553613411764704
+        },
+        {
+          "id": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+          "label": "1 Mistees",
+          "percent": 18.498252070588237
+        },
+        {
+          "id": "d2892691-b234-45d0-a903-19e05e245cb4",
+          "label": "Free Spin + 1 Mistees",
+          "percent": 9
+        },
+        {
+          "id": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+          "label": "4 Mistees",
+          "percent": 8.221445364705882
+        },
+        {
+          "id": "fb06b996-e027-4bbd-9a88-95c3a986a3d3",
+          "label": "5 Mistees",
+          "percent": 6.166084023529412
+        },
+        {
+          "id": "62ed1e2b-7bd7-4427-bdb9-f6e2b1b6c59e",
+          "label": "10 Mistees",
+          "percent": 2.569201676470588
+        },
+        {
+          "id": "09e14bce-7eee-451f-8065-d3dca88faafd",
+          "label": "2 Free Spins + 2 Mistees",
+          "percent": 2
+        },
+        {
+          "id": "72801ec5-767f-48b0-84a4-9a439d5290ff",
+          "label": "Chanel Rouge Coco lip colour, 434 Mademoiselle",
+          "percent": 0.579465
+        },
+        {
+          "id": "034ef938-596c-4e68-b6af-ddcb0acf279c",
+          "label": "Ralph Lauren Romance eau de parfum, 100 ml",
+          "percent": 0.54776
+        },
+        {
+          "id": "916be1e0-fa08-40c8-aa55-bb39539320e8",
+          "label": "30 Mistees",
+          "percent": 0.5138403352941177
+        },
+        {
+          "id": "32d8b50b-74ff-4b21-9201-ee49c39ec0fa",
+          "label": "Tiffany & Co. Rose Gold eau de parfum, 75 ml",
+          "percent": 0.22833
+        },
+        {
+          "id": "f92b5056-8cd3-4a7d-856b-c1fd086a2821",
+          "label": "Louis Vuitton x Murakami Spell on You Cherry",
+          "percent": 0.110719
+        },
+        {
+          "id": "e8def10e-cdf7-49db-b431-530568197162",
+          "label": "Louis Vuitton x Murakami Spell on You Cherry Blossom",
+          "percent": 0.108225
+        },
+        {
+          "id": "e7013300-99ea-465f-8658-32aae28e0e1c",
+          "label": "Louis Vuitton x Murakami Denim Cerise shawl",
+          "percent": 0.053229
+        },
+        {
+          "id": "81034127-be39-4bfe-b791-e11dd8cdc676",
+          "label": "Louis Vuitton x Murakami Sunset Cherry bag",
+          "percent": 0.015365
+        },
+        {
+          "id": "dff0b77f-a875-439a-9f70-30d66bd01cca",
+          "label": "Rolex Lady-Datejust 28 mm, pink dial, Jubilee bracelet, ref. 279174",
+          "percent": 0.00405
+        }
+      ]
+    },
+    "handbag-suite": {
+      "tableHash": "ecd72a40ade28916d278d257be69ee195bfb81d06ac37ce4b73af0cff8df4372",
+      "priceCents": 1000,
+      "entries": [
+        {
+          "id": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+          "label": "1 Mistees",
+          "percent": 31.228879411764705
+        },
+        {
+          "id": "56f2f9b1-ad79-4382-8aa3-92c9d638ac31",
+          "label": "1.60 Mistees",
+          "percent": 20.81925294117647
+        },
+        {
+          "id": "96a0345f-36e2-4a13-b0b4-5cc0149805bf",
+          "label": "0.50 Mistees",
+          "percent": 18.737327647058823
+        },
+        {
+          "id": "a6aae015-28ff-4067-b630-e4ebfebcfd5b",
+          "label": "Free Spin + 0.60 Mistees",
+          "percent": 9
+        },
+        {
+          "id": "5b6e47e2-b0dd-4a03-b317-34327a00f287",
+          "label": "2 Mistees",
+          "percent": 8.327701176470589
+        },
+        {
+          "id": "85789254-5bcd-4544-95ba-e577026de2f3",
+          "label": "2.40 Mistees",
+          "percent": 6.245775882352941
+        },
+        {
+          "id": "97aeae53-62a6-4a10-9d3b-231e838eb115",
+          "label": "5 Mistees",
+          "percent": 2.6024066176470586
+        },
+        {
+          "id": "41acf276-feff-4ffe-9d8f-e41f8a169c5d",
+          "label": "2 Free Spins + 1 Mistees",
+          "percent": 2
+        },
+        {
+          "id": "604ea793-0385-4af0-baa7-0044216d4c0e",
+          "label": "15 Mistees",
+          "percent": 0.5204813235294118
+        },
+        {
+          "id": "e4ce15c7-08b3-43ae-892b-cefccc08d010",
+          "label": "Pop Mart Labubu Tasty Macarons bag charm, Lychee Berry",
+          "percent": 0.471297
+        },
+        {
+          "id": "78ac780d-1052-48ea-a118-534c981d6b7f",
+          "label": "Off-White Jitney Micro bag",
+          "percent": 0.029647
+        },
+        {
+          "id": "0ee3ad95-685c-424e-a562-4492d2fb33a8",
+          "label": "Louis Vuitton x Murakami Sunset Cherry bag",
+          "percent": 0.015365
+        },
+        {
+          "id": "5d1ad157-3452-4531-a0d9-ee27ac27e553",
+          "label": "Chanel Classic Flap, medium, black chevron lambskin, gold hardware",
+          "percent": 0.0012
+        },
+        {
+          "id": "a1659cbd-ff48-4ccf-b3dd-78dbdf984c00",
+          "label": "Hermès Kelly 28, Gold, gold hardware",
+          "percent": 0.000666
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "normal, 2 seats, 3 rounds",
+      "mode": "normal",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        },
+        {
+          "slug": "handbag-suite",
+          "tableHash": "ecd72a40ade28916d278d257be69ee195bfb81d06ac37ce4b73af0cff8df4372",
+          "priceCents": 1000
+        },
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "extraNonce": 7,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 2,
+        "rounds": 3,
+        "mode": "normal",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 0,
+            "nonce": 3,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-3",
+            "digest": "80962fe5f68bdf6a0df97eafd5169e2c5819f2fa5c54d9eb099f03dfb0d82321",
+            "roll": 0.5022916733201293,
+            "outcomeId": "56f2f9b1-ad79-4382-8aa3-92c9d638ac31",
+            "label": "1.60 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 1,
+            "nonce": 4,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-4",
+            "digest": "2521e251fbd7ff4ec51a0b7c6a636d0ac07398339eb9136d6f1a2e6697120af3",
+            "roll": 0.1450482797771142,
+            "outcomeId": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 2,
+            "seat": 0,
+            "nonce": 5,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-5",
+            "digest": "72040af76ed8e63333340b0f3916bf9b6947d7c4cb50c52d8c29937a6f145f41",
+            "roll": 0.44537418881268165,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          },
+          {
+            "round": 2,
+            "seat": 1,
+            "nonce": 6,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-6",
+            "digest": "a727c9a669288bfcbef272755dab11e8dd81a73209f6d8b1915be6c41c405de9",
+            "roll": 0.652950862052565,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          }
+        ],
+        "totals": [
+          500,
+          300
+        ],
+        "lastRound": [
+          300,
+          100
+        ],
+        "potCents": 800,
+        "winners": [
+          0
+        ],
+        "sharesCents": [
+          800,
+          0
+        ],
+        "extra": null,
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "crazy, 3 seats, 3 rounds",
+      "mode": "crazy",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        },
+        {
+          "slug": "handbag-suite",
+          "tableHash": "ecd72a40ade28916d278d257be69ee195bfb81d06ac37ce4b73af0cff8df4372",
+          "priceCents": 1000
+        },
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        },
+        {
+          "seat": 2,
+          "clientSeed": "carol"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4,
+          5,
+          6
+        ],
+        [
+          7,
+          8,
+          9
+        ]
+      ],
+      "extraNonce": 10,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 3,
+        "rounds": 3,
+        "mode": "crazy",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 2,
+            "nonce": 3,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-3",
+            "digest": "53529bd5531d3b519251645e7cdab981c8e9e2175507a3451666a74e11a86a24",
+            "roll": 0.32547925909158404,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          },
+          {
+            "round": 1,
+            "seat": 0,
+            "nonce": 4,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-4",
+            "digest": "c581feb7e9d348a52445913d4c6d9e3e59606de5b25acf86050f02bf11b36d6a",
+            "roll": 0.771514816189506,
+            "outcomeId": "a6aae015-28ff-4067-b630-e4ebfebcfd5b",
+            "label": "Free Spin + 0.60 Mistees",
+            "kind": "bonus",
+            "valueCents": 0,
+            "credits": 0
+          },
+          {
+            "round": 1,
+            "seat": 1,
+            "nonce": 5,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-5",
+            "digest": "02a50691977a5f2d30a3a196dea908eaf18383a319d542b3b13f3097abce451d",
+            "roll": 0.010330591721392723,
+            "outcomeId": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 2,
+            "nonce": 6,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-6",
+            "digest": "e0458dfa6ed616680cba02f2dc9ad961b8507ce83cd067b481e5dd292281782b",
+            "roll": 0.8760613190086917,
+            "outcomeId": "5b6e47e2-b0dd-4a03-b317-34327a00f287",
+            "label": "2 Mistees",
+            "kind": "credit",
+            "valueCents": 200,
+            "credits": 2
+          },
+          {
+            "round": 2,
+            "seat": 0,
+            "nonce": 7,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-7",
+            "digest": "c22a9ba1ef430ead340210c7090745fa34ecb3621033b5e0a67a07e19d75ef04",
+            "roll": 0.7584626455639061,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 2,
+            "seat": 1,
+            "nonce": 8,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-8",
+            "digest": "cb7495d9dfb4edd914143de9d7535ad783091bdb4bae030c0501b9a50e13d417",
+            "roll": 0.7947477013510311,
+            "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+            "label": "4 Mistees",
+            "kind": "credit",
+            "valueCents": 400,
+            "credits": 4
+          },
+          {
+            "round": 2,
+            "seat": 2,
+            "nonce": 9,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-9",
+            "digest": "668fbae6e728824281b045955b3d14aa0a459a6990526b6581ce09075f9e17b4",
+            "roll": 0.4006306470611509,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          }
+        ],
+        "totals": [
+          200,
+          600,
+          800
+        ],
+        "lastRound": [
+          100,
+          400,
+          300
+        ],
+        "potCents": 1600,
+        "winners": [
+          0
+        ],
+        "sharesCents": [
+          1600,
+          0,
+          0
+        ],
+        "extra": null,
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "terminal, 4 seats, 1 round",
+      "mode": "terminal",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        },
+        {
+          "seat": 2,
+          "clientSeed": "carol"
+        },
+        {
+          "seat": 3,
+          "clientSeed": "dave"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "extraNonce": 5,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 4,
+        "rounds": 1,
+        "mode": "terminal",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 2,
+            "nonce": 3,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-3",
+            "digest": "53529bd5531d3b519251645e7cdab981c8e9e2175507a3451666a74e11a86a24",
+            "roll": 0.32547925909158404,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          },
+          {
+            "round": 0,
+            "seat": 3,
+            "nonce": 4,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-dave-4",
+            "digest": "a14392cbe5cc247d7513b57db5031c70820a09513e61b78bde736574e1ef0d70",
+            "roll": 0.6299373386189449,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          }
+        ],
+        "totals": [
+          100,
+          100,
+          300,
+          100
+        ],
+        "lastRound": [
+          100,
+          100,
+          300,
+          100
+        ],
+        "potCents": 600,
+        "winners": [
+          2
+        ],
+        "sharesCents": [
+          0,
+          0,
+          600,
+          0
+        ],
+        "extra": null,
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "jackpot, 4 seats, 3 rounds",
+      "mode": "jackpot",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        },
+        {
+          "slug": "handbag-suite",
+          "tableHash": "ecd72a40ade28916d278d257be69ee195bfb81d06ac37ce4b73af0cff8df4372",
+          "priceCents": 1000
+        },
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        },
+        {
+          "seat": 2,
+          "clientSeed": "carol"
+        },
+        {
+          "seat": 3,
+          "clientSeed": "dave"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          5,
+          6,
+          7,
+          8
+        ],
+        [
+          9,
+          10,
+          11,
+          12
+        ]
+      ],
+      "extraNonce": 13,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 4,
+        "rounds": 3,
+        "mode": "jackpot",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 2,
+            "nonce": 3,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-3",
+            "digest": "53529bd5531d3b519251645e7cdab981c8e9e2175507a3451666a74e11a86a24",
+            "roll": 0.32547925909158404,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          },
+          {
+            "round": 0,
+            "seat": 3,
+            "nonce": 4,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-dave-4",
+            "digest": "a14392cbe5cc247d7513b57db5031c70820a09513e61b78bde736574e1ef0d70",
+            "roll": 0.6299373386189449,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 0,
+            "nonce": 5,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-5",
+            "digest": "05790fed5632ccf3d79adbf2106331939914bb4713a218d8a5231046abf1f4de",
+            "roll": 0.02137851280549352,
+            "outcomeId": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 1,
+            "nonce": 6,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-6",
+            "digest": "5b4ec9192a7d887b442615c9b766a9b9c72781664dc07c6452d804dbefbcd4fb",
+            "roll": 0.3566709219398856,
+            "outcomeId": "56f2f9b1-ad79-4382-8aa3-92c9d638ac31",
+            "label": "1.60 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 2,
+            "nonce": 7,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-7",
+            "digest": "429692048e8273e1f5ac92a92b5bc61e98030405ed8c128eb25f53a29ab95cad",
+            "roll": 0.26011002169844644,
+            "outcomeId": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 3,
+            "nonce": 8,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-dave-8",
+            "digest": "9907a47d49e12cdeaf3c3502b6e7e1090459f75682e9a1cf7d84f0032d7b5ea6",
+            "roll": 0.597772865856204,
+            "outcomeId": "96a0345f-36e2-4a13-b0b4-5cc0149805bf",
+            "label": "0.50 Mistees",
+            "kind": "credit",
+            "valueCents": 0,
+            "credits": 0
+          },
+          {
+            "round": 2,
+            "seat": 0,
+            "nonce": 9,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-9",
+            "digest": "cf13c064c655edd4945c2a228a5f4b919650845783d237411204da029cee45b4",
+            "roll": 0.8088951345474338,
+            "outcomeId": "daca5b60-d544-4a7c-84e9-6d7d6f2e880b",
+            "label": "4 Mistees",
+            "kind": "credit",
+            "valueCents": 400,
+            "credits": 4
+          },
+          {
+            "round": 2,
+            "seat": 1,
+            "nonce": 10,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-10",
+            "digest": "16d0483d36463f315e76d6ebd01fe194331ee42905a30ed3466b74a52aac3e33",
+            "roll": 0.08911563391145516,
+            "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+            "label": "2 Mistees",
+            "kind": "credit",
+            "valueCents": 200,
+            "credits": 2
+          },
+          {
+            "round": 2,
+            "seat": 2,
+            "nonce": 11,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-11",
+            "digest": "a125e69bd879eac4f590c6e80b8601efc908d2a86021afd76bed1ae9da4e2de9",
+            "roll": 0.6294845705492444,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 2,
+            "seat": 3,
+            "nonce": 12,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-dave-12",
+            "digest": "3829627df0302cf5a5b1696080bb3d35ca5bb2f09addd3aa77c3aba473454f91",
+            "roll": 0.21938148092903065,
+            "outcomeId": "defbeedf-5cea-4e62-82ec-7c1119bfa7eb",
+            "label": "2 Mistees",
+            "kind": "credit",
+            "valueCents": 200,
+            "credits": 2
+          }
+        ],
+        "totals": [
+          600,
+          400,
+          500,
+          300
+        ],
+        "lastRound": [
+          400,
+          200,
+          100,
+          200
+        ],
+        "potCents": 1800,
+        "winners": [
+          0
+        ],
+        "sharesCents": [
+          1800,
+          0,
+          0,
+          0
+        ],
+        "extra": {
+          "nonce": 13,
+          "key": "DRAW-battle-jackpot-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice|bob|carol|dave-13",
+          "digest": "22d345f38948e252a55b1c6baf14b35e42c7c874c2f1d5c1a34081fae5534848",
+          "roll": 0.1360362739153831,
+          "clientSeed": "alice|bob|carol|dave"
+        },
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "group, 3 seats, 1 round",
+      "mode": "group",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        },
+        {
+          "seat": 2,
+          "clientSeed": "carol"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "extraNonce": 4,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 3,
+        "rounds": 1,
+        "mode": "group",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 2,
+            "nonce": 3,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-carol-3",
+            "digest": "53529bd5531d3b519251645e7cdab981c8e9e2175507a3451666a74e11a86a24",
+            "roll": 0.32547925909158404,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          }
+        ],
+        "totals": [
+          100,
+          100,
+          300
+        ],
+        "lastRound": [
+          100,
+          100,
+          300
+        ],
+        "potCents": 500,
+        "winners": [
+          0,
+          1,
+          2
+        ],
+        "sharesCents": [
+          168,
+          166,
+          166
+        ],
+        "extra": null,
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "break, 2 seats, 3 rounds",
+      "mode": "break",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        },
+        {
+          "slug": "handbag-suite",
+          "tableHash": "ecd72a40ade28916d278d257be69ee195bfb81d06ac37ce4b73af0cff8df4372",
+          "priceCents": 1000
+        },
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        }
+      ],
+      "coinflipEdge": null,
+      "nonces": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "extraNonce": 7,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 2,
+        "rounds": 3,
+        "mode": "break",
+        "pulls": [
+          {
+            "round": 0,
+            "seat": 0,
+            "nonce": 1,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-1",
+            "digest": "bf741263e3469f9dff07656f0e80aa73a5fff49c5b2b2e0f73f013fd894d7e4e",
+            "roll": 0.7478648656717957,
+            "outcomeId": "d2892691-b234-45d0-a903-19e05e245cb4",
+            "label": "Free Spin + 1 Mistees",
+            "kind": "bonus",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 0,
+            "seat": 1,
+            "nonce": 2,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-2",
+            "digest": "89181f9a6ff65909e6dbcf0e010e7059d4b4579d5c9bfb5d8c2637e904b1aa5e",
+            "roll": 0.5355243446392361,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 0,
+            "nonce": 3,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-3",
+            "digest": "80962fe5f68bdf6a0df97eafd5169e2c5819f2fa5c54d9eb099f03dfb0d82321",
+            "roll": 0.5022916733201293,
+            "outcomeId": "56f2f9b1-ad79-4382-8aa3-92c9d638ac31",
+            "label": "1.60 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 1,
+            "seat": 1,
+            "nonce": 4,
+            "key": "DRAW-handbag-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-4",
+            "digest": "2521e251fbd7ff4ec51a0b7c6a636d0ac07398339eb9136d6f1a2e6697120af3",
+            "roll": 0.1450482797771142,
+            "outcomeId": "5851f246-2cf8-4dfd-9c65-61451305bb3a",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          },
+          {
+            "round": 2,
+            "seat": 0,
+            "nonce": 5,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice-5",
+            "digest": "72040af76ed8e63333340b0f3916bf9b6947d7c4cb50c52d8c29937a6f145f41",
+            "roll": 0.44537418881268165,
+            "outcomeId": "54771a4e-4eaa-468d-891d-e9e4fd026e2d",
+            "label": "3 Mistees",
+            "kind": "credit",
+            "valueCents": 300,
+            "credits": 3
+          },
+          {
+            "round": 2,
+            "seat": 1,
+            "nonce": 6,
+            "key": "DRAW-timepiece-suite-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-bob-6",
+            "digest": "a727c9a669288bfcbef272755dab11e8dd81a73209f6d8b1915be6c41c405de9",
+            "roll": 0.652950862052565,
+            "outcomeId": "d5a85838-92d3-4547-94fd-de312eb3ac4d",
+            "label": "1 Mistees",
+            "kind": "credit",
+            "valueCents": 100,
+            "credits": 1
+          }
+        ],
+        "totals": [
+          500,
+          300
+        ],
+        "lastRound": [
+          300,
+          100
+        ],
+        "potCents": 800,
+        "winners": [
+          0,
+          1
+        ],
+        "sharesCents": [
+          500,
+          300
+        ],
+        "extra": null,
+        "tiedSeats": []
+      }
+    },
+    {
+      "name": "coinflip, 2 seats, edge 5%",
+      "mode": "coinflip",
+      "rounds": [
+        {
+          "slug": "timepiece-suite",
+          "tableHash": "e30ff59db6278ac4d37d1ee68b3531928624e277ca0cb41deb4d61bec0058532",
+          "priceCents": 1000
+        }
+      ],
+      "seats": [
+        {
+          "seat": 0,
+          "clientSeed": "alice"
+        },
+        {
+          "seat": 1,
+          "clientSeed": "bob"
+        }
+      ],
+      "coinflipEdge": 0.05,
+      "nonces": [],
+      "extraNonce": 1,
+      "result": {
+        "serverHash": "2a8abfa8cb9906290437854193ca6bca41d4d4e26d1d454bd66a35158095e737",
+        "seats": 2,
+        "rounds": 0,
+        "mode": "coinflip",
+        "pulls": [],
+        "totals": [
+          0,
+          0
+        ],
+        "lastRound": [
+          0,
+          0
+        ],
+        "potCents": 1900,
+        "winners": [
+          1
+        ],
+        "sharesCents": [
+          0,
+          1900
+        ],
+        "extra": {
+          "nonce": 1,
+          "key": "DRAW-battle-coinflip-00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff-alice|bob-1",
+          "digest": "c6fa710be50467bf36348b4c314c6ebefc313f77adab0cc460ae65b551d598dd",
+          "roll": 0.7772589353599115,
+          "clientSeed": "alice|bob"
+        },
+        "tiedSeats": []
+      }
+    }
+  ]
+}

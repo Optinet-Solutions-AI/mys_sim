@@ -1,11 +1,11 @@
 openapi: 3.1.0
 info:
   title: Misty-style mystery box API
-  version: 1.1.0
+  version: 1.2.0
   description: >-
     Backend of a priced mystery box with published odds, a secret committed before payment, a player seed,
     free spins, site credit and a public verifier. Kit v1.1, 14 October 2026. See README.md for the rules and
-    section 0 for what changed since 1.0. Every error body is { code, message, details? } (schema Error).
+    section 0 for what changed since 1.0. 1.2 adds battles (BATTLES.md). Every error body is { code, message, details? } (schema Error).
 servers:
   - url: https://api.example.com/v1
 tags:
@@ -15,6 +15,7 @@ tags:
   - name: credit
   - name: verify
   - name: admin
+  - name: battles
 
 paths:
   /boxes:
@@ -488,6 +489,210 @@ paths:
       responses:
         "204": { description: Set }
 
+  /battles:
+    get:
+      tags: [battles]
+      summary: Public battles and the caller's own, newest first
+      security: [{ bearer: [] }]
+      parameters:
+        - { name: status, in: query, schema: { type: string, enum: [open, full, in_progress, settling, finished, cancelled, expired] } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Battle" } } } } }
+    post:
+      tags: [battles]
+      summary: Create a battle within the admin limits; the creator takes seat 0 and pays the hold; the server hash is returned
+      security: [{ bearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode, seats, boxSlugs, idempotencyKey]
+              properties:
+                mode: { type: string, enum: [normal, crazy, terminal, jackpot, group, break, coinflip] }
+                seats: { type: integer, minimum: 2, maximum: 16 }
+                boxSlugs: { type: array, items: { type: string }, description: one per round, in order; eligible boxes only }
+                isPrivate: { type: boolean, default: false }
+                clientSeed: { type: string, maxLength: 64 }
+                idempotencyKey: { type: string }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Battle" } } } }
+        "402": { description: insufficient_credit, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "422": { description: validation_failed or battles_disabled, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "429": { description: rate_limited, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /battles/{battleId}:
+    get:
+      tags: [battles]
+      summary: The battle as it stands; pulls appear as rounds resolve; serverSeed only when finished
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Battle" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+
+  /battles/{battleId}/join:
+    post:
+      tags: [battles]
+      summary: Take a free seat; the credit hold is taken in the same transaction; idempotent on the key
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idempotencyKey]
+              properties:
+                clientSeed: { type: string, maxLength: 64 }
+                inviteCode: { type: string }
+                idempotencyKey: { type: string }
+      responses:
+        "200": { description: Seated, content: { application/json: { schema: { $ref: "#/components/schemas/BattleSeat" } } } }
+        "402": { description: insufficient_credit, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "403": { description: forbidden (invite code), content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "409": { description: battle_not_open, battle_full or already_seated, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /battles/{battleId}/leave:
+    post:
+      tags: [battles]
+      summary: Leave before the start; the hold is released; a full battle goes back to open
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      responses:
+        "204": { description: Left }
+        "409": { description: battle_started, not_seated or creator_must_cancel, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /battles/{battleId}/cancel:
+    post:
+      tags: [battles]
+      summary: Cancel before the start (creator while alone, or admin); every hold is refunded
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        "204": { description: Cancelled and refunded }
+        "403": { $ref: "#/components/responses/Error" }
+        "409": { description: battle_started, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /battles/{battleId}/bots:
+    post:
+      tags: [battles]
+      summary: The creator asks bots to fill the free seats (admin bots on); the battle becomes full and the countdown starts
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      responses:
+        "200": { description: Filled, content: { application/json: { schema: { $ref: "#/components/schemas/Battle" } } } }
+        "403": { description: not_creator, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "409": { description: bots_disabled, battle_not_open or battle_full, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /battles/{battleId}/events:
+    get:
+      tags: [battles]
+      summary: Server-sent events for the battle (joined, left, full, countdown, started, round, finished, cancelled, expired, revealed)
+      security: [{ bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      responses:
+        "200": { description: text/event-stream; each event carries the battle_events row }
+
+  /battles/{battleId}/verify:
+    get:
+      tags: [battles, verify]
+      summary: Public recomputation of a finished battle, one boolean per claim
+      parameters:
+        - { $ref: "#/components/parameters/battleId" }
+        - { name: serverHash, in: query, schema: { type: string } }
+        - { name: winners, in: query, schema: { type: string, example: "1" }, description: comma separated seat numbers }
+        - { name: totals, in: query, schema: { type: string, example: "1234,5678" }, description: comma separated cents per seat }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BattleVerifyResult" } } } }
+        "409": { description: battle not finished, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /admin/battles/settings:
+    get:
+      tags: [admin, battles]
+      summary: The battle settings (one row per site)
+      security: [{ adminBearer: [] }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BattleSettings" } } } }
+    put:
+      tags: [admin, battles]
+      summary: Update the settings; changes apply to new battles only
+      security: [{ adminBearer: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/BattleSettings" } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BattleSettings" } } } }
+        "422": { description: validation_failed, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /admin/battles/{battleId}/cancel:
+    post:
+      tags: [admin, battles]
+      summary: Admin cancel before the start, with a reason; every hold is refunded; audited
+      security: [{ adminBearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/battleId" }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [reason], properties: { reason: { type: string } } } } } }
+      responses:
+        "204": { description: Cancelled and refunded }
+        "409": { description: battle_started, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /admin/battles/bots:
+    get:
+      tags: [admin, battles]
+      summary: The bot list (name and picture, nothing else)
+      security: [{ adminBearer: [] }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BattleBot" } } } } }
+    put:
+      tags: [admin, battles]
+      summary: Replace the bot list
+      security: [{ adminBearer: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BattleBot" } } } } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BattleBot" } } } } }
+
+  /admin/battles/sponsored:
+    post:
+      tags: [admin, battles]
+      summary: Create a sponsored battle; the house pays every entry (one battle-sponsor ledger entry); players join free
+      security: [{ adminBearer: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode, seats, boxSlugs, sponsor, idempotencyKey]
+              properties:
+                mode: { type: string, enum: [normal, crazy, terminal, jackpot, group, break, coinflip] }
+                seats: { type: integer, minimum: 2, maximum: 16 }
+                boxSlugs: { type: array, items: { type: string } }
+                isPrivate: { type: boolean, default: false }
+                sponsor: { type: string, description: shown as "Sponsored by ..." }
+                idempotencyKey: { type: string }
+      responses:
+        "201": { description: Created, content: { application/json: { schema: { $ref: "#/components/schemas/Battle" } } } }
+        "422": { description: validation_failed, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /admin/battles/report:
+    get:
+      tags: [admin, battles]
+      summary: Battles played and gross gaming revenue per day and mode (player money only; the view battle_daily_report)
+      security: [{ adminBearer: [] }]
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/BattleReportRow" } } } } }
+
 components:
   securitySchemes:
     bearer:
@@ -506,6 +711,7 @@ components:
     slug: { name: slug, in: path, required: true, schema: { type: string } }
     openId: { name: openId, in: path, required: true, schema: { type: string, format: uuid } }
     awardId: { name: awardId, in: path, required: true, schema: { type: string, format: uuid } }
+    battleId: { name: battleId, in: path, required: true, schema: { type: string, format: uuid } }
   responses:
     Error:
       description: Error
@@ -519,7 +725,7 @@ components:
       properties:
         code:
           type: string
-          enum: [unknown_box, unknown_open, unknown_award, unknown_table, open_expired, seed_locked, open_not_payable, open_not_paid, payment_failed, insufficient_credit, award_not_tradeable, award_not_shippable, invalid_seed, validation_failed, unauthenticated, forbidden, rate_limited, internal]
+          enum: [unknown_box, unknown_open, unknown_award, unknown_table, open_expired, seed_locked, open_not_payable, open_not_paid, payment_failed, insufficient_credit, award_not_tradeable, award_not_shippable, invalid_seed, validation_failed, unauthenticated, forbidden, rate_limited, internal, battles_disabled, battle_not_open, battle_full, already_seated, battle_started, not_seated, creator_must_cancel, battle_not_startable, battle_incomplete, conflict, bots_disabled, not_creator]
         message: { type: string }
         details: { type: object, additionalProperties: true }
     Outcome:
@@ -714,6 +920,122 @@ components:
         bonusSpins:
           type: array
           items: { $ref: "#/components/schemas/BonusSpin" }
+        reason: { type: string, nullable: true }
+    BattleSettings:
+      type: object
+      properties:
+        enabled: { type: boolean }
+        modesAllowed: { type: array, items: { type: string, enum: [normal, crazy, terminal, jackpot, group, break, coinflip] } }
+        seatsAllowed: { type: array, items: { type: integer } }
+        roundsMax: { type: integer, minimum: 1, maximum: 50 }
+        eligibleBoxSlugs: { type: array, items: { type: string } }
+        feePercent: { type: number, minimum: 0, maximum: 20 }
+        coinflipEdge: { type: number, minimum: 0, maximum: 0.1 }
+        openExpiryMinutes: { type: integer }
+        countdownSeconds: { type: integer }
+        privateAllowed: { type: boolean }
+        botsEnabled: { type: boolean }
+        botLabel: { type: string }
+        maxConcurrentPerPlayer: { type: integer }
+        creditFaceCents: { type: integer }
+    BattleRound:
+      type: object
+      properties:
+        slug: { type: string }
+        tableHash: { type: string }
+        bonusHash: { type: string }
+        priceCents: { type: integer }
+    BattleSeat:
+      type: object
+      properties:
+        seat: { type: integer }
+        playerId: { type: string, nullable: true }
+        displayName: { type: string }
+        isBot: { type: boolean }
+        botName: { type: string, nullable: true }
+        botAvatarUrl: { type: string, nullable: true }
+        clientSeed: { type: string }
+        clientSeedSource: { type: string, enum: [player, server-default, bot] }
+        joinedAt: { type: string, format: date-time }
+    BattlePull:
+      type: object
+      properties:
+        round: { type: integer }
+        seat: { type: integer }
+        nonce: { type: integer }
+        digest: { type: string }
+        roll: { type: number }
+        outcome: { $ref: "#/components/schemas/Outcome" }
+        valueCents: { type: integer }
+        credits: { type: integer }
+        awardId: { type: string, format: uuid, nullable: true }
+    Battle:
+      type: object
+      properties:
+        battleId: { type: string, format: uuid }
+        status: { type: string, enum: [open, full, in_progress, settling, finished, cancelled, expired] }
+        version: { type: integer }
+        mode: { type: string, enum: [normal, crazy, terminal, jackpot, group, break, coinflip] }
+        seats: { type: integer }
+        rounds: { type: array, items: { $ref: "#/components/schemas/BattleRound" } }
+        entryCents: { type: integer }
+        feePercent: { type: number }
+        coinflipEdge: { type: number }
+        isPrivate: { type: boolean }
+        inviteCode: { type: string, nullable: true, description: only to the creator }
+        sponsored: { type: boolean, description: the house paid the entries; players joined free }
+        sponsor: { type: string, nullable: true }
+        displayStatus: { type: string, enum: [Waiting, Ongoing, Settled, Cancelled, Expired], description: the plain word for the status }
+        createdBy: { type: string }
+        serverHash: { type: string, description: shown before any seat is taken }
+        serverSeed: { type: string, nullable: true, description: only when finished }
+        seatList: { type: array, items: { $ref: "#/components/schemas/BattleSeat" } }
+        pulls: { type: array, items: { $ref: "#/components/schemas/BattlePull" }, description: appear as rounds resolve }
+        totalsCents: { type: array, items: { type: integer }, nullable: true }
+        potCents: { type: integer, nullable: true }
+        winners: { type: array, items: { type: integer }, nullable: true }
+        sharesCents: { type: array, items: { type: integer }, nullable: true }
+        tiedSeats: { type: array, items: { type: integer }, nullable: true }
+        extra: { type: object, nullable: true, properties: { nonce: { type: integer }, digest: { type: string }, roll: { type: number } } }
+        expiresAt: { type: string, format: date-time }
+        startsAt: { type: string, format: date-time, nullable: true }
+        startedAt: { type: string, format: date-time, nullable: true }
+        settledAt: { type: string, format: date-time, nullable: true }
+        verifyUrl: { type: string, nullable: true }
+    BattleBot:
+      type: object
+      required: [name]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        avatarUrl: { type: string, nullable: true }
+        enabled: { type: boolean, default: true }
+    BattleReportRow:
+      type: object
+      properties:
+        day: { type: string, format: date }
+        mode: { type: string }
+        battles: { type: integer }
+        sponsoredBattles: { type: integer }
+        battlesWithBots: { type: integer }
+        playerEntriesCents: { type: integer }
+        creditPaidCents: { type: integer }
+        itemsPaidCents: { type: integer }
+        ggrCents: { type: integer }
+    BattleVerifyResult:
+      type: object
+      properties:
+        ok: { type: boolean }
+        checks:
+          type: object
+          properties:
+            serverHash: { type: boolean, nullable: true }
+            winners: { type: boolean, nullable: true }
+            totals: { type: boolean, nullable: true }
+            pulls: { type: boolean, nullable: true }
+        winners: { type: array, items: { type: integer } }
+        totalsCents: { type: array, items: { type: integer } }
+        pulls: { type: array, items: { $ref: "#/components/schemas/BattlePull" } }
         reason: { type: string, nullable: true }
     LedgerEntry:
       type: object

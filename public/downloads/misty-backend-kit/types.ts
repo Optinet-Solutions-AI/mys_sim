@@ -280,6 +280,119 @@ export interface JemlitResult {
   elapsedMs: number;
 }
 
+/* ---------- IcyBox: a reconstruction of the iOS app's box from public sources (terms, App Store, site, press, reviews). No API was captured. ---------- */
+export type IcyboxBandId = "common" | "uncommon" | "rare" | "epic" | "legendary" | "grail";
+export interface IcyboxItem {
+  id: string;
+  label: string;
+  brand: string;
+  /** the value the app lists for the item (reported as retail-style) */
+  value: number;
+  category: "watch" | "bag";
+  /** relative chance inside the band (reconstructed): the cheap end of a wide band is common, the showcase end rare */
+  weight: number;
+}
+/** A rarity band: the app shows a chance and a value range per band, not per item. */
+export interface IcyboxBand {
+  id: IcyboxBandId;
+  label: string;
+  /** reconstructed chance, 0..1; the five boxes are fitted to a target return at listed values */
+  chance: number;
+  items: IcyboxItem[];
+}
+export interface IcyboxBox {
+  slug: string;
+  name: string;
+  tier: "bronze" | "silver" | "ruby" | "gold" | "icy";
+  price: number;
+  bands: IcyboxBand[];
+  /** the six values the website's box carousel shows for this tier (captured) */
+  showcase: number[];
+  note: string;
+}
+export interface IcyboxConfig {
+  boxSlug: string;
+  /** chance per band id, 0..1, sums to 1 */
+  chances: Record<string, number>;
+  /** buyback offer as a share of the listed value (reported about 0.9) */
+  buybackPercent: number;
+  /** hours to decide before the item is sold back automatically (length not published; an assumption) */
+  buybackWindowHours: number;
+  /** share of players who miss the window (auto-sold) */
+  missWindowRate: number;
+  /** share of wins worth the price or more that are kept and shipped */
+  keepRate: number;
+  /** cost of keeping: shipping fee per item and sales tax on the value */
+  shippingFee: number;
+  taxRate: number;
+  /** cashing out: minimum and fee (site: $6 minimum; reviews: $2 fee) */
+  withdrawMin: number;
+  withdrawFee: number;
+  /** resale share of the listed value for kept items */
+  itemRealized: number;
+  /** finite drop: a fixed stock of copies; 0 copies or disabled = plain odds */
+  drop: { enabled: boolean; copies: number; retireAt: number };
+  run: { opens: number };
+}
+export interface IcyboxSpin {
+  idx: number;
+  boxSlug: string;
+  price: number;
+  /** the simulator's own roll, 0..1; IcyBox publishes nothing of the kind */
+  roll: number;
+  bandId: IcyboxBandId;
+  bandFrom: number;
+  bandTo: number;
+  item: IcyboxItem;
+  buyback: number;
+  keepCost: number;
+  /** drop mode: copies left after this open and whether the drop was retired by this open */
+  copiesLeft?: number;
+  retired?: boolean;
+}
+export interface IcyboxBandStat {
+  id: IcyboxBandId;
+  label: string;
+  chance: number;
+  expected: number;
+  actual: number;
+  meanValue: number;
+  costPerOpen: number;
+}
+export interface IcyboxResult {
+  kind: "icybox";
+  boxSlug: string;
+  boxName: string;
+  price: number;
+  opens: number;
+  spent: number;
+  listedValue: number;
+  buybackPaid: number;
+  soldBack: number;
+  autoSold: number;
+  itemsKept: number;
+  keptValue: number;
+  keptReal: number;
+  feesPaid: number;
+  grails: number;
+  pGrail: number;
+  bigWins: number;
+  pBig: number;
+  returnListed: number;
+  returnBuyback: number;
+  returnReal: number;
+  expectedListed: number;
+  expectedBuyback: number;
+  expectedReal: number;
+  byBand: IcyboxBandStat[];
+  chi: ChiSquare;
+  curve: { n: number; listed: number; buyback: number }[];
+  longestDry: number;
+  drop: { enabled: boolean; copies: number; retireAt: number; drops: number; retired: number; grailsShipped: number; grailsLeftBehind: number; opensPerDrop: number } | null;
+  verifier: Verifier;
+  sample: IcyboxSpin[];
+}
+
 
 export interface ChiSquare {
   statistic: number;
