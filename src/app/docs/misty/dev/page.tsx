@@ -493,7 +493,7 @@ export default function MistyDevPage() {
       <section className="space-y-3">
         <H2 id="battles">14. Battles</H2>
         <P>
-          Battles run on the same committed-seed engine: one secret per battle, a seed per seat, every pull a normal open with its nonce fixed by position, one extra roll for ties, jackpot and coinflip, and a status in the database from open to finished. They have their own developer page with the state machine, the API, the tables, the test vectors and the prompt for the main repository: <Link href="/docs/battles/dev">Battles for developers</Link>. The plain-language version is <Link href="/docs/battles">Battles, explained</Link>; the logic is playable on <Link href="/operators/vendor">Evo Verse</Link>, Battles tab.
+          Battles run on the same committed-seed engine: one secret per battle, a server-generated seed per seat, every pull a normal open with its nonce fixed by position, one extra roll for ties, jackpot and coinflip, and a status in the database from open to finished. They have their own developer page with the state machine, the API, the tables, the test vectors and the prompt for the main repository: <Link href="/docs/battles/dev">Battles for developers</Link>. The plain-language version is <Link href="/docs/battles">Battles, explained</Link>; the logic is playable on <Link href="/operators/vendor">Evo Verse</Link>, Battles tab.
         </P>
       </section>
 

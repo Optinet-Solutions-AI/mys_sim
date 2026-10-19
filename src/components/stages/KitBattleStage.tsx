@@ -14,7 +14,7 @@ import { CountUp } from "../lab/CountUp";
 
 /**
  * The committed-seed battle from the backend kit, played live. One secret per battle hashed before anyone joins,
- * a client seed per seat, every pull a normal open with its nonce fixed by position, and the status moving through
+ * a server-generated seed per seat, every pull a normal open with its nonce fixed by position, and the status moving through
  * the same state machine the database will carry. The admin panel decides what is allowed; the player plays inside it.
  */
 
@@ -110,7 +110,6 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
   const evPerSeat = prepared.reduce((a, p) => a + p.evCents, 0);
   const error = !s.enabled ? "Battles are switched off in the admin panel." : !rounds.length ? "No rounds: pick at least one box." : rounds.some((r) => r.table.entries.length === 0) ? "A round has no items with odds." : null;
 
-  const [mySeed, setMySeed] = useState("my-seed");
   const [battle, setBattle] = useState<Battle | null>(null);
   const [revealed, setRevealed] = useState<boolean[]>([]);
   const [round, setRound] = useState(0);
@@ -164,12 +163,12 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
     const seats: Seat[] = Array.from({ length: players }, (_, p) => {
       const kind: SeatKind = p === 0 ? "you" : p < humans ? "player" : "bot";
       const name = kind === "you" ? "You" : kind === "player" ? `Player ${p + 1}` : names[(p - humans) % names.length];
-      const clientSeed = kind === "you" ? mySeed.trim() || "grailnoir-default" : kind === "player" ? `player-${p + 1}-${randomHex(3)}` : `bot-${randomHex(4)}`;
-      return { seat: p, kind, name, clientSeed, source: kind === "bot" ? "bot" : kind === "you" && !mySeed.trim() ? "server-default" : "player", joined: p === 0 };
+      const clientSeed = kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`;
+      return { seat: p, kind, name, clientSeed, source: kind === "bot" ? "bot" : "server-default", joined: p === 0 };
     });
     const b: Battle = { id: randomHex(6), version: 0, status: "open", serverSeed, serverHash: battleCommit(serverSeed), sponsored, seats, events: [], res: null, startsAt: null, startedAt: null, settledAt: null };
     b.events.push(
-      { at: clock(), actor: "you", event: "created", data: `hash ${short(b.serverHash)}${sponsored ? `; sponsored by ${s.sponsored.sponsor}: the house pays ${cents(entryCents * humans)} (battle-sponsor)` : `; seat 0 held ${cents(entryCents)}`}` },
+      { at: clock(), actor: "you", event: "created", data: `hash ${short(b.serverHash)}${`; seat 0 held ${cents(entryCents)}`}` },
       { at: clock(), actor: "you", event: "joined", data: "seat 0" },
     );
     setBattle(b);
@@ -466,14 +465,6 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
                       <div className="text-[10px] uppercase tracking-wide text-ink-3">{isBot ? "house bot" : p === 0 ? "you" : "player"}</div>
                     </div>
                     {win && !grp && !brk && <Icon name="ph:crown" size={20} className="ml-auto animate-pop text-warn" />}
-                  </div>
-                  <div className="mt-1.5 text-[10px] text-ink-3">
-                    seed{" "}
-                    {p === 0 && (!battle || status === "open") ? (
-                      <input value={mySeed} onChange={(e) => setMySeed(e.target.value.slice(0, 64))} onBlur={() => battle && setBattle((b) => (b ? { ...b, seats: b.seats.map((x) => (x.seat === 0 ? { ...x, clientSeed: mySeed.trim() || "grailnoir-default" } : x)) } : b))} className="w-full rounded border border-line bg-surface px-1 py-0.5 font-mono text-[10px]" placeholder="grailnoir-default" title="Your client seed. Fixed when the battle fills." />
-                    ) : (
-                      <code className="font-mono">{seat && joined ? seat.clientSeed : "—"}</code>
-                    )}
                   </div>
                   {coin ? (
                     <div className="mt-2 flex h-24 items-center justify-center rounded-lg border border-line bg-surface">

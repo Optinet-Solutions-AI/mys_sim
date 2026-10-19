@@ -46,7 +46,7 @@ const TOC = [
 const EX_SEED = "6f1d2c3b4a59687706152433425160798a9bacbdcedfe0f10213243546576879";
 const EX_ROUNDS = [0, 0, 0].map((bi, i) => prepareRound(DEFAULT_KIT_BATTLES.boxes[bi], i));
 const EX_SEATS = [
-  { seat: 0, clientSeed: "anna-2026", name: "Anna" },
+  { seat: 0, clientSeed: "seat-0-5e21", name: "Anna" },
   { seat: 1, clientSeed: "bot-7c1e", name: "Atlas (bot)" },
   { seat: 2, clientSeed: "bot-02aa", name: "Nova (bot)" },
   { seat: 3, clientSeed: "bot-d41b", name: "Rook (bot)" },
@@ -60,7 +60,7 @@ const winnerName = EX_SEATS[EX.winners[0]].name;
 const STEPS: { what: string; why: string; example: string }[] = [
   { what: "Someone creates a battle: a mode, a number of seats, and one box per round, all from the lists the admin allowed.", why: "The player chooses inside the admin's limits. Nothing about odds or boxes is decided by the player.", example: `Anna creates a normal battle, 4 seats, 3 rounds of the ${EX_BOX.box.name.split(" · ")[0]} at ${money(EX_BOX.box.price)}.` },
   { what: "Before anyone else joins, the server draws one secret for the whole battle and shows its hash on the page.", why: "Every roll in the battle comes from that secret. Showing the hash first proves it was fixed before anyone paid or sat down.", example: `The page shows ${short(battleCommit(EX_SEED))}. Nobody can read the secret from it.` },
-  { what: "Each seat sets a seed of its own when it joins, or the server records the default. The entry is held from the player's credit.", why: "The seeds go into every roll, so the server alone cannot pick a result. The hold means a seat is never taken with money that is then spent elsewhere.", example: `Anna types anna-2026 and ${cents(EX_ENTRY.entryCents)} is held. Three bots join with seeds the server made for them.` },
+  { what: "When a seat is taken, the server gives it a random seed of its own and records it. The entry is held from the player's credit. Players never type a seed.", why: "Each seat's seed goes into its rolls and is stored before the battle starts, so it cannot be changed afterwards. The hold means a seat is never taken with money that is then spent elsewhere.", example: `Anna joins and ${cents(EX_ENTRY.entryCents)} is held; her seat gets the seed seat-0-5e21. Three bots join with seeds of their own.` },
   { what: "When the last seat is taken, a short countdown runs on the server, and the battle starts. From here nothing that feeds a roll can change.", why: "The countdown lets people see the seats fill; the server owns the clock so no client can start or delay a battle.", example: "Four seats, countdown 3, 2, 1." },
   { what: "Every seat opens the round's box. Each open is a normal open: secret + the seat's seed + a spin number → a roll between 0 and 1 → read against the box's odds table.", why: "Battles reuse the single-open rule, so one check covers both. The spin number is the pull's position: round × seats + seat + 1.", example: `Round 1: Anna is spin 1, Atlas spin 2, Nova spin 3, Rook spin 4. Anna's roll ${EX.pulls[0].roll.toFixed(4)} lands on ${EX.pulls[0].label} (${cents(EX.pulls[0].valueCents)}).` },
   { what: "After the last round the mode decides who takes the pot. If seats tie, one extra roll breaks the tie.", why: "The extra roll uses the next spin number and every seat's seed joined together, so no single seat controls it.", example: `Totals ${EX.totals.map((t, i) => `${EX_SEATS[i].name.split(" ")[0]} ${cents(t)}`).join(", ")}. ${winnerName} has the highest total and takes the pot of ${cents(EX.potCents)}.${EX.tiedSeats.length > 1 ? " A tie was broken by the extra roll." : ""}` },
@@ -267,7 +267,7 @@ export default function BattlesDocPage() {
         <H2 id="bots">6. Bots</H2>
         <Ul>
           <li>Off unless the admin switches them on. When they are on, the creator of a waiting battle that nobody joins can ask for bots; the server fills every free seat with a bot from the admin&apos;s list and the countdown starts.</li>
-          <li>A bot is a name and a picture, nothing more. It plays the same boxes with the same odds and the same committed secret; the server makes its seed and records it as a bot&apos;s; it holds no credit; what it wins returns to the house with no award and no ledger row.</li>
+          <li>A bot is a name and a picture, nothing more. It plays the same boxes with the same odds and the same committed secret; the server gives it a seed like any seat; it holds no credit; what it wins returns to the house with no award and no ledger row.</li>
           <li>A bot seat is labelled as a bot on every screen, in the lobby and in the game history.</li>
           <li>A bot with better odds than players would be a rig. The engine has no setting for it and the kit forbids it. Evocase described its bots the same way in its 15 October demo: &quot;just names and images, no higher configuration&quot;.</li>
         </Ul>
@@ -365,7 +365,7 @@ export default function BattlesDocPage() {
               ["Entry", "What a seat pays: the round prices plus any fee."],
               ["Pot", "Everything every seat pulled, in items and credit."],
               ["Secret", "The server seed drawn for the battle; its hash is shown before anyone joins; it is published when the battle is settled."],
-              ["Seed", "The client seed a seat sets when it joins; it goes into that seat's rolls."],
+              ["Seed", "A random value the server gives each seat when it joins and records; it goes into that seat's rolls. Players never enter one."],
               ["Spin number", "The nonce of a pull: round × seats + seat + 1."],
               ["Extra roll", "One more roll for ties, jackpot and coinflip, with every seat's seed joined together."],
               ["Hold", "Credit set aside for a seat; refunded if the battle never starts."],

@@ -146,8 +146,7 @@ export async function createBattle(store: BattleStore, playerId: string, input: 
     expiresAt: new Date(Date.now() + s.openExpiryMinutes * 60_000),
     startsAt: null,
   };
-  const seed = input.clientSeed && input.clientSeed.length <= 64 ? input.clientSeed : s.defaultClientSeed;
-  const creatorSeat: SeatRow = { battleId: row.id, seat: 0, playerId, isBot: false, botId: null, clientSeed: seed, clientSeedSource: input.clientSeed ? "player" : "server-default", holdLedgerId: null };
+  const creatorSeat: SeatRow = { battleId: row.id, seat: 0, playerId, isBot: false, botId: null, clientSeed: randomBytes(16).toString("hex"), clientSeedSource: "server-default", holdLedgerId: null }; // players never enter a seed
   await store.insertBattle(row, creatorSeat, row.sponsored ? 0 : entryCents); // the insert takes the hold for seat 0 in the same transaction
   return row; // the HTTP layer strips serverSeed
 }
@@ -162,8 +161,8 @@ export async function joinBattle(store: BattleStore, battleId: string, playerId:
   if (seats.some((x) => x.playerId === playerId)) throw err("already_seated");
   const free = Array.from({ length: b.seats }, (_, i) => i).find((i) => !seats.some((x) => x.seat === i));
   if (free === undefined) throw err("battle_full");
-  const seed = clientSeed && clientSeed.length <= 64 ? clientSeed : s.defaultClientSeed;
-  const row = await store.takeSeat(battleId, { battleId, seat: free, playerId, isBot: false, botId: null, clientSeed: seed, clientSeedSource: clientSeed ? "player" : "server-default", holdLedgerId: null }, b.sponsored ? 0 : b.entryCents, idempotencyKey);
+  void clientSeed; // ignored: the server generates every seat seed
+  const row = await store.takeSeat(battleId, { battleId, seat: free, playerId, isBot: false, botId: null, clientSeed: randomBytes(16).toString("hex"), clientSeedSource: "server-default", holdLedgerId: null }, b.sponsored ? 0 : b.entryCents, idempotencyKey);
   if (seats.length + 1 === b.seats) {
     const startsAt = new Date(Date.now() + s.countdownSeconds * 1000);
     await store.transition(battleId, "open", b.version, "full", { startsAt }, { actor: playerId, event: "full", data: { startsAt } });

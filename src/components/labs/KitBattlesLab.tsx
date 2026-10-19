@@ -188,135 +188,14 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
       ),
     },
     {
-      id: "sponsored",
-      label: "Sponsored",
-      icon: "ph:gift",
-      badge: s.sponsored.enabled ? <span className="ml-auto rounded-full bg-warn px-1.5 text-[10px] text-white">on</span> : undefined,
-      content: (
-        <Card title="Sponsored battles">
-          <div className="space-y-3">
-            <Toggle checked={s.sponsored.enabled} onChange={(v) => setS({ sponsored: { ...s.sponsored, enabled: v } })} label="New battles are sponsored" hint="The house pays every entry (one battle-sponsor ledger entry); players join free; the pot is real and the winner is paid as usual." />
-            <Field label="Sponsor shown on the battle" hint="Appears as 'Sponsored by …' on the lobby and the battle page.">
-              <input className="w-full max-w-xs rounded-md border border-line bg-paper px-2 py-1 text-sm" value={s.sponsored.sponsor} onChange={(e) => setS({ sponsored: { ...s.sponsored, sponsor: e.target.value } })} />
-            </Field>
-            <Help>In the real product the admin creates a sponsored battle from this panel, for a stream or a promotion. A promo code that gives a free battle is a credit voucher limited to battle entries and belongs to the promo module.</Help>
-          </div>
-        </Card>
-      ),
-    },
-    {
-      id: "battles",
-      label: "Battles & report",
-      icon: "ph:table",
-      badge: records.length ? <span className="ml-auto rounded-full bg-ink-3/40 px-1.5 text-[10px] text-white">{records.length}</span> : undefined,
+      id: "setup",
+      label: "Battle to play",
+      icon: "ph:play",
       content: (
         <div className="space-y-4">
-          <Card title="Report: battles and GGR per mode" actions={<Info>Gross gaming revenue = what players paid in minus what players took home (credit and items at listed value). Bot seats and sponsored seats are not player money. The kit&apos;s view battle_daily_report does the same arithmetic per day.</Info>}>
-            {report.length ? (
-              <div className="tbl">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr>
-                      <Th>Mode</Th>
-                      <Th right>Battles</Th>
-                      <Th right>Sponsored</Th>
-                      <Th right>With bots</Th>
-                      <Th right>Player entries</Th>
-                      <Th right>Paid to players</Th>
-                      <Th right>Fee</Th>
-                      <Th right>GGR</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.map(([m, r]) => (
-                      <tr key={m} className="border-t border-line">
-                        <Td>{m}</Td>
-                        <Td right mono>{num(r.battles)}</Td>
-                        <Td right mono>{num(r.sponsored)}</Td>
-                        <Td right mono>{num(r.withBots)}</Td>
-                        <Td right mono>{cents(r.entries)}</Td>
-                        <Td right mono>{cents(r.paid)}</Td>
-                        <Td right mono>{cents(r.fee)}</Td>
-                        <Td right mono>
-                          <span className={r.entries - r.paid >= 0 ? "text-good" : "text-bad"}>{cents(r.entries - r.paid)}</span>
-                        </Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-ink-2">No settled battles in this session yet. Play one and it appears here, as it would in the admin dashboard.</p>
-            )}
-          </Card>
-          <Card title={`Battles this session (${records.length})`}>
-            {records.length ? (
-              <div className="tbl">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr>
-                      <Th>id</Th>
-                      <Th>mode</Th>
-                      <Th right>seats</Th>
-                      <Th right>bots</Th>
-                      <Th>status</Th>
-                      <Th>winner</Th>
-                      <Th right>pot</Th>
-                      <Th right>player entries</Th>
-                      <Th right>paid</Th>
-                      <Th>settled</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[...records].reverse().map((r) => (
-                      <tr key={r.id} className="border-t border-line">
-                        <Td mono>{r.id}</Td>
-                        <Td>
-                          {r.mode}
-                          {r.sponsored ? " · sponsored" : ""}
-                        </Td>
-                        <Td right mono>{r.seats}</Td>
-                        <Td right mono>{r.bots}</Td>
-                        <Td>
-                          <Badge tone="good">finished</Badge>
-                        </Td>
-                        <Td>{r.winnerName}</Td>
-                        <Td right mono>{cents(r.potCents)}</Td>
-                        <Td right mono>{cents(r.playerEntriesCents)}</Td>
-                        <Td right mono>{cents(r.playerPaidCents)}</Td>
-                        <Td mono>{r.settledAt}</Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-sm text-ink-2">The admin&apos;s battle list: every battle with its status, seats, result and times. Running battles would show as in_progress here.</p>
-            )}
-          </Card>
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <>
-      <LabFrame doc={variant.doc} featureKey={variant.key} lab={variant.lab} operator={operator} rigCount={0} onSettings={openSettings} settingsOpen={settings.open} chips={[]}>
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm">
-          <Link href="/docs/battles" className="btn no-underline">
-            <Icon name="ph:book-open-text" size={16} /> Document
-          </Link>
-          <button type="button" className="btn" onClick={() => openSettings("settings")}>
-            <Icon name="ph:sliders-horizontal" size={16} /> Admin panel
-          </button>
-          <Link href="/docs/battles/dev" className="btn no-underline">
-            <Icon name="ph:file-code" size={16} /> Developer document
-          </Link>
-        </div>
-
         {s.enabled && (
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-ink-2">Create a battle</h2>
+            <h2 className="mb-2 text-sm font-semibold text-ink-2">The battle to play</h2>
             <Card>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Mode" hint={KIT_BATTLE_MODES.find((m) => m.id === cfg.play.mode)?.rule}>
@@ -371,7 +250,6 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
                     <Badge tone="accent">
                       entry {cents(entry.entryCents)} per seat{entry.feeCents ? ` (incl. ${cents(entry.feeCents)} fee)` : ""}
                     </Badge>
-                    {s.sponsored.enabled && <Badge tone="warn">sponsored: players pay nothing</Badge>}
                   </div>
                 </Field>
               </div>
@@ -438,6 +316,116 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
             </div>
           </div>
         )}
+
+        </div>
+      ),
+    },
+    {
+      id: "battles",
+      label: "Battles & report",
+      icon: "ph:table",
+      badge: records.length ? <span className="ml-auto rounded-full bg-ink-3/40 px-1.5 text-[10px] text-white">{records.length}</span> : undefined,
+      content: (
+        <div className="space-y-4">
+          <Card title="Report: battles and GGR per mode" actions={<Info>Gross gaming revenue = what players paid in minus what players took home (credit and items at listed value). Bot seats are not player money. The kit&apos;s view battle_daily_report does the same arithmetic per day.</Info>}>
+            {report.length ? (
+              <div className="tbl">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr>
+                      <Th>Mode</Th>
+                      <Th right>Battles</Th>
+                      <Th right>With bots</Th>
+                      <Th right>Player entries</Th>
+                      <Th right>Paid to players</Th>
+                      <Th right>Fee</Th>
+                      <Th right>GGR</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {report.map(([m, r]) => (
+                      <tr key={m} className="border-t border-line">
+                        <Td>{m}</Td>
+                        <Td right mono>{num(r.battles)}</Td>
+                        <Td right mono>{num(r.withBots)}</Td>
+                        <Td right mono>{cents(r.entries)}</Td>
+                        <Td right mono>{cents(r.paid)}</Td>
+                        <Td right mono>{cents(r.fee)}</Td>
+                        <Td right mono>
+                          <span className={r.entries - r.paid >= 0 ? "text-good" : "text-bad"}>{cents(r.entries - r.paid)}</span>
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-ink-2">No settled battles in this session yet. Play one and it appears here, as it would in the admin dashboard.</p>
+            )}
+          </Card>
+          <Card title={`Battles this session (${records.length})`}>
+            {records.length ? (
+              <div className="tbl">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr>
+                      <Th>id</Th>
+                      <Th>mode</Th>
+                      <Th right>seats</Th>
+                      <Th right>bots</Th>
+                      <Th>status</Th>
+                      <Th>winner</Th>
+                      <Th right>pot</Th>
+                      <Th right>player entries</Th>
+                      <Th right>paid</Th>
+                      <Th>settled</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...records].reverse().map((r) => (
+                      <tr key={r.id} className="border-t border-line">
+                        <Td mono>{r.id}</Td>
+                        <Td>
+                          {r.mode}
+                        </Td>
+                        <Td right mono>{r.seats}</Td>
+                        <Td right mono>{r.bots}</Td>
+                        <Td>
+                          <Badge tone="good">finished</Badge>
+                        </Td>
+                        <Td>{r.winnerName}</Td>
+                        <Td right mono>{cents(r.potCents)}</Td>
+                        <Td right mono>{cents(r.playerEntriesCents)}</Td>
+                        <Td right mono>{cents(r.playerPaidCents)}</Td>
+                        <Td mono>{r.settledAt}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-ink-2">The admin&apos;s battle list: every battle with its status, seats, result and times. Running battles would show as in_progress here.</p>
+            )}
+          </Card>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <LabFrame doc={variant.doc} featureKey={variant.key} lab={variant.lab} operator={operator} rigCount={0} onSettings={openSettings} settingsOpen={settings.open} chips={[]}>
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2 text-sm">
+          <Link href="/docs/battles" className="btn no-underline">
+            <Icon name="ph:book-open-text" size={16} /> Document
+          </Link>
+          <button type="button" className="btn" onClick={() => openSettings("setup")}>
+            <Icon name="ph:sliders-horizontal" size={16} /> Admin panel
+          </button>
+          <Link href="/docs/battles/dev" className="btn no-underline">
+            <Icon name="ph:file-code" size={16} /> Developer document
+          </Link>
+        </div>
 
         <KitBattleStage cfg={cfg} onSettings={openSettings} onRecord={(r) => setRecords((xs) => [...xs, r])} />
       </LabFrame>
