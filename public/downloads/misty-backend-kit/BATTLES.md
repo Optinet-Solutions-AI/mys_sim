@@ -93,6 +93,30 @@ Rules the server enforces:
   what the server says.
 - Every transition writes a `battle_events` row (who, what, when, from, to) for the audit log and for the live feed.
 
+## 4b. The lobby and rooms
+
+A battle is a room. Creating a battle opens a room in the lobby; other players join its free seats; it starts when
+every seat is taken.
+
+- The lobby lists public battles that are `open` (Waiting), plus recent `in_progress` (Ongoing) and `finished`
+  (Settled) ones so players see activity. Each row shows: mode, the boxes per round with prices, entry per seat, the
+  seats (name and picture per taken seat, bots labelled, free seats empty), the creator, how long ago it opened, the
+  secret hash, and a Join button with the entry on it. Ongoing rows show "rounds playing"; settled rows show the winner
+  and the pot.
+- The list comes from `GET /v1/battles` and stays live through the lobby stream `GET /v1/battles/events`: room
+  opened, seat taken, seat left, status changed, room settled. The client never invents a row.
+- Join: a player takes the first free seat with `POST /v1/battles/{id}/join`; the hold and the seat are one
+  transaction; the player can sit in any seat, not only seat 0; the room view opens at once and follows
+  `GET /v1/battles/{id}/events`.
+- Leave before the start refunds the hold (`POST /v1/battles/{id}/leave`); a full room goes back to open. The creator
+  cannot leave; they cancel while alone. After the start nobody can leave.
+- Create: the player picks mode, seats and one box per round from what the admin allows, and may make the room
+  private (invite code). The creator takes seat 0 and pays the hold; the room appears in the lobby with its hash.
+- Ask bots to join: only the creator, only while open, only if the admin has bots on; every free seat gets a bot.
+- Private rooms are not listed; they are joined with the invite code.
+- "Your battles" above the lobby: battles played, won, spent, took home, from `GET /v1/battles?mine=true` and the
+  `battle_history` view.
+
 ## 3. What the admin panel configures
 
 | Setting | Meaning | Default |
@@ -116,6 +140,8 @@ and its seats at creation.
 
 ## 4. What the client does
 
+(The lobby is section 4b.)
+
 Players, with their credit balance: list open battles; create one within the admin limits (mode, seats, rounds from
 the eligible boxes, public or private); join a seat (the hold is taken); leave before the start (hold released);
 watch the rounds play back from the server's records; see the result, their awards and their ledger; open the verify
@@ -126,7 +152,8 @@ pull records arrive and ends on exactly what they say.
 
 | Method | Path | Does |
 |---|---|---|
-| GET | /v1/battles | public and the caller's battles, filter by status |
+| GET | /v1/battles | the lobby: public battles, filter by status; `mine=true` for the caller's own |
+| GET | /v1/battles/events | the lobby stream: room opened, seat taken, seat left, status changed, settled |
 | POST | /v1/battles | create within admin limits; returns the server hash, seat 0 taken by the creator with a hold |
 | GET | /v1/battles/{id} | the battle as it stands; pulls appear as rounds resolve; seed only when finished |
 | POST | /v1/battles/{id}/join | take a seat; the server generates its seed; idempotent on an idempotency key |
@@ -165,9 +192,9 @@ once when the admin's countdown is 0).
 
 ## 7. Data (see schema-battles.sql)
 
-`battle_settings` (one row per site), `battle_bots` (name, picture), `battles` (status, version, mode, seats, sponsored flag, rounds as a JSON array of
+`battle_settings` (one row per site), `battle_bots` (name, picture), `battles` (status, version, mode, seats, rounds as a JSON array of
 `{slug, tableHash, bonusHash, priceCents}`, fee, server seed encrypted, server hash, created by, timestamps per
-transition, winners, pot, shares), `battle_seats` (seat number, player or bot, client seed and its source, hold ledger
+transition, winners, pot, shares), `battle_seats` (seat number, player or bot, the server-generated seed and its source, hold ledger
 id, joined at), `battle_pulls` (round, seat, nonce, digest, roll, outcome id, value cents, credits), `battle_events`
 (audit and feed). The ledger and `item_awards` are the existing tables with new reasons.
 
@@ -185,8 +212,7 @@ id, joined at), `battle_pulls` (round, seat, nonce, digest, roll, outcome id, va
 ## 9. Where battles sit in the codebase
 
 Battles are their own module: tables prefixed `battle_`, one backend module, one timer job, one set of routes under
-`/v1/battles`. They touch the rest of the system in four places only: the ledger (holds, refunds, wins, sponsor
-entries), item awards (what the winner takes home), boxes and frozen tables fetched by hash, and the site's auth.
+`/v1/battles`. They touch the rest of the system in four places only: the ledger (holds, refunds, wins, fees), item awards (what the winner takes home), boxes and frozen tables fetched by hash, and the site's auth.
 Nothing else reads battle tables. That keeps the module out of the first build (single opens, credit, admin panel)
 and lets it move to a separate service later without touching the core.
 

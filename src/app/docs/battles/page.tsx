@@ -33,7 +33,7 @@ const TOC = [
   ["status", "4. The status of a battle"],
   ["sums", "5. The sums"],
   ["bots", "6. Bots"],
-  ["sponsored", "7. Sponsored battles"],
+  ["lobby", "7. The lobby"],
   ["check", "8. The check"],
   ["admin", "9. What the admin panel sets"],
   ["player", "10. What the player sees"],
@@ -274,8 +274,8 @@ export default function BattlesDocPage() {
       </section>
 
       <section className="space-y-3">
-        <H2 id="sponsored">7. Sponsored battles</H2>
-        <P>A battle whose entries the house pays. The admin creates it, for a stream or a promotion; players join free; the house ledger takes one entry for the whole cost; the pot is real and the winner is paid as usual. The battle shows &quot;Sponsored by …&quot; on the lobby and the battle page. A promo code that gives &quot;a free battle&quot; is the same thing seen from the player: a credit voucher that may only pay a battle entry.</P>
+        <H2 id="lobby">7. The lobby</H2>
+        <P>A battle is a room. Creating one opens a room in the lobby, where everyone sees the mode, the boxes, the entry, the seats taken and free, and the secret hash. Other players press Join to take a free seat, in any position; when every seat is taken the room starts. Before the start a player can leave and get the entry back. If nobody comes, the creator can ask bots to fill the rest, when the admin allows bots. Ongoing and settled rooms stay visible for a moment, with the winner and the pot. The Evo Verse Battles tab shows this lobby with simulated players.</P>
       </section>
 
       <section className="space-y-3">
@@ -340,7 +340,7 @@ export default function BattlesDocPage() {
         <H2 id="history">11. History and reports</H2>
         <Ul>
           <li>A player&apos;s game history lists every battle they sat in with their pulls, the result and what they took home, next to their single opens. The admin&apos;s player screen shows &quot;Boxes opened&quot; and &quot;Battles played&quot;.</li>
-          <li>The admin dashboard shows battles played per day and per mode, and the gross gaming revenue per game mode: what players paid in minus what players took home. Bot seats and sponsored seats are not player money.</li>
+          <li>The admin dashboard shows battles played per day and per mode, and the gross gaming revenue per game mode: what players paid in minus what players took home. Bot seats are not player money.</li>
           <li>A settled battle is never edited; its seats, pulls, events and secret are kept as long as the ledger is.</li>
         </Ul>
       </section>
@@ -351,7 +351,6 @@ export default function BattlesDocPage() {
           <li>Battles multiply the bet. One click wagers every round at once, and the vendor&apos;s own figure was that battles make 90% of all wagering. The fairness of each roll is unchanged; the amount at risk per minute is not.</li>
           <li>Bots mean the house sits across the table. The odds are the same, so the player&apos;s expectation is the same as a single open, but a bot winning the pot is the house collecting the player&apos;s pulls as well as its own margin. The label on the seat is what keeps this honest.</li>
           <li>The check proves the roll, not the value. Items count at listed value; what they fetch when sold is a separate question, the same one the single-open pages raise.</li>
-          <li>Sponsored battles are marketing spend. They cost the house every entry and should be reported as such, not as play.</li>
         </Ul>
       </section>
 

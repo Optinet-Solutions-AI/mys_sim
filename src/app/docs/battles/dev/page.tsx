@@ -39,6 +39,7 @@ const TOC = [
   ["downloads", "2. Downloads"],
   ["algorithm", "3. The algorithm, exactly"],
   ["state", "4. The state machine"],
+  ["lobby", "4b. The lobby and rooms"],
   ["api", "5. API"],
   ["data", "6. Data model"],
   ["admin", "7. Admin panel rules"],
@@ -103,7 +104,7 @@ export default function BattlesDevPage() {
         <H2 id="scope">1. What to build</H2>
         <Ul>
           <li>A battles module in the main repository: migration, backend, admin settings screens, player lobby and room, live updates, verify page, tests. Its own tables (prefix battle_), one timer job, routes under /v1/battles.</li>
-          <li>It touches the rest of the system in four places only: the credit ledger (holds, refunds, wins, sponsor entries), item awards (what the winner takes home), boxes and frozen tables fetched by hash, and auth. Nothing else reads battle tables, so it can move to a separate service later.</li>
+          <li>It touches the rest of the system in four places only: the credit ledger (holds, refunds, wins, fees), item awards (what the winner takes home), boxes and frozen tables fetched by hash, and auth. Nothing else reads battle tables, so it can move to a separate service later.</li>
           <li>Configuration lives in the admin panel only. Players create, join, leave before the start, watch, and verify, with credit. Nothing about a result is computed in the browser.</li>
           <li>Build it after single opens, credit and the admin panel exist; it is planned for weeks 3 and 4.</li>
         </Ul>
@@ -129,7 +130,7 @@ export default function BattlesDevPage() {
               <tbody>
                 {(
                   [
-                    ["BATTLES.md", "The rule book: mechanic, modes, payout, bots, sponsored battles, state machine, admin settings, API summary, security, data, history and reports, conformance."],
+                    ["BATTLES.md", "The rule book: mechanic, modes, payout, bots, the lobby and rooms, state machine, admin settings, API summary, security, data, history and reports, conformance."],
                     ["battleKit.ts", "The pure resolver and verifier, the same code the simulator runs. Deterministic; no I/O."],
                     ["battles-reference.ts", "The server flow: create, join, leave, cancel, ask bots, the timer, start and resolve, settle, reveal, all through a Store interface and the status-and-version guard."],
                     ["schema-battles.sql", "Postgres: battle_settings, battle_bots, battles, battle_seats, battle_pulls, battle_events, the report and history views, the ledger reasons."],
@@ -206,6 +207,21 @@ export default function BattlesDevPage() {
       </section>
 
       <section className="space-y-3">
+        <H2 id="lobby">4b. The lobby and rooms</H2>
+        <P>A battle is a room. Creating a battle opens a room in the lobby; other players join its free seats; it starts when every seat is taken. The simulator shows this screen on the Evo Verse Battles tab, with simulated players in place of real users.</P>
+        <Ul>
+          <li>The lobby lists public battles that are open (Waiting), plus recent in_progress (Ongoing) and finished (Settled) ones. Each row: mode, the boxes per round with prices, entry per seat, the seats (name and picture per taken seat, bots labelled, free seats empty), the creator, how long ago it opened, the secret hash, and a Join button with the entry on it. Ongoing rows show &quot;rounds playing&quot;; settled rows show the winner and the pot.</li>
+          <li>The list comes from GET /v1/battles and stays live through the lobby stream GET /v1/battles/events: room opened, seat taken, seat left, status changed, settled. The client never invents a row.</li>
+          <li>Join takes the first free seat; the hold and the seat are one transaction; a player can sit in any seat, not only seat 0. The room view opens at once and follows GET /v1/battles/{"{id}"}/events.</li>
+          <li>Leave before the start refunds the hold; a full room goes back to open. The creator cannot leave; they cancel while alone. After the start nobody can leave.</li>
+          <li>Create: the player picks mode, seats and one box per round from what the admin allows, and may make the room private. The creator takes seat 0 and pays the hold; the room appears in the lobby with its hash.</li>
+          <li>Ask bots to join: only the creator, only while open, only if the admin has bots on; every free seat gets a bot.</li>
+          <li>Private rooms are not listed; they are joined with the invite code.</li>
+          <li>&quot;Your battles&quot; above the lobby: battles played, won, spent and took home, from GET /v1/battles?mine=true and the battle_history view.</li>
+        </Ul>
+      </section>
+
+      <section className="space-y-3">
         <H2 id="api">5. API</H2>
         <P>
           Contract in <Ext href={`${KIT}/openapi.yaml`}>openapi.yaml</Ext>. Errors are {"{ code, message, details? }"} like the rest of the API.
@@ -222,7 +238,8 @@ export default function BattlesDevPage() {
             <tbody>
               {(
                 [
-                  ["GET", "/v1/battles", "public battles and the caller's own; filter by status"],
+                  ["GET", "/v1/battles", "the lobby: public battles, filter by status; mine=true for the caller's own (Your battles, game history)"],
+                  ["GET", "/v1/battles/events", "the lobby stream: room opened, seat taken, seat left, status changed, settled"],
                   ["POST", "/v1/battles", "create within the admin limits; seat 0 taken by the creator with a hold; returns the server hash"],
                   ["GET", "/v1/battles/{id}", "the battle as it stands; pulls appear as rounds resolve; serverSeed only when finished"],
                   ["POST", "/v1/battles/{id}/join", "take a seat; the server generates the seat's seed; the hold is taken in the same transaction; idempotent on a key"],
@@ -233,7 +250,6 @@ export default function BattlesDevPage() {
                   ["GET", "/v1/battles/{id}/verify", "public recomputation; one boolean per claim: serverHash, winners, totals, pulls"],
                   ["GET, PUT", "/v1/admin/battles/settings", "the admin settings; changes apply to new battles only"],
                   ["GET, PUT", "/v1/admin/battles/bots", "the bot list: name and picture"],
-                  ["POST", "/v1/admin/battles/sponsored", "create a sponsored battle; the house pays the entries"],
                   ["GET", "/v1/admin/battles/report", "battles played and GGR per day and mode, for a date range"],
                   ["POST", "/v1/admin/battles/{id}/cancel", "admin cancel with a reason; refunds; audited"],
                 ] as const
@@ -267,13 +283,13 @@ export default function BattlesDevPage() {
                 [
                   ["battle_settings", "one row per site: enabled, modes and seats allowed, rounds max, eligible boxes, fee, coinflip edge, expiry, countdown, private, bots, concurrency, credit face"],
                   ["battle_bots", "the admin's bot list: name, picture, enabled; nothing else"],
-                  ["battles", "status, version, mode, seats, rounds as JSON with slug, tableHash, bonusHash and priceCents, entry, fee, sponsored flag and sponsor, the encrypted server seed and its hash, the result columns, one timestamp per transition"],
+                  ["battles", "status, version, mode, seats, rounds as JSON with slug, tableHash, bonusHash and priceCents, entry, fee, the encrypted server seed and its hash, the result columns, one timestamp per transition"],
                   ["battle_seats", "seat number, player or bot, the seat's server-generated seed and its source (server or bot), the hold's ledger id, idempotency key, joined and left times; one seat per player per battle"],
                   ["battle_pulls", "round, seat, nonce, digest, roll, outcome, kind, value cents, credits, and the award id set at settling"],
                   ["battle_events", "the audit log and the live feed: actor, event, from, to, time, data"],
-                  ["battle_daily_report (view)", "per day and mode: battles, sponsored, with bots, player entries, credit paid, items paid, GGR"],
+                  ["battle_daily_report (view)", "per day and mode: battles, with bots, player entries, credit paid, items paid, GGR"],
                   ["battle_history (view)", "a player's battles for the game-history screen"],
-                  ["credit_ledger, item_awards", "the existing tables with new reasons (battle-entry, battle-refund, battle-win, battle-fee, battle-sponsor) and a battle_id on awards"],
+                  ["credit_ledger, item_awards", "the existing tables with new reasons (battle-entry, battle-refund, battle-win, battle-fee) and a battle_id on awards"],
                 ] as const
               ).map(([t, d]) => (
                 <tr key={t} className="border-t border-line align-top">
@@ -290,7 +306,7 @@ export default function BattlesDevPage() {
         <H2 id="admin">7. Admin panel rules</H2>
         <Ul>
           <li>Three screens: Battle settings (the list above, validated: modes a subset, seats a subset, rounds 1 to 50, fee 0 to 20, coinflip edge 0 to 10%); Eligible boxes (pick from the catalogue, show each box&apos;s table hash and return); Battles (filter by status, open one to see seats, pulls, result, events, hash and seed after finished; admin cancel with a reason).</li>
-          <li>Plus the bot list (names and pictures, on or off), a Create sponsored battle form, the report, and the player screen&apos;s Boxes opened and Battles played counters.</li>
+          <li>Plus the bot list (names and pictures, on or off), the report, and the player screen&apos;s Boxes opened and Battles played counters.</li>
           <li>A change never touches an existing battle: the battle pinned its boxes&apos; table hashes, its mode, its fee and its seats at creation. Show &quot;changes apply to new battles only&quot;.</li>
           <li>Bots: a name and a picture. There is no odds setting for bots and there must not be one.</li>
         </Ul>
@@ -360,7 +376,7 @@ export default function BattlesDevPage() {
           <li>Crash: kill the process between in_progress and finished; the sweeper completes the battle with identical digests and exactly one payout.</li>
           <li>State machine: every forbidden transition is rejected; every transition writes an event.</li>
           <li>Bots: a battle won by a bot writes no award and no ledger row; a player who beats bots is paid in full; the report counts only the player&apos;s entry.</li>
-          <li>Sponsored: no hold from any player, one battle-sponsor entry, the winner paid as usual, the report shows zero player entries.</li>
+          <li>Lobby: a room appears in every open lobby within a second of being created; a seat taken in one browser shows in the others; a full room disappears from Join; a private room never appears.</li>
           <li>Front end: the animation ends on the server&apos;s outcome; a reload mid-battle resumes from GET /v1/battles/{"{id}"}; the verify page passes on real data and fails on a tampered seed.</li>
         </Ul>
       </section>
@@ -376,7 +392,7 @@ export default function BattlesDevPage() {
 
       <section className="space-y-3">
         <H2 id="prompt">11. Prompt for the main repository</H2>
-        <P>Paste this into the Claude session opened in the main project repository. It carries the mechanic, the state machine, the admin settings, the player screens, the security rules and the tests, and points at the files above.</P>
+        <P>Paste this into the Claude session opened in the main project repository. It carries the mechanic, the lobby and rooms, the state machine, the admin settings, the player screens, the security rules and the tests, and points at the files above.</P>
         <CopyBlock text={BATTLES_PROMPT} filename="battles-prompt.txt" />
       </section>
 
@@ -386,7 +402,6 @@ export default function BattlesDevPage() {
         <Ul>
           <li>Bots are &quot;just names and images, no higher configuration&quot;, and a player can &quot;ask bots to join&quot; when nobody else does. The kit: a bot list of names and pictures, an ask-bots endpoint, same odds, winnings back to the house.</li>
           <li>A battle shows &quot;ongoing&quot; and then &quot;settled&quot; once the money has moved. The kit: in_progress and finished in the database, Ongoing and Settled on screen.</li>
-          <li>Sponsored battles exist as a flag. The kit: admin-created battles whose entries the house pays, labelled.</li>
           <li>Game history lists battles next to single opens, and the player screen counts battles participated. The kit: the battle_history view and the counters.</li>
           <li>The dashboard shows GGR by game mode. The kit: the battle_daily_report view and the report endpoint.</li>
           <li>Promo codes can give a free battle. The kit: a credit voucher limited to battle entries, in the promo module.</li>

@@ -24,7 +24,7 @@ interface Seat {
   kind: SeatKind;
   name: string;
   clientSeed: string;
-  source: "player" | "server-default" | "bot";
+  source: "server" | "bot";
   joined: boolean;
 }
 interface Ev {
@@ -169,7 +169,7 @@ export function KitBattleStage({ cfg, onSettings, onRecord, room, onExit }: { cf
       const kind: SeatKind = p === 0 ? "you" : p < humans ? "player" : "bot";
       const name = kind === "you" ? "You" : kind === "player" ? SIM_NAMES[(p * 7 + serverSeed.charCodeAt(0)) % SIM_NAMES.length] : names[(p - humans) % names.length];
       const clientSeed = kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`;
-      return { seat: p, kind, name, clientSeed, source: kind === "bot" ? "bot" : "server-default", joined: p === 0 };
+      return { seat: p, kind, name, clientSeed, source: kind === "bot" ? "bot" : "server", joined: p === 0 };
     });
     const b: Battle = { id: randomHex(6), version: 0, status: "open", serverSeed, serverHash: battleCommit(serverSeed), sponsored, seats, events: [], res: null, startsAt: null, startedAt: null, settledAt: null };
     b.events.push(
@@ -185,8 +185,8 @@ export function KitBattleStage({ cfg, onSettings, onRecord, room, onExit }: { cf
   const joinRoom = (r: JoinedRoom) => {
     const seats: Seat[] = r.seats.map((x, p) =>
       p === r.youSeat
-        ? { seat: p, kind: "you", name: "You", clientSeed: `seat-${p}-${randomHex(4)}`, source: "server-default", joined: true }
-        : { seat: p, kind: x.kind, name: x.name, clientSeed: x.kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`, source: x.kind === "bot" ? "bot" : "server-default", joined: x.joined },
+        ? { seat: p, kind: "you", name: "You", clientSeed: `seat-${p}-${randomHex(4)}`, source: "server", joined: true }
+        : { seat: p, kind: x.kind, name: x.name, clientSeed: x.kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`, source: x.kind === "bot" ? "bot" : "server", joined: x.joined },
     );
     const b: Battle = { id: r.id, version: 0, status: "open", serverSeed: r.serverSeed, serverHash: battleCommit(r.serverSeed), sponsored: false, seats, events: [], res: null, startsAt: null, startedAt: null, settledAt: null };
     b.events.push({ at: clock(), actor: r.creator, event: "created", data: `hash ${short(b.serverHash)}; seat 0 held ${cents(entryCents)}` });
