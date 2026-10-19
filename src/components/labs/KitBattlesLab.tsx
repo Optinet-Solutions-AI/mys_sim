@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { BattleMode, BoxDef, KitBattlesConfig } from "@/engine/types";
 import { KIT_BATTLE_MODES } from "@/engine/labs/battleKit";
 import type { FeatureDef } from "@/lib/operators";
@@ -8,7 +8,10 @@ import { ALL_KIT_MODES, entryOf, normaliseKitBattles, prepareRound } from "@/lib
 import { money, num, pct } from "@/lib/format";
 import { LabFrame } from "../lab/LabFrame";
 import { SettingsDialog, type SettingsSection } from "../lab/SettingsDialog";
-import { KitBattleStage, type KitBattleRecord } from "../stages/KitBattleStage";
+import { KitBattleStage, type JoinedRoom, type KitBattleRecord } from "../stages/KitBattleStage";
+import { BattleLobby, evolveRooms, makeRoom, type LobbyRoom } from "../lab/BattleLobby";
+import { randomHex } from "@/engine/hash";
+import { SIM_NAMES } from "../stages/KitBattleStage";
 import { BoxBuilder } from "../config/BoxBuilder";
 import { ItemTile } from "../ItemTile";
 import { Badge, Button, Card, Field, Help, Info, NumberInput, Td, Th, Toggle } from "../ui";
@@ -34,6 +37,29 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
   const s = cfg.settings;
   const coin = cfg.play.mode === "coinflip";
   const prepared = useMemo(() => cfg.boxes.map((b, i) => prepareRound(b, i)), [cfg.boxes]);
+
+  // the lobby: rooms opened by simulated players, evolving every second and a half; reset when the admin changes anything
+  const [view, setView] = useState<{ key: string; room: JoinedRoom | null; cfg: KitBattlesConfig } | null>(null);
+  const [rooms, setRooms] = useState<LobbyRoom[]>([]);
+  useEffect(() => {
+    const now = Date.now();
+    setRooms(cfg.settings.enabled && cfg.boxes.length ? [0, 1, 2, 0, 1].map((k) => makeRoom(cfg, now, k)) : []);
+    const t = setInterval(() => setRooms((rs) => evolveRooms(rs, cfg, prepared, Date.now())), 1500);
+    return () => clearInterval(t);
+  }, [cfg, prepared]);
+  const stats = useMemo(() => ({ battles: records.length, wins: records.filter((r) => r.youWon).length, spent: records.reduce((a, r) => a + r.youSpentCents, 0), won: records.reduce((a, r) => a + r.youWonCents, 0) }), [records]);
+  const join = (r: LobbyRoom) => {
+    const youSeat = r.seats.findIndex((x) => !x.joined);
+    if (youSeat < 0) return;
+    const names = cfg.settings.botNames.length ? cfg.settings.botNames : ["Bot"];
+    let b = 0;
+    // the seats still free after yours: more players coming, or the creator's bots
+    const seats = r.seats.map((x, i) => (x.joined || i === youSeat ? x : r.willAskBots ? { kind: "bot" as const, name: names[b++ % names.length], joined: false } : { kind: "player" as const, name: SIM_NAMES.filter((n) => !r.seats.some((y) => y.name === n))[i % 5] ?? `Player ${i + 1}`, joined: false }));
+    const humans = seats.filter((x, i) => i === youSeat || x.kind !== "bot").length;
+    setRooms((rs) => rs.filter((x) => x.id !== r.id));
+    setView({ key: r.id, room: { id: r.id, serverSeed: r.serverSeed, creator: r.creator, seats, youSeat }, cfg: { ...cfg, play: { mode: r.mode, seats: r.seats.length, rounds: r.rounds, humans } } });
+  };
+  const create = () => setView({ key: `new-${randomHex(4)}`, room: null, cfg });
   const chosen = cfg.play.rounds.map((i) => prepared[i]).filter(Boolean);
   const entry = entryOf(chosen.map((p) => p.round), s.feePercent);
   const setPlay = (patch: Partial<KitBattlesConfig["play"]>) => setCfg({ ...cfg, play: { ...cfg.play, ...patch } });
@@ -189,13 +215,13 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
     },
     {
       id: "setup",
-      label: "Battle to play",
+      label: "Create battle setup",
       icon: "ph:play",
       content: (
         <div className="space-y-4">
         {s.enabled && (
           <div>
-            <h2 className="mb-2 text-sm font-semibold text-ink-2">The battle to play</h2>
+            <h2 className="mb-2 text-sm font-semibold text-ink-2">What the lobby&apos;s Create battle opens</h2>
             <Card>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Mode" hint={KIT_BATTLE_MODES.find((m) => m.id === cfg.play.mode)?.rule}>
@@ -427,7 +453,11 @@ export function KitBattlesLab({ variant, operator }: { variant: FeatureDef; oper
           </Link>
         </div>
 
-        <KitBattleStage cfg={cfg} onSettings={openSettings} onRecord={(r) => setRecords((xs) => [...xs, r])} />
+        {view ? (
+          <KitBattleStage key={view.key} cfg={view.cfg} room={view.room} onSettings={openSettings} onExit={() => setView(null)} onRecord={(r) => setRecords((xs) => [...xs, r])} />
+        ) : (
+          <BattleLobby cfg={cfg} prepared={prepared} rooms={rooms} stats={stats} onJoin={join} onCreate={create} />
+        )}
       </LabFrame>
 
       <SettingsDialog

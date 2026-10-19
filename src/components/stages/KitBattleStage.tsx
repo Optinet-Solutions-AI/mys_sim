@@ -49,6 +49,20 @@ interface Battle {
   startedAt: string | null;
   settledAt: string | null;
 }
+/** A seat in a lobby room: a simulated player or a bot, joined or still coming. */
+export interface LobbySeat {
+  kind: "player" | "bot";
+  name: string;
+  joined: boolean;
+}
+/** A room from the lobby that you join: its secret, its creator, its seats, and the seat you take. */
+export interface JoinedRoom {
+  id: string;
+  serverSeed: string;
+  creator: string;
+  seats: LobbySeat[];
+  youSeat: number;
+}
 /** What the admin panel's battle list and report receive when a battle settles. */
 export interface KitBattleRecord {
   id: string;
@@ -63,20 +77,18 @@ export interface KitBattleRecord {
   playerPaidCents: number;
   feeCents: number;
   settledAt: string;
+  youSpentCents: number;
+  youWonCents: number;
+  youWon: boolean;
 }
-interface Tally {
-  battles: number;
-  yourWins: number;
-  yourSpent: number;
-  yourWon: number;
-}
-const EMPTY: Tally = { battles: 0, yourWins: 0, yourSpent: 0, yourWon: 0 };
 
 const SPIN_MS = 3400;
 const STAGGER_MS = 220;
 const SETTLE_MS = 1300;
 const COIN_MS = 1700;
 const JOIN_MS = 420;
+/** Simulated players for the lobby and for the seats that fill on their own. */
+export const SIM_NAMES = ["Marco_88", "lena.v", "Kai", "JDM_Rex", "Sofia", "Tomasz", "ayumi", "Dre", "Noor", "Felix", "Rina", "Big_Lou", "Hana", "Viktor"];
 
 const DISPLAY: Record<BattleStatus, { word: string; tone: "neutral" | "accent" | "good" | "warn" | "bad" }> = {
   open: { word: "Waiting", tone: "neutral" },
@@ -92,9 +104,8 @@ const clock = () => new Date().toISOString().slice(11, 23);
 const short = (h: string, n = 10) => (h.length > n * 2 + 1 ? `${h.slice(0, n)}…${h.slice(-n)}` : h);
 const cents = (c: number) => money(c / 100);
 
-export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesConfig; onSettings: (section?: string) => void; onRecord?: (r: KitBattleRecord) => void }) {
+export function KitBattleStage({ cfg, onSettings, onRecord, room, onExit }: { cfg: KitBattlesConfig; onSettings: (section?: string) => void; onRecord?: (r: KitBattleRecord) => void; room?: JoinedRoom | null; onExit?: () => void }) {
   const { settings: s, play } = cfg;
-  const key = useMemo(() => JSON.stringify(cfg), [cfg]);
   const mode = kitMode(play.mode);
   const coin = mode === "coinflip";
   const brk = mode === "break";
@@ -104,7 +115,7 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
   const rounds = useMemo(() => prepared.map((p) => p.round), [prepared]);
   const pools = useMemo(() => prepared.map((p) => p.pool), [prepared]);
   const players = coin ? 2 : play.seats;
-  const humans = s.botsEnabled ? Math.min(players, Math.max(1, play.humans)) : players;
+  const humans = room ? room.seats.filter((x, i) => i === room.youSeat || x.kind !== "bot").length : s.botsEnabled ? Math.min(players, Math.max(1, play.humans)) : players;
   const { baseCents, feeCents, entryCents } = entryOf(rounds, s.feePercent);
   const sponsored = s.sponsored.enabled;
   const evPerSeat = prepared.reduce((a, p) => a + p.evCents, 0);
@@ -116,7 +127,8 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
   const [phase, setPhase] = useState<"idle" | "round" | "settle">("idle");
   const [countdown, setCountdown] = useState(0);
   const [fast, setFast] = useState(false);
-  const [tally, setTally] = useState<Tally>(EMPTY);
+  const [you, setYou] = useState(0);
+  const [botsAsked, setBotsAsked] = useState(false);
   const [verify, setVerify] = useState<BattleVerifyResult | null>(null);
   const [tamper, setTamper] = useState(false);
   const [fair, setFair] = useState<{ n: number; wins: number; paidIn: number; pot: number } | "busy" | null>(null);
@@ -130,19 +142,12 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
     timers.current = [];
   };
 
-  // a new configuration is a new lobby
+  // mounted per battle (the lab keys this component by room): create a new room, or take a seat in the one you joined
   useEffect(() => {
-    clearTimers();
-    setBattle(null);
-    setRevealed([]);
-    setRound(0);
-    setPhase("idle");
-    setCountdown(0);
-    setVerify(null);
-    setTamper(false);
-    setTally(EMPTY);
-    setFair(null);
-  }, [key]);
+    if (room) joinRoom(room);
+    else create();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => () => clearTimers(), []);
 
   /** The only way the status changes: guarded by the allowed transitions, a version bump and an event row, as the server does. */
@@ -162,7 +167,7 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
     const names = s.botNames.length ? s.botNames : ["Bot"];
     const seats: Seat[] = Array.from({ length: players }, (_, p) => {
       const kind: SeatKind = p === 0 ? "you" : p < humans ? "player" : "bot";
-      const name = kind === "you" ? "You" : kind === "player" ? `Player ${p + 1}` : names[(p - humans) % names.length];
+      const name = kind === "you" ? "You" : kind === "player" ? SIM_NAMES[(p * 7 + serverSeed.charCodeAt(0)) % SIM_NAMES.length] : names[(p - humans) % names.length];
       const clientSeed = kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`;
       return { seat: p, kind, name, clientSeed, source: kind === "bot" ? "bot" : "server-default", joined: p === 0 };
     });
@@ -171,38 +176,55 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
       { at: clock(), actor: "you", event: "created", data: `hash ${short(b.serverHash)}${`; seat 0 held ${cents(entryCents)}`}` },
       { at: clock(), actor: "you", event: "joined", data: "seat 0" },
     );
+    setYou(0);
+    setBotsAsked(false);
     setBattle(b);
-    setRevealed([]);
-    setRound(0);
-    setPhase("idle");
-    setVerify(null);
-    setTamper(false);
   };
 
-  /** Fill: the other seats join one by one, then the battle goes full and the countdown runs on the "server". */
-  const fill = () => {
-    if (!battle || battle.status !== "open") return;
-    const others = battle.seats.filter((x) => !x.joined);
-    const step = fast ? 60 : JOIN_MS;
-    others.forEach((x, i) => {
-      later(() => {
-        setBattle((b) =>
-          b
-            ? {
-                ...b,
-                seats: b.seats.map((y) => (y.seat === x.seat ? { ...y, joined: true } : y)),
-                events: [...b.events, { at: clock(), actor: x.kind === "bot" ? "server" : `player ${x.seat + 1}`, event: "joined", data: `seat ${x.seat}${x.kind === "bot" ? ` (${x.name}, bot, no hold)` : sponsored ? " (sponsored, no hold)" : ` held ${cents(entryCents)}`}` }],
-              }
-            : b,
-        );
-      }, step * (i + 1));
+  /** Join: the room already exists with its secret hash; you take the free seat and your entry is held. */
+  const joinRoom = (r: JoinedRoom) => {
+    const seats: Seat[] = r.seats.map((x, p) =>
+      p === r.youSeat
+        ? { seat: p, kind: "you", name: "You", clientSeed: `seat-${p}-${randomHex(4)}`, source: "server-default", joined: true }
+        : { seat: p, kind: x.kind, name: x.name, clientSeed: x.kind === "bot" ? `bot-${randomHex(4)}` : `seat-${p}-${randomHex(4)}`, source: x.kind === "bot" ? "bot" : "server-default", joined: x.joined },
+    );
+    const b: Battle = { id: r.id, version: 0, status: "open", serverSeed: r.serverSeed, serverHash: battleCommit(r.serverSeed), sponsored: false, seats, events: [], res: null, startsAt: null, startedAt: null, settledAt: null };
+    b.events.push({ at: clock(), actor: r.creator, event: "created", data: `hash ${short(b.serverHash)}; seat 0 held ${cents(entryCents)}` });
+    seats.forEach((x) => {
+      if (x.joined && x.seat !== 0) b.events.push({ at: clock(), actor: x.kind === "you" ? "you" : x.kind === "bot" ? "server" : x.name, event: "joined", data: `seat ${x.seat}${x.kind === "bot" ? ` (${x.name}, bot, no hold)` : ` held ${cents(entryCents)}`}` });
     });
-    const secs = fast ? 0 : s.countdownSeconds;
-    later(() => {
-      transition("full", "server", "full", `countdown ${secs}s`, { startsAt: Date.now() + secs * 1000 });
-      setCountdown(secs);
-    }, step * (others.length + 1));
+    setYou(r.youSeat);
+    setBotsAsked(true);
+    setBattle(b);
   };
+
+  /** Seats join one by one: simulated players on their own, bots once the creator asks; the last seat starts the countdown on the "server". */
+  useEffect(() => {
+    if (!battle || battle.status !== "open") return;
+    const next = battle.seats.find((x) => !x.joined && (x.kind !== "bot" || botsAsked));
+    if (!next) {
+      if (battle.seats.every((x) => x.joined)) {
+        const secs = fast ? 0 : s.countdownSeconds;
+        transition("full", "server", "full", `countdown ${secs}s`, { startsAt: Date.now() + secs * 1000 });
+        setCountdown(secs);
+      }
+      return;
+    }
+    const wait = fast ? 80 : next.kind === "bot" ? JOIN_MS : 900 + ((next.seat * 613 + battle.serverSeed.charCodeAt(next.seat)) % 1500);
+    const t = setTimeout(() => {
+      setBattle((b) =>
+        b
+          ? {
+              ...b,
+              seats: b.seats.map((y) => (y.seat === next.seat ? { ...y, joined: true } : y)),
+              events: [...b.events, { at: clock(), actor: next.kind === "bot" ? "server" : next.name, event: "joined", data: `seat ${next.seat}${next.kind === "bot" ? ` (${next.name}, bot, no hold)` : ` held ${cents(entryCents)}`}` }],
+            }
+          : b,
+      );
+    }, wait);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [battle?.status, battle?.seats, botsAsked, fast]);
 
   // the countdown; at zero the server starts the battle and resolves every round from the committed inputs
   useEffect(() => {
@@ -260,10 +282,6 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
           const settledAt = clock();
           transition("finished", "server", "finished", "awards and ledger written", { settledAt });
           appendEvent("server", "revealed", `secret ${short(battle.serverSeed, 8)}`);
-          const youWon = res.sharesCents[0];
-          const win = grp || brk ? 0 : res.winners.includes(0) ? 1 : 0;
-          const spent = sponsored ? 0 : entryCents;
-          setTally((t) => ({ battles: t.battles + 1, yourWins: t.yourWins + win, yourSpent: t.yourSpent + spent, yourWon: t.yourWon + youWon }));
           const playerSeats = battle.seats.filter((x) => x.kind !== "bot");
           onRecord?.({
             id: battle.id,
@@ -278,6 +296,9 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
             playerPaidCents: playerSeats.reduce((a, x) => a + res.sharesCents[x.seat], 0),
             feeCents: sponsored ? 0 : playerSeats.length * feeCents,
             settledAt,
+            youSpentCents: entryCents,
+            youWonCents: res.sharesCents[you],
+            youWon: !grp && !brk && res.winners.includes(you),
           });
         }, fast ? 150 : 700);
       },
@@ -296,18 +317,6 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
     });
   }, []);
 
-  const reset = () => {
-    clearTimers();
-    setBattle(null);
-    setRevealed([]);
-    setRound(0);
-    setPhase("idle");
-    setCountdown(0);
-    setVerify(null);
-    setTamper(false);
-    setTally(EMPTY);
-    setFair(null);
-  };
 
   const check = () => {
     if (!battle?.res) return;
@@ -362,12 +371,12 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
     const paidIn = sponsored ? 0 : battle.seats.filter((x) => x.kind !== "bot").length * entryCents;
     const paid = sponsored ? `The house paid every entry (sponsored by ${s.sponsored.sponsor}).` : `Players paid ${cents(paidIn)} in${feeCents ? `, of which ${cents(feeCents * humans)} was the fee` : ""}.`;
     if (grp) return { tone: "accent", title: `Pot ${cents(res.potCents)} split ${players} ways`, sub: `${cents(res.sharesCents[1])} each against an entry of ${cents(entryCents)}. ${paid}` };
-    if (brk) return { tone: res.sharesCents[0] >= entryCents ? "good" : "accent", title: "No pot: everyone keeps their own pulls", sub: `You took home ${cents(res.sharesCents[0])} for ${cents(sponsored ? 0 : entryCents)} paid in.` };
+    if (brk) return { tone: res.sharesCents[you] >= entryCents ? "good" : "accent", title: "No pot: everyone keeps their own pulls", sub: `You took home ${cents(res.sharesCents[you])} for ${cents(sponsored ? 0 : entryCents)} paid in.` };
     const w = res.winners[0];
     const seat = battle.seats[w];
     const tie = res.tiedSeats.length > 1 ? ` Tie between seats ${res.tiedSeats.join(", ")} broken by the extra roll (nonce ${res.extra?.nonce}).` : "";
     if (seat.kind === "bot") return { tone: "bad", title: `${seat.name} (house bot) wins the pot of ${cents(res.potCents)}`, sub: `The pot returns to the house: no award, no ledger row. ${paid}${tie}` };
-    return { tone: w === 0 ? "good" : "accent", title: w === 0 ? `You win the pot of ${cents(res.potCents)}` : `${seat.name} wins the pot of ${cents(res.potCents)}`, sub: `${w === 0 ? "Items become awards (ship or trade in); credit goes to the ledger." : "Their items become awards; their credit goes to their ledger."} ${paid}${coin ? ` The house kept its ${pct(s.coinflipEdge, 0)} edge.` : ""}${tie}` };
+    return { tone: w === you ? "good" : "accent", title: w === you ? `You win the pot of ${cents(res.potCents)}` : `${seat.name} wins the pot of ${cents(res.potCents)}`, sub: `${w === you ? "Items become awards (ship or trade in); credit goes to the ledger." : "Their items become awards; their credit goes to their ledger."} ${paid}${coin ? ` The house kept its ${pct(s.coinflipEdge, 0)} edge.` : ""}${tie}` };
   };
   const wl = winnerLine();
   const disp = status ? DISPLAY[status] : null;
@@ -462,7 +471,7 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
                     </span>
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">{label}</div>
-                      <div className="text-[10px] uppercase tracking-wide text-ink-3">{isBot ? "house bot" : p === 0 ? "you" : "player"}</div>
+                      <div className="text-[10px] uppercase tracking-wide text-ink-3">{isBot ? "house bot" : seat?.kind === "you" || (!seat && p === 0) ? "you" : "player"}</div>
                     </div>
                     {win && !grp && !brk && <Icon name="ph:crown" size={20} className="ml-auto animate-pop text-warn" />}
                   </div>
@@ -528,42 +537,35 @@ export function KitBattleStage({ cfg, onSettings, onRecord }: { cfg: KitBattlesC
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          {!battle || status === "finished" ? (
-            <button type="button" className="btn btn-primary btn-lg" onClick={create}>
-              <Icon name="ph:plus" size={18} className="text-white" /> {battle ? "New battle" : "Create battle"}
-            </button>
-          ) : status === "open" ? (
-            <button type="button" className="btn btn-primary btn-lg" onClick={fill}>
-              <Icon name="ph:users-three" size={18} className="text-white" /> {players - humans > 0 ? "Fill the seats (ask bots to join)" : "Fill the seats"}
+          {status === "open" && battle ? (
+            <>
+              {!room && !botsAsked && battle.seats.some((x) => !x.joined && x.kind === "bot") ? (
+                <button type="button" className="btn btn-primary btn-lg" onClick={() => setBotsAsked(true)}>
+                  <Icon name="ph:robot" size={18} className="text-white" /> Ask bots to join
+                </button>
+              ) : (
+                <button type="button" className="btn btn-primary btn-lg" disabled>
+                  <Icon name="ph:timer" size={18} className="text-white" /> Waiting for players · {battle.seats.filter((x) => x.joined).length} of {players}
+                </button>
+              )}
+              <button type="button" className="btn" onClick={() => onExit?.()}>
+                <Icon name="ph:arrow-left" size={16} /> {room ? "Leave (entry refunded)" : "Cancel (entry refunded)"}
+              </button>
+            </>
+          ) : status === "finished" ? (
+            <button type="button" className="btn btn-primary btn-lg" onClick={() => onExit?.()}>
+              <Icon name="ph:arrow-left" size={18} className="text-white" /> Back to the lobby
             </button>
           ) : (
             <button type="button" className="btn btn-primary btn-lg" disabled>
               <Icon name="ph:play" size={18} className="text-white" /> {status === "full" ? `Starting in ${countdown}…` : "Battle in progress…"}
             </button>
           )}
-          <button type="button" className="btn" onClick={reset} disabled={busy}>
-            <Icon name="ph:arrow-counter-clockwise" size={16} /> Reset session
-          </button>
-          <div className="ml-auto grid grid-cols-4 gap-2 text-right text-xs">
-            <div>
-              <div className="text-ink-3">battles</div>
-              <div className="font-semibold tabular-nums">{num(tally.battles)}</div>
-            </div>
-            <div>
-              <div className="text-ink-3">your wins</div>
-              <div className="font-semibold tabular-nums">
-                {grp || brk ? "—" : tally.battles ? pct(tally.yourWins / tally.battles, 0) : "—"} {!grp && !brk && <span className="font-normal text-ink-3">(fair {pct(fairShare, 0)})</span>}
-              </div>
-            </div>
-            <div>
-              <div className="text-ink-3">you spent</div>
-              <div className="font-semibold tabular-nums">{cents(tally.yourSpent)}</div>
-            </div>
-            <div>
-              <div className="text-ink-3">you took home</div>
-              <div className={`font-semibold tabular-nums ${tally.yourWon < tally.yourSpent && tally.battles > 4 ? "text-bad" : ""}`}>{cents(tally.yourWon)}</div>
-            </div>
-          </div>
+          {battle && (
+            <span className="ml-auto text-xs text-ink-3">
+              {room ? `Room opened by ${room.creator}` : "Your room"} · you are seat {you}
+            </span>
+          )}
         </div>
       </Card>
 
