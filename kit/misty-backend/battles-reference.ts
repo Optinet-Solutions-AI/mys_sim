@@ -122,7 +122,8 @@ export async function createBattle(store: BattleStore, playerId: string, input: 
   if (input.isPrivate && !s.privateAllowed) throw err("validation_failed", "private battles are off");
   if ((await store.countOpenBattlesOf(playerId)) >= s.maxConcurrentPerPlayer) throw err("rate_limited", "too many open battles");
   const rounds = input.mode === "coinflip" ? await pinRounds(store, s, input.boxSlugs.slice(0, 1)) : await pinRounds(store, s, input.boxSlugs);
-  const entryCents = rounds.reduce((a, r) => a + r.priceCents, 0);
+  const baseCents = rounds.reduce((a, r) => a + r.priceCents, 0);
+  const entryCents = baseCents + Math.round((baseCents * s.feePercent) / 100); // the fee is the house's, on top of the prices, never in the pot
   const serverSeed = randomBytes(32).toString("hex");
   const row: BattleRow = {
     id: crypto.randomUUID(),

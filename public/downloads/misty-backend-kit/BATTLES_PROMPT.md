@@ -13,7 +13,7 @@ REFERENCES
 - Schema: https://mys-sim.vercel.app/downloads/misty-backend-kit/schema-battles.sql
 - API contract (paths under /v1/battles): https://mys-sim.vercel.app/downloads/misty-backend-kit/openapi.yaml
 - Test vectors your implementation must reproduce: https://mys-sim.vercel.app/downloads/misty-backend-kit/test-vectors-battles.json
-- Playable reference of exactly this logic: https://mys-sim.vercel.app/operators/vendor, Battles tab, Engine: Kit (the hash before the seats fill, the statuses, every nonce, the check). Jemlit's own battles for comparison: https://mys-sim.vercel.app/operators/jemlit (Battles tab)
+- Playable reference of exactly this logic: https://mys-sim.vercel.app/operators/vendor, Battles tab (Admin panel button for the settings; the hash before the seats fill, the statuses, every nonce, the check). Plain-language page: https://mys-sim.vercel.app/docs/battles. Developer page: https://mys-sim.vercel.app/docs/battles/dev
 If a link does not open, say so and ask for the file. Do not guess its contents.
 
 WHERE THINGS LIVE
@@ -23,7 +23,7 @@ WHERE THINGS LIVE
 - Battles are their own module: tables prefixed battle_, one backend module, one timer job, routes under /v1/battles. They touch the rest of the system in four places only: the ledger, item awards, boxes and frozen tables fetched by hash, and auth. Nothing else reads battle tables, so the module can move to a separate service later. Build it after single opens, credit and the admin panel exist; it is planned for weeks 3 and 4.
 
 THE MECHANIC (the server does all of this)
-- N seats open the same box each round. Entry per seat = sum of the round prices, paid in credit as a hold when the seat is taken, refunded on cancel or expiry.
+- N seats open the same box each round. Entry per seat = sum of the round prices plus the admin's fee on top (the fee is the house's and never part of the pot), paid in credit as a hold when the seat is taken, refunded on cancel or expiry.
 - One server seed per battle, generated with a CSPRNG at creation, stored encrypted, its SHA-256 hash returned in the create response and shown before any seat is taken. Each seat fixes a client seed at join (or the published default is recorded). Nothing that feeds a roll changes after the start.
 - Pull order is round-major, seat-minor. nonce = round x seats + seat + 1 (round and seat from 0). Each pull is a normal open: key = "DRAW-" + boxSlug + "-" + serverSeed + "-" + seatClientSeed + "-" + nonce, digest = HMAC-SHA256(key, ""), roll = first 13 hex / 2^52, band lookup on the round's table pinned by hash at creation. Battles use the main table only: a bonus row pays its credits; free spins are not played.
 - Values in integer cents: items at listed value, credit rows at the credit face (100 cents per credit by default).

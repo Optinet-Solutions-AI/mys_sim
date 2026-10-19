@@ -14,12 +14,11 @@ import { SettingsDialog, type SettingsSection } from "../lab/SettingsDialog";
 import { SimulateBar } from "../lab/SimulateBar";
 import { ResultsSection } from "../lab/ResultsSection";
 import { BattlesStage } from "../stages/BattlesStage";
-import { KitBattleStage } from "../stages/KitBattleStage";
 import { BoxBuilder } from "../config/BoxBuilder";
 import { AlgoPanel } from "../config/AlgoPanel";
 import { RigPanel } from "../config/RigPanel";
 import { BattlesResults } from "../results/OtherResults";
-import { Button, Card, Field, Help, Info, NumberInput, Select, Toggle } from "../ui";
+import { Button, Card, Field, Help, NumberInput, Select, Toggle } from "../ui";
 import { Icon } from "../Icon";
 
 const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x));
@@ -31,8 +30,6 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
   const [sizes, setSizes] = useState<Record<string, number>>({ battles: 2000 });
   const [seed, setSeed] = useState(3);
   const [settings, setSettings] = useState<{ open: boolean; section: string }>({ open: false, section: "battle" });
-  const [engine, setEngine] = useState<"kit" | "research">(variant.kitEngine ? "kit" : "research");
-  const kit = engine === "kit";
   const [editBox, setEditBox] = useState(0);
   const [saved, setSaved] = useState(false);
   const [lastCfg, setLastCfg] = useState<BattlesConfig | null>(null);
@@ -193,22 +190,8 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
           { label: `${num(sizes.battles)} ${coin ? "flips" : "battles"} · seed ${seed}`, section: "battle", tone: "accent" },
         ]}
       >
-        {variant.kitEngine && (
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-ink-3">Engine</span>
-            <button type="button" className={`chip ${kit ? "chip-accent" : ""}`} onClick={() => setEngine("kit")}>
-              <Icon name="ph:shield-check" size={12} /> Kit · committed seed
-            </button>
-            <button type="button" className={`chip ${!kit ? "chip-accent" : ""}`} onClick={() => setEngine("research")}>
-              <Icon name="ph:flask" size={12} /> Research · shared random
-            </button>
-            <Info>
-              Kit: the production logic from the backend kit. One secret per battle hashed before anyone joins, a seed per seat, every pull a normal open with its nonce fixed by position, the status moving through the database states. No rigs. Research: the lab engine with one shared random stream and the rig switches, for studying what a dishonest operator could do.
-            </Info>
-          </div>
-        )}
-        {kit ? <KitBattleStage cfg={cfg} onSettings={openSettings} /> : <BattlesStage cfg={cfg} seed={seed} onSettings={openSettings} />}
-        {!kit && <SimulateBar
+        <BattlesStage cfg={cfg} seed={seed} onSettings={openSettings} />
+        <SimulateBar
           label={`Run ${num(sizes.battles)} ${coin ? "flips" : "battles"}`}
           hint="Realized house edge, human win rate against the fair expectation, wager multiplier and the pot distribution."
           status={sim.status}
@@ -218,8 +201,8 @@ export function BattlesLab({ variant, operator }: { variant: FeatureDef; operato
           onRun={start}
           onCancel={sim.cancel}
           onSettings={() => openSettings("battle")}
-        />}
-        {!kit && result && lastCfg && (
+        />
+        {result && lastCfg && (
           <ResultsSection title="Simulation results" meta={`${num(result.battles)} ${coin ? "flips" : "battles"} · ${result.mode} · seed ${lastSeed}`} stale={stale} saved={saved} onSave={save} onReport={report}>
             <BattlesResults r={result} />
           </ResultsSection>

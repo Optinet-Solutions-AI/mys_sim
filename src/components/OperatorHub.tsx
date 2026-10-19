@@ -8,6 +8,7 @@ import { SkinProvider } from "./lab/SkinContext";
 import { MysteryBoxLab } from "./labs/MysteryBoxLab";
 import { SellbackLab } from "./labs/SellbackLab";
 import { BattlesLab } from "./labs/BattlesLab";
+import { KitBattlesLab } from "./labs/KitBattlesLab";
 import { RetentionLab } from "./labs/RetentionLab";
 import { CreditsLab } from "./labs/CreditsLab";
 import { UpgraderLab } from "./labs/UpgraderLab";
@@ -23,7 +24,7 @@ function FeatureLab({ feature, operator }: { feature: FeatureDef; operator: stri
     case "sellback":
       return <SellbackLab variant={feature} operator={operator} />;
     case "battles":
-      return <BattlesLab variant={feature} operator={operator} />;
+      return feature.kitEngine ? <KitBattlesLab variant={feature} operator={operator} /> : <BattlesLab variant={feature} operator={operator} />;
     case "retention":
       return <RetentionLab variant={feature} operator={operator} />;
     case "credits":

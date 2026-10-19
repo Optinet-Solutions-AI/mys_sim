@@ -204,8 +204,8 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
     settings: ["Economy rules: the haircut on sell-back and whether withdrawal is cash or only through items.", "Agents: how much the simulated players deposit, how often they play, when they ship, when they stop.", "Run gives the hold (how much of deposits never leaves), ruin (how many players go bust) and the ship rate."],
   },
   "vendor-battles": {
-    player: ["Two to eight players open the same boxes at the same time. Whoever pulls the highest total (or the lowest, in crazy mode) takes everything.", "Empty seats are filled by bots, which means you are playing against the house.", "The bet is the price of all the boxes together, so battles move much more money than single opens."],
-    settings: ["Battle: mode, players, bots, and the boxes per round.", "Rigs include 'favoured bots', which quietly gives the house seats better odds.", "Run gives the house edge, how often humans win against the fair rate, and the pot sizes."],
+    player: ["Two or more seats open the same boxes at the same time. The mode decides who takes everything: highest total, lowest, last round only, a draw in proportion to totals, a split, or everyone keeps their own.", "One secret is hashed before anyone joins; every pull is a normal open with its spin number fixed by position; the secret is published when the battle is settled, and a Check recomputes every roll.", "Bots, when the admin allows them, are a name and a picture with the same odds; what a bot wins goes back to the house. The bet is every round at once, so battles move much more money than single opens."],
+    settings: ["Admin panel: battles on or off, modes and seats allowed, rounds max, eligible boxes with their odds, fee, coinflip edge, countdown, bots and their names, sponsored battles.", "Create a battle inside those limits: mode, seats, one box per round, how many real players.", "Analysis after a battle: the sums, what the database holds at each step, every roll, the check, a 2,000-battle fairness run."],
   },
   "vendor-retention": {
     player: ["A free box every day that disappears if you miss a day, leaderboards that pay the biggest spenders, and invite codes with free boxes and commission.", "Each one is a reason to come back and spend a little more."],
@@ -362,10 +362,16 @@ export const GUIDES: Record<string, { player: string[]; settings: string[] }> = 
   },
 };
 
+/** The research battles lab (Cases.gg pages): one shared random stream with rig switches. */
+const RESEARCH_BATTLES_GUIDE = {
+  player: ["Two to eight players open the same boxes at the same time. Whoever pulls the highest total (or the lowest, in crazy mode) takes everything.", "Empty seats are filled by bots, which means you are playing against the house.", "The bet is the price of all the boxes together, so battles move much more money than single opens."],
+  settings: ["Battle: mode, players, bots, and the boxes per round.", "Rigs include 'favoured bots', which quietly gives the house seats better odds.", "Run gives the house edge, how often humans win against the fair rate, and the pot sizes."],
+};
+
 export const GUIDE_BY_LAB: Record<string, { player: string[]; settings: string[] }> = {
   "mystery-box": GUIDES["vendor-boxes"],
   sellback: GUIDES["vendor-sellback"],
-  battles: GUIDES["vendor-battles"],
+  battles: RESEARCH_BATTLES_GUIDE,
   retention: GUIDES["vendor-retention"],
   credits: GUIDES["misty-credits"],
   upgrader: GUIDES["jemlit-upgrader"],

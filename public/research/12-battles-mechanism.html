@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Battles, explained simply</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#F4F6F4;--surface:#FFFFFF;--ink:#16191D;--ink-2:#4A5560;--ink-3:#78838C;--line:#D6DDD8;--accent:#0F6B6B;--accent-ink:#0A5252;--accent-soft:#DBECEA;--good:#1E7A3C;--good-soft:#DCEFE1;--warn:#8F5A00;--warn-soft:#F7EBCF;--bad:#B0281F;--bad-soft:#F8DEDB;--code-bg:#EBEFEC;
+--display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;--body:"Source Serif 4",Georgia,"Times New Roman",serif;--mono:"IBM Plex Mono",Consolas,"Courier New",monospace}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0F1314;--surface:#161B1D;--ink:#E6EAE7;--ink-2:#B4BCB7;--ink-3:#848E89;--line:#2A3336;--accent:#5EC3BD;--accent-ink:#8EDBD6;--accent-soft:#163A3A;--good:#5CC47A;--good-soft:#14301E;--warn:#E6B44E;--warn-soft:#3A2C0E;--bad:#F28B82;--bad-soft:#3D1A17;--code-bg:#1C2325;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;padding-inline:16px;padding-block:0}
+a{color:var(--accent-ink);text-decoration-thickness:1px;text-underline-offset:2px}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.08;text-wrap:balance;margin:0;letter-spacing:.005em}
+h1{font-size:clamp(40px,6vw,60px);font-weight:700}
+h2{font-size:33px;font-weight:600;margin-top:52px;padding-top:18px;border-top:2px solid var(--ink);scroll-margin-top:12px}
+h3{font-size:24px;font-weight:600;margin-top:34px}
+h4{font-size:19px;font-weight:600;margin-top:24px;color:var(--ink-2)}
+p{margin:14px 0;max-width:70ch}
+ul,ol{max-width:74ch;padding-left:1.3em}
+li{margin:8px 0}
+li::marker{color:var(--ink-3)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{font-family:var(--mono);font-size:14px;line-height:1.5;background:var(--code-bg);border-left:3px solid var(--accent);padding:14px 16px;overflow-x:auto;margin:16px 0;max-width:100%}
+pre code{background:none;padding:0;font-size:inherit}
+blockquote{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 18px;margin:20px 0;border-radius:0 6px 6px 0;max-width:74ch}
+blockquote p{margin:6px 0;max-width:none}
+.eyebrow{font-family:var(--display);text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:600;color:var(--accent-ink)}
+.wrap{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+main{min-width:0;padding-block:40px 96px}
+nav.rail{position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding-block:48px 24px}
+nav.rail .eyebrow{display:block;margin-bottom:10px}
+nav.rail ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+nav.rail li{margin:0}
+nav.rail a{display:block;padding:6px 0 6px 14px;margin-left:-1px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none;font-family:var(--display);font-size:16px;line-height:1.2}
+nav.rail a:hover{color:var(--ink)}
+nav.rail a.active{border-left-color:var(--accent);color:var(--ink);font-weight:600}
+nav.rail li.sep a{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;color:var(--accent-ink)}
+nav.rail li.ext a{color:var(--accent-ink)}
+details.toc{display:none;margin:24px 0 0;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+details.toc summary{cursor:pointer;padding:12px 16px;font-family:var(--display);font-size:18px;font-weight:600}
+details.toc ol{margin:0;padding:0 16px 12px 36px}
+details.toc a{font-family:var(--display);font-size:17px;text-decoration:none;color:var(--ink-2)}
+@media (max-width:980px){.wrap{grid-template-columns:minmax(0,1fr);gap:0} nav.rail{display:none} details.toc{display:block}}
+header.masthead{border-bottom:1px solid var(--line);padding-bottom:28px}
+header.masthead .eyebrow{display:block;margin-bottom:14px}
+header.masthead .lead{font-size:20px;line-height:1.45;max-width:66ch;margin-top:18px}header.masthead{position:relative}.prov{position:static;display:inline-block;margin-left:10px;vertical-align:middle}.prov-btn{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font:600 12px/20px var(--body);cursor:pointer;padding:0;text-align:center}.prov-btn:hover,.prov-btn:focus-visible{border-color:var(--accent);color:var(--accent-ink)}.prov-pop{display:none;position:absolute;left:0;top:34px;z-index:30;width:min(640px,100%);background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px;font-family:var(--body);font-size:14.5px;line-height:1.5;font-weight:400;letter-spacing:0;text-transform:none}.prov:hover .prov-pop,.prov:focus-within .prov-pop,.prov.open .prov-pop{display:block}
+.table-wrap{overflow-x:auto;margin:18px 0;max-width:100%}figure.chart{margin:22px 0;padding:14px 14px 10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;max-width:100%}figure.chart svg{width:100%;height:auto;display:block}figure.chart figcaption{margin-top:8px;font-size:13.5px;color:var(--ink-2);max-width:none}.chart .ink{fill:var(--ink)}.chart .ink2{fill:var(--ink-2)}.chart .muted{fill:var(--ink-3)}.chart .onfill{fill:#fff}.chart .grid{stroke:var(--line);stroke-width:1}.chart .axis{stroke:var(--ink-3);stroke-width:1}.chart .whisker{stroke:var(--ink-2);stroke-width:1.5}.chart .band{fill:var(--accent);opacity:.08}.chart .s1{fill:#2a78d6}.chart .s2{fill:#eb6834}.chart .s3{fill:#1baf7a}.chart .s4{fill:#eda100}.chart .l1{fill:none;stroke:#2a78d6;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.chart .l2{fill:none;stroke:#eb6834;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.chart .l3{fill:none;stroke:#1baf7a;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}.chart circle.ring{stroke:var(--surface);stroke-width:2}@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .chart .s1{fill:#3987e5}:root:not([data-theme="light"]) .chart .s2{fill:#d95926}:root:not([data-theme="light"]) .chart .s3{fill:#199e70}:root:not([data-theme="light"]) .chart .s4{fill:#c98500}:root:not([data-theme="light"]) .chart .l1{stroke:#3987e5}:root:not([data-theme="light"]) .chart .l2{stroke:#d95926}:root:not([data-theme="light"]) .chart .l3{stroke:#199e70}}:root[data-theme="dark"] .chart .s1{fill:#3987e5}:root[data-theme="dark"] .chart .s2{fill:#d95926}:root[data-theme="dark"] .chart .s3{fill:#199e70}:root[data-theme="dark"] .chart .s4{fill:#c98500}:root[data-theme="dark"] .chart .l1{stroke:#3987e5}:root[data-theme="dark"] .chart .l2{stroke:#d95926}:root[data-theme="dark"] .chart .l3{stroke:#199e70}
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums;background:var(--surface)}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--display);font-size:15px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-2);font-weight:600;background:var(--bg)}
+details.appendix{margin-top:52px;border-top:2px solid var(--ink);padding-top:18px}
+details.appendix summary{cursor:pointer;font-family:var(--display);font-size:33px;font-weight:600;list-style:none}
+details.appendix summary::before{content:"▸ ";color:var(--ink-3);font-size:24px}
+details.appendix[open] summary::before{content:"▾ "}
+details.appendix .note{font-family:var(--display);font-size:15px;color:var(--ink-2);margin:6px 0 0}
+a.term{color:inherit;text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help}
+a.term:hover{color:var(--accent-ink)}
+.tip{position:absolute;z-index:20;max-width:350px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:6px;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:12px 14px 10px;font-family:var(--body);font-size:14.5px;line-height:1.45}
+.tip b.t{display:block;font-family:var(--display);font-size:18px;font-weight:600;margin-bottom:4px}
+.tip p{margin:0 0 6px;max-width:none}
+.tip a.more{display:inline-block;margin-top:2px;font-family:var(--display);font-size:13px;letter-spacing:.05em;text-transform:uppercase}
+@media (max-width:600px){.tip{max-width:calc(100vw - 32px)}}
+.howto{display:flex;gap:10px;align-items:flex-start;margin-top:16px;padding:10px 14px;background:var(--surface);border:1px dashed var(--line);border-radius:6px;font-size:15px;max-width:70ch}
+.howto .i{font-family:var(--display);font-weight:700;color:var(--accent-ink);border:1.5px solid var(--accent);border-radius:50%;width:20px;height:20px;line-height:17px;text-align:center;font-size:13px;flex:none;margin-top:2px}
+.gloss dl{margin:12px 0 0;max-width:76ch}
+.gloss dt{font-family:var(--display);font-size:19px;font-weight:600;margin-top:16px;scroll-margin-top:16px}
+.gloss dt:target{color:var(--accent-ink)}
+.gloss dd{margin:4px 0 0}
+.gen{font-family:var(--display);font-size:14px;color:var(--ink-3);margin-top:48px}
+@media print{nav.rail,details.toc,.tip{display:none} .wrap{display:block} body{background:#fff;color:#000} h2{break-before:page} a{color:inherit} details.appendix{display:block} details.appendix summary::before{content:""}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="rail" aria-label="Contents"><span class="eyebrow">Contents</span><ol><li><a href="#1-what-a-battle-is">1. What a battle is</a></li><li><a href="#2-one-battle-step-by-step">2. One battle, step by step</a></li><li><a href="#3-the-modes">3. The modes</a></li><li><a href="#4-the-status-of-a-battle">4. The status of a battle</a></li><li><a href="#5-the-sums">5. The sums</a></li><li><a href="#6-bots">6. Bots</a></li><li><a href="#7-sponsored-battles">7. Sponsored battles</a></li><li><a href="#8-the-check">8. The check</a></li><li><a href="#9-what-the-admin-panel-sets">9. What the admin panel sets</a></li><li><a href="#10-what-the-player-sees">10. What the player sees</a></li><li><a href="#11-history-and-reports">11. History and reports</a></li><li><a href="#12-where-this-comes-from">12. Where this comes from</a></li><li><a href="#13-critique">13. Critique</a></li><li><a href="#glossary">Glossary</a></li><li class="sep"><a href="https://mys-sim.vercel.app/operators/vendor">Simulator (Evo Verse battles)</a></li><li class="ext"><a href="https://mys-sim.vercel.app/docs/battles">Battles, explained (live numbers)</a></li><li class="ext"><a href="https://mys-sim.vercel.app/docs/battles/dev">Battles for developers</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></nav>
+<main>
+<header class="masthead"><span class="eyebrow">Research · generated from 12-battles-mechanism.md<span class="prov"><button type="button" class="prov-btn" aria-label="About this document" onclick="this.parentNode.classList.toggle(&quot;open&quot;)">i</button><span class="prov-pop" role="tooltip">Version 1.0, 19 October 2026. How a battle works on the committed-seed engine of the backend kit (kit 1.2), for anyone on the team. The same explanation with the sums computed live, a worked battle resolved from a fixed secret and the check is inside the simulator at <code>/docs/battles</code>; the developer version with the API, the tables, the test vectors and the prompt for the main repository is at <code>/docs/battles/dev</code>. The battle is playable on the Evo Verse page of the simulator, Battles tab, with the admin panel behind its own button. &gt; <strong>In one sentence.</strong> Several seats open the same boxes at the same time, one secret fixed before anyone joins decides every roll, a mode decides who takes everything, and the whole battle has a status in the database from the moment it is created until it is settled.</span></span></span><h1>Battles, explained simply</h1></header>
+<details class="toc"><summary>Contents</summary><ol><li><a href="#1-what-a-battle-is">1. What a battle is</a></li><li><a href="#2-one-battle-step-by-step">2. One battle, step by step</a></li><li><a href="#3-the-modes">3. The modes</a></li><li><a href="#4-the-status-of-a-battle">4. The status of a battle</a></li><li><a href="#5-the-sums">5. The sums</a></li><li><a href="#6-bots">6. Bots</a></li><li><a href="#7-sponsored-battles">7. Sponsored battles</a></li><li><a href="#8-the-check">8. The check</a></li><li><a href="#9-what-the-admin-panel-sets">9. What the admin panel sets</a></li><li><a href="#10-what-the-player-sees">10. What the player sees</a></li><li><a href="#11-history-and-reports">11. History and reports</a></li><li><a href="#12-where-this-comes-from">12. Where this comes from</a></li><li><a href="#13-critique">13. Critique</a></li><li><a href="#glossary">Glossary</a></li><li class="sep"><a href="https://mys-sim.vercel.app/operators/vendor">Simulator (Evo Verse battles)</a></li><li class="ext"><a href="https://mys-sim.vercel.app/docs/battles">Battles, explained (live numbers)</a></li><li class="ext"><a href="https://mys-sim.vercel.app/docs/battles/dev">Battles for developers</a></li><li class="ext"><a href="00-tracker.html">Tracker</a></li></ol></details>
+<section id="1-what-a-battle-is"><h2>1. What a battle is</h2><ul><li>N seats (2 or more) and R rounds. Each round names one box; in that round every seat opens that box once.</li><li>Entry per seat = the sum of the round prices, plus the admin's fee if one is set. It is held from the player's credit when the seat is taken and returned if the battle is cancelled or never fills.</li><li>What the seats pull makes the pot. The mode decides who takes it.</li><li>A battle does not change any box's odds. It changes who takes the items and how much is bet at once.</li></ul></section>
+<section id="2-one-battle-step-by-step"><h2>2. One battle, step by step</h2><div class="table-wrap"><table><thead><tr><th>Step</th><th>What happens</th><th>Why it is done that way</th></tr></thead><tbody><tr><td>1</td><td>Someone creates a battle: a mode, a seat count and one box per round, all from the lists the admin allowed.</td><td>The player chooses inside the admin's limits. Nothing about odds or boxes is decided by the player.</td></tr><tr><td>2</td><td>Before anyone else joins, the server draws one secret for the whole battle and shows its hash on the page.</td><td>Every roll comes from that secret. Showing the hash first proves it was fixed before anyone paid or sat down.</td></tr><tr><td>3</td><td>Each seat sets a seed of its own when it joins (or the server records the default). The entry is held from the player's credit.</td><td>The seeds go into every roll, so the server alone cannot pick a result. The hold means a seat is never taken with money that is then spent elsewhere.</td></tr><tr><td>4</td><td>When the last seat is taken, a short countdown runs on the server and the battle starts. From here nothing that feeds a roll can change.</td><td>The server owns the clock; no client can start or delay a battle.</td></tr><tr><td>5</td><td>Every seat opens the round's box. Each open is a normal open: secret + the seat's seed + a spin number → a roll between 0 and 1 → read against the box's odds table.</td><td>Battles reuse the single-open rule, so one check covers both. The spin number is the pull's position: round × seats + seat + 1.</td></tr><tr><td>6</td><td>After the last round the mode decides who takes the pot. If seats tie, one extra roll breaks the tie.</td><td>The extra roll uses the next spin number and every seat's seed joined together, so no single seat controls it.</td></tr><tr><td>7</td><td>The winner's items become awards (ship or trade in) and the credit goes to the ledger. Then the battle is marked settled and the secret is published.</td><td>Money moves first, status last, so a crash can never leave a battle finished but unpaid.</td></tr><tr><td>8</td><td>Anyone can check the battle: recompute every roll from the secret, the seeds and the odds tables.</td><td>The check proves the secret matches the hash, every pull landed where the page says, and the right seat won.</td></tr></tbody></table></div></section>
+<section id="3-the-modes"><h2>3. The modes</h2><div class="table-wrap"><table><thead><tr><th>Mode</th><th>Who wins</th><th>What is paid</th></tr></thead><tbody><tr><td>Normal</td><td>Highest total over all rounds</td><td>Every item and credit pulled by every seat, to the winner</td></tr><tr><td>Crazy</td><td>Lowest total</td><td>Same</td></tr><tr><td>Terminal</td><td>Highest pull in the last round</td><td>Same</td></tr><tr><td>Jackpot</td><td>Drawn in proportion to the totals, with the extra roll</td><td>Same</td></tr><tr><td>Group</td><td>Everyone</td><td>The pot split equally; odd cents to seat 0</td></tr><tr><td>Break</td><td>Everyone</td><td>Each seat keeps its own pulls; no pot</td></tr><tr><td>Coinflip</td><td>One fair extra roll; no boxes</td><td>The two stakes less the disclosed edge, to the winner</td></tr></tbody></table></div>
+<p>Ties in normal, crazy and terminal are broken by one extra roll among the tied seats, in seat order. Jackpot with every total at zero falls back to a uniform draw.</p></section>
+<section id="4-the-status-of-a-battle"><h2>4. The status of a battle</h2><p>Every battle is a row in the database with a status. Screens show plain words; the codes stay in the API. A status only ever changes by one guarded step: the server writes the new status together with a version number and refuses the write if anyone else moved first.</p>
+<div class="table-wrap"><table><thead><tr><th>On screen</th><th>Code</th><th>What it means</th><th>What the database holds</th></tr></thead><tbody><tr><td>Waiting</td><td><code>open</code></td><td>Created; seats free; credit held for the seats taken</td><td>The secret hash, the mode, the seats, the rounds with their table hashes, the holds</td></tr><tr><td>Waiting · starting</td><td><code>full</code></td><td>Every seat taken; the countdown runs on the server</td><td>The seats with their seeds, fixed; the start time</td></tr><tr><td>Ongoing</td><td><code>in_progress</code></td><td>The server resolves every round from the committed inputs and writes the pulls</td><td>Every pull with its spin number, digest, roll, outcome and value</td></tr><tr><td>Ongoing · settling</td><td><code>settling</code></td><td>Awards and ledger entries are being written</td><td>The pot, the winners, the shares; item awards and ledger rows</td></tr><tr><td>Settled</td><td><code>finished</code></td><td>Everything is paid; the secret is published; anyone can check</td><td>The secret, the settled time, the result; never edited again</td></tr><tr><td>Cancelled</td><td><code>cancelled</code></td><td>Creator (while alone) or admin cancelled before the start</td><td>The reason, the refunds</td></tr><tr><td>Expired</td><td><code>expired</code></td><td>Never filled within the admin's window</td><td>The refunds</td></tr></tbody></table></div>
+<p>The only paths: open → full → in_progress → settling → finished; full → open (a seat left); open or full → cancelled; open → expired. Because every roll is computed from fixed inputs, a server that crashes halfway runs the same resolution again and gets the same pulls: nothing is re-rolled and nothing is paid twice.</p></section>
+<section id="5-the-sums"><h2>5. The sums</h2><ul><li>Every seat plays the same table with the same odds, so over many battles each seat takes home what its own boxes pay back on average. A battle changes the shape of the result (all or nothing) and the size of the bet (every round at once), not the average.</li><li>What the house keeps is the boxes' margin, plus a disclosed fee if the admin sets one. The fee is added on top of the entry and never touches the pot.</li><li>Bots do not change a player's expectation. When the house fills the other seats with bots it funds those seats itself; against the one real player it keeps exactly what one open of each box would keep.</li><li>The default Evo Verse battle (4 seats, 3 rounds of the vendor box at $50, entry $150) is worked through with live numbers at <code>/docs/battles</code>, section 5.</li></ul></section>
+<section id="6-bots"><h2>6. Bots</h2><ul><li>Off unless the admin switches them on. When on, the creator of a waiting battle that nobody joins can ask for bots; the server fills every free seat with a bot from the admin's list and the countdown starts.</li><li>A bot is a name and a picture, nothing more. Same boxes, same odds, same committed secret; the server makes its seed and records it as a bot's; it holds no credit; what it wins returns to the house with no award and no ledger row.</li><li>Labelled as a bot on every screen, in the lobby and in the game history.</li><li>A bot with better odds than players would be a rig. The engine has no setting for it and the kit forbids it. Evocase described its bots the same way in its 15 October demo: "just names and images, no higher configuration".</li></ul></section>
+<section id="7-sponsored-battles"><h2>7. Sponsored battles</h2><p>A battle whose entries the house pays. The admin creates it, for a stream or a promotion; players join free; the house ledger takes one entry for the whole cost; the pot is real and the winner is paid as usual. The battle shows "Sponsored by …". A promo code that gives "a free battle" is the same thing seen from the player: a credit voucher that may only pay a battle entry.</p></section>
+<section id="8-the-check"><h2>8. The check</h2><p>After a battle is settled the page shows the secret, every seat's seed, the table hash of every round and the spin number of every pull. The check recomputes every roll and compares four things: the secret hashes to what was shown before the battle; every pull lands where the page says; every total matches; the same seat wins. The public verify endpoint does the same on the server for anyone with the battle id.</p></section>
+<section id="9-what-the-admin-panel-sets"><h2>9. What the admin panel sets</h2><div class="table-wrap"><table><thead><tr><th>Setting</th><th>Meaning</th><th>Kit default</th></tr></thead><tbody><tr><td>Battles enabled</td><td>The master switch</td><td>off</td></tr><tr><td>Modes allowed</td><td>Which of the seven modes players may pick</td><td>normal, crazy, terminal</td></tr><tr><td>Seats allowed</td><td>Which seat counts a battle may have</td><td>2, 3, 4</td></tr><tr><td>Rounds max</td><td>Boxes per battle</td><td>10</td></tr><tr><td>Eligible boxes</td><td>Which boxes may be put in a battle; each pinned by its table hash</td><td>none until chosen</td></tr><tr><td>Fee</td><td>A disclosed percentage on top of the box prices, kept by the house</td><td>0</td></tr><tr><td>Coinflip edge</td><td>Taken from the coinflip pot before the winner is paid</td><td>0</td></tr><tr><td>Open battle expiry</td><td>Minutes a waiting battle lives before it expires and refunds</td><td>30</td></tr><tr><td>Countdown</td><td>Seconds from every seat taken to the start</td><td>5</td></tr><tr><td>Private battles</td><td>Invite code instead of the public list</td><td>on</td></tr><tr><td>Bots</td><td>Off, or on with a list of names and pictures</td><td>off</td></tr><tr><td>Max open battles per player</td><td>Anti-abuse</td><td>3</td></tr><tr><td>Credit face</td><td>What one credit counts for in totals</td><td>100 cents</td></tr></tbody></table></div>
+<p>Changing a setting never touches an existing battle: a battle pins its mode, its seats, its fee and its boxes' table hashes when it is created. In the simulator the same panel sits behind the Admin panel button on the Evo Verse battles tab, with every mode switched on so each can be tried.</p></section>
+<section id="10-what-the-player-sees"><h2>10. What the player sees</h2><ul><li>A lobby: open battles with mode, seats taken, entry, boxes and the secret hash; Create offers only what the admin allowed; Join; private battles by code.</li><li>The battle room: seats with names (bots labelled), the boxes per round, the secret hash, the countdown from the server, then the rounds playing back from the server's pull records, totals updating, the winner, the pot, what each seat takes home, Ship or Trade in for item awards.</li><li>The result and the check: the secret revealed, the seeds, the spin numbers, the table hashes, a Check this battle button.</li><li>Nothing is computed in the browser before the server has written it.</li></ul></section>
+<section id="11-history-and-reports"><h2>11. History and reports</h2><ul><li>A player's game history lists every battle they sat in with their pulls, the result and what they took home, next to their single opens. The admin's player screen shows "Boxes opened" and "Battles played".</li><li>The admin dashboard shows battles played per day and per mode, and the gross gaming revenue per game mode: what players paid in minus what players took home. Bot seats and sponsored seats are not player money.</li><li>A settled battle is never edited.</li></ul></section>
+<section id="12-where-this-comes-from"><h2>12. Where this comes from</h2><ul><li>The mechanic and the proof are the Misty single-open recipe (document 06) extended with one secret per battle, a seed per seat, a nonce fixed by position and one extra roll.</li><li>The product facts (bots as names and images a player can ask to join, "ongoing" and "settled", sponsored battles, game history, GGR by game mode) are from the Evocase demo of 15 October 2026.</li><li>The Evo Verse battles engine that the simulator used until 19 October was a research tool: one shared random stream for every seat, a favoured-bots rig, a random tie-break, no database. It stays available on the Cases.gg pages for rigging research; it is not the production logic and is not in the kit.</li></ul></section>
+<section id="13-critique"><h2>13. Critique</h2><ul><li>Battles multiply the bet. One click wagers every round at once; the vendor's own figure was that battles make 90% of all wagering. The fairness of each roll is unchanged; the amount at risk per minute is not.</li><li>Bots mean the house sits across the table. The odds are the same, so the player's expectation equals a single open, but a bot winning the pot is the house collecting the player's pulls as well as its margin. The label on the seat is what keeps this honest.</li><li>The check proves the roll, not the value. Items count at listed value; what they fetch when sold is a separate question.</li><li>Sponsored battles are marketing spend and should be reported as such, not as play.</li></ul></section>
+<section id="glossary" class="gloss"><h2>Glossary</h2><dl></dl></section>
+<p class="gen">Generated from 12-battles-mechanism.md by tools/build_page.py. Edit the Markdown, then rebuild.</p>
+</main>
+</div>
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.rail a[href^="#"]'));
+  if (!links.length || !('IntersectionObserver' in window)) return;
+  var map = {}; links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  var current = null;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) { if (current) current.classList.remove('active'); current = map[e.target.id]; if (current) current.classList.add('active'); } });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
+  Object.keys(map).forEach(function(id){ var el = document.getElementById(id); if (el) io.observe(el); });
+})();
+(function(){
+  var gloss = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.gloss dt[id]'), function(dt){ var dd = dt.nextElementSibling; gloss[dt.id] = { title: dt.textContent, body: dd ? dd.innerHTML : '' }; });
+  if (!Object.keys(gloss).length) return;
+  var tip = document.createElement('div'); tip.className = 'tip'; tip.setAttribute('role', 'tooltip'); tip.id = 'term-tip'; tip.hidden = true; document.body.appendChild(tip);
+  var open = null, hideTimer = null;
+  function place(el){
+    var r = el.getBoundingClientRect(), sx = window.pageXOffset, sy = window.pageYOffset;
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.min(Math.max(16, r.left), vw - tw - 16) + sx, top = r.bottom + 8 + sy;
+    if (r.bottom + 8 + th > vh && r.top - 8 - th > 0) top = r.top - 8 - th + sy;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function show(el){
+    var id = (el.getAttribute('href') || '').slice(1), g = gloss[id]; if (!g) return;
+    clearTimeout(hideTimer);
+    tip.innerHTML = '<b class="t"></b><p></p><a class="more" href="#' + id + '">See it in the glossary</a>';
+    tip.querySelector('b.t').textContent = g.title; tip.querySelector('p').innerHTML = g.body;
+    tip.hidden = false; open = el; el.setAttribute('aria-describedby', 'term-tip'); place(el);
+  }
+  function hide(){ if (open) open.removeAttribute('aria-describedby'); tip.hidden = true; open = null; }
+  function hideSoon(){ clearTimeout(hideTimer); hideTimer = setTimeout(hide, 180); }
+  Array.prototype.forEach.call(document.querySelectorAll('a.term'), function(el){
+    el.addEventListener('mouseenter', function(){ show(el); });
+    el.addEventListener('mouseleave', hideSoon);
+    el.addEventListener('focus', function(){ show(el); });
+    el.addEventListener('blur', hideSoon);
+    el.addEventListener('click', function(ev){ ev.preventDefault(); if (open === el && !tip.hidden) hide(); else show(el); });
+  });
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideSoon);
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') hide(); });
+  document.addEventListener('click', function(ev){ if (tip.hidden) return; if (tip.contains(ev.target) || (open && open.contains(ev.target))) return; hide(); });
+  window.addEventListener('resize', function(){ if (open && !tip.hidden) place(open); });
+})();
+</script>
+
+</body>
+</html>

@@ -343,6 +343,35 @@ export interface BattlesConfig {
   coinflipEdge?: number;
 }
 
+/** The committed-seed battles of the backend kit: what the admin panel holds, the eligible boxes, and the player's choice inside those limits. */
+export interface KitBattleSettings {
+  enabled: boolean;
+  modesAllowed: BattleMode[];
+  seatsAllowed: number[];
+  roundsMax: number;
+  /** disclosed charge on top of the box prices, kept by the house; 0..20 */
+  feePercent: number;
+  /** coinflip only; 0..0.10 */
+  coinflipEdge: number;
+  countdownSeconds: number;
+  openExpiryMinutes: number;
+  privateAllowed: boolean;
+  botsEnabled: boolean;
+  /** a bot is a name and a picture, nothing else */
+  botNames: string[];
+  maxConcurrentPerPlayer: number;
+  creditFaceCents: number;
+  /** new battles are paid by the house and labelled */
+  sponsored: { enabled: boolean; sponsor: string };
+}
+export interface KitBattlesConfig {
+  settings: KitBattleSettings;
+  /** the eligible boxes, as the admin lists them */
+  boxes: BoxDef[];
+  /** the player's choice: mode, seats, one eligible-box index per round, how many real players (the rest bots when allowed) */
+  play: { mode: BattleMode; seats: number; rounds: number[]; humans: number };
+}
+
 export interface BattlesResult {
   kind: "battles";
   battles: number;

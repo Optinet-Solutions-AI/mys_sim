@@ -11,8 +11,8 @@ admin set. Nothing about odds, boxes, modes, fees or bots is decided on the clie
 
 - N seats (2 to the admin's maximum) open the same box in each round; the admin's catalogue decides which boxes are
   eligible. A battle of 3 rounds with boxes A, B, A means every seat opens A, then B, then A.
-- Entry per seat = the sum of the round prices, paid in credit when the seat is taken. The credit is held, not spent,
-  until the battle starts; it is refunded if the battle is cancelled or expires.
+- Entry per seat = the sum of the round prices plus the admin's fee, paid in credit when the seat is taken. The credit is
+  held, not spent, until the battle starts; it is refunded if the battle is cancelled or expires.
 - Every pull is a normal open: digest = HMAC-SHA256(`DRAW-<slug>-<serverSeed>-<clientSeed>-<nonce>`, ""), roll = first
   13 hex / 2^52, read against the round's frozen table. Battles use the main table only: a bonus row pays its credits;
   free spins are not played in battles.
@@ -45,8 +45,8 @@ Ties in normal, crazy and terminal are broken by the extra roll among the tied s
 The winner receives the actual items and credits that were pulled: an `item_awards` row per item (ship or trade in,
 as a single open) and a ledger entry for the credits. Group splits by value as credit unless the admin enables item
 allocation; break hands each seat its own pulls. Coinflip pays credit. The house keeps nothing extra: its margin is the
-boxes' return, which the admin set. If the admin enables a battle fee, it is a disclosed percentage of entries taken
-before the pot is formed and shown on the battle page.
+boxes' return, which the admin set. If the admin enables a battle fee, it is a disclosed percentage added on top of
+the box prices (entry = prices + fee), kept by the house, never part of the pot, and shown on the battle page.
 
 ### Bots
 
@@ -214,5 +214,5 @@ and lets it move to a separate service later without touching the core.
 7. Sponsored: a sponsored battle takes no hold from any player, writes one `battle-sponsor` entry, and pays the
    winner as usual.
 
-The simulator runs the pure parts in `scripts/smoke-battles.ts` and plays this exact logic at
-/operators/vendor, Battles tab, Engine: Kit (the hash before the seats fill, the statuses, every nonce, the check).
+The simulator runs the pure parts in `scripts/smoke-battles.ts` and plays this exact logic at /operators/vendor,
+Battles tab (Admin panel button for the settings). Plain-language page: /docs/battles. Developer page: /docs/battles/dev.

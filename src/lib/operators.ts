@@ -4,6 +4,7 @@ import { applyGuarantee } from "@/engine/table";
 import { DEFAULT_MISTY, mistyConfigFor } from "./mistyPresets";
 import { DEFAULT_JEMLIT, DEFAULT_JEMLIT_PACKS } from "./jemlitPresets";
 import { DEFAULT_ICYBOX } from "./icyboxPresets";
+import { DEFAULT_KIT_BATTLES } from "./battlesPresets";
 import { CATALOG_BY_ID } from "@/engine/catalog";
 import type { AnyConfig, BattleMode, BattlesConfig, CreditsConfig, LabId, MysteryBoxConfig, RetentionConfig, SellbackConfig, UpgraderConfig } from "@/engine/types";
 import {
@@ -61,7 +62,7 @@ export interface FeatureDef {
   lockMode?: boolean;
   /** battles: allowed modes */
   modes?: BattleMode[];
-  /** battles: offer the committed-seed engine from the backend kit next to the research engine */
+  /** battles: the committed-seed logic of the backend kit (admin panel, database statuses, check) instead of the research engine */
   kitEngine?: boolean;
   /** sell-back: option cards shown (decision, keepFees, estimate, creditExpiry, guaranteeFloor, vault, creatorCut) */
   sellbackOptions?: string[];
@@ -161,13 +162,13 @@ export const OPERATORS: OperatorDef[] = [
         rigIds: BATTLE_RIGS,
         doc: {
           title: "Battles",
-          short: "Multi-box battles with bots as the house; 90% of wagering.",
-          what: "Several players open the same boxes and a mode decides who takes the pot. Bots fill empty seats and 'play against the house'. The vendor says battles are 90% of all wagering because the bet is the sum of all boxes.",
-          configure: ["Engine: Kit (the committed-seed logic from the backend kit, with the database statuses) or Research (one shared random stream with rigs).", "Mode (normal, crazy, group, terminal, jackpot), players, bots, boxes per round.", "Algorithm and rigs (research engine only), including favoured bots."],
-          read: ["Wager multiplier, realized house edge, human win rate against the fair rate, pot distribution."],
-          source: "Vendor demo (dossier 2 §3.5).",
+          short: "Multi-box battles on the kit's committed-seed logic; the vendor says 90% of wagering.",
+          what: "Several seats open the same boxes and a mode decides who takes the pot. One secret per battle is hashed before anyone joins, every pull is a normal open with its spin number fixed by position, and the battle has a status in the database from Waiting to Settled. The admin panel decides what is allowed; players create and join inside it. Bots, when allowed, are a name and a picture with the same odds.",
+          configure: ["Admin panel: battles on or off, modes and seats allowed, rounds max, eligible boxes with their odds, fee, coinflip edge, countdown, bots and their names, sponsored battles.", "Create a battle: mode, seats, one eligible box per round, how many real players; the rest are bots when the admin allows them.", "Battles & report: every settled battle and the GGR per mode, as the admin dashboard would show them."],
+          read: ["The secret hash before the seats fill, the statuses as the database holds them, every nonce and roll, the check, the sums, a 2,000-battle fairness run."],
+          source: "Vendor demo (dossier 2 §3.5); kit 1.2 BATTLES.md; Evocase demo of 15 October 2026.",
         },
-        initial: DEFAULT_BATTLES,
+        initial: DEFAULT_KIT_BATTLES as unknown as AnyConfig,
       },
       {
         key: "vendor-retention",

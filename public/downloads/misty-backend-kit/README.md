@@ -338,4 +338,4 @@ The rule book is `BATTLES.md`; the state machine (`open → full → in_progress
 Configuration (modes, seats, rounds, eligible boxes, fee, bots, timers) lives in the admin panel; players only create,
 join, watch, ask bots to join when the admin allows it, and verify. Sponsored battles (the house pays the entries),
 game history and the GGR-per-mode report are in the rule book too. Reproduce `test-vectors-battles.json` before
-anything else.
+anything else. Developer page with everything in one place: https://mys-sim.vercel.app/docs/battles/dev.
