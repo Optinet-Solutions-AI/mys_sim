@@ -61,6 +61,8 @@ export interface FeatureDef {
   lockMode?: boolean;
   /** battles: allowed modes */
   modes?: BattleMode[];
+  /** battles: offer the committed-seed engine from the backend kit next to the research engine */
+  kitEngine?: boolean;
   /** sell-back: option cards shown (decision, keepFees, estimate, creditExpiry, guaranteeFloor, vault, creatorCut) */
   sellbackOptions?: string[];
   /** retention: extra cards shown (missions, freeEntry, spendCap) */
@@ -153,6 +155,7 @@ export const OPERATORS: OperatorDef[] = [
       {
         key: "vendor-battles",
         minimal: true,
+        kitEngine: true,
         lab: "battles",
         modes: VENDOR_MODES,
         rigIds: BATTLE_RIGS,
@@ -160,7 +163,7 @@ export const OPERATORS: OperatorDef[] = [
           title: "Battles",
           short: "Multi-box battles with bots as the house; 90% of wagering.",
           what: "Several players open the same boxes and a mode decides who takes the pot. Bots fill empty seats and 'play against the house'. The vendor says battles are 90% of all wagering because the bet is the sum of all boxes.",
-          configure: ["Mode (normal, crazy, group, terminal, jackpot), players, bots, boxes per round.", "Algorithm and rigs (research), including favoured bots."],
+          configure: ["Engine: Kit (the committed-seed logic from the backend kit, with the database statuses) or Research (one shared random stream with rigs).", "Mode (normal, crazy, group, terminal, jackpot), players, bots, boxes per round.", "Algorithm and rigs (research engine only), including favoured bots."],
           read: ["Wager multiplier, realized house edge, human win rate against the fair rate, pot distribution."],
           source: "Vendor demo (dossier 2 §3.5).",
         },

@@ -8,7 +8,7 @@ REFERENCES
 - Schema: https://mys-sim.vercel.app/downloads/misty-backend-kit/schema-battles.sql
 - API contract (paths under /v1/battles): https://mys-sim.vercel.app/downloads/misty-backend-kit/openapi.yaml
 - Test vectors your implementation must reproduce: https://mys-sim.vercel.app/downloads/misty-backend-kit/test-vectors-battles.json
-- Live reference of the mechanic: https://mys-sim.vercel.app/operators/jemlit (Battles tab) and https://mys-sim.vercel.app/operators/vendor (Battles tab)
+- Playable reference of exactly this logic: https://mys-sim.vercel.app/operators/vendor, Battles tab, Engine: Kit (the hash before the seats fill, the statuses, every nonce, the check). Jemlit's own battles for comparison: https://mys-sim.vercel.app/operators/jemlit (Battles tab)
 If a link does not open, say so and ask for the file. Do not guess its contents.
 
 WHERE THINGS LIVE

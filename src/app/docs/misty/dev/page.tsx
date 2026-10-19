@@ -529,6 +529,7 @@ export default function MistyDevPage() {
           <li>Bots are off by default. If on, the creator of a waiting battle can press Ask bots to join; the server fills the free seats with bots from the admin&apos;s list (a name and a picture, nothing else), same odds, same seed, winnings to the house. Labelled everywhere.</li>
           <li>Sponsored battles: the admin creates them, the house pays the entries, players join free, the winner is paid as usual.</li>
           <li>Screens say Waiting, Ongoing and Settled; the codes stay in the API. Game history and the GGR-per-mode report read two views in the schema.</li>
+          <li>Play it: Evo Verse, Battles tab, Engine: Kit. The hash before the seats fill, the statuses as the database would hold them, every nonce, the check.</li>
           <li>Files in the kit: BATTLES.md (rule book), battleKit.ts (pure resolver), battles-reference.ts (server flow), schema-battles.sql, test-vectors-battles.json, and the API under /v1/battles in openapi.yaml.</li>
         </ul>
         <P>The prompt below is for the Claude session in the main repository. It carries the mechanic, the state machine, the admin settings, the player screens, the security rules and the tests.</P>

@@ -214,4 +214,5 @@ and lets it move to a separate service later without touching the core.
 7. Sponsored: a sponsored battle takes no hold from any player, writes one `battle-sponsor` entry, and pays the
    winner as usual.
 
-The simulator runs the pure parts in `scripts/smoke-battles.ts`.
+The simulator runs the pure parts in `scripts/smoke-battles.ts` and plays this exact logic at
+/operators/vendor, Battles tab, Engine: Kit (the hash before the seats fill, the statuses, every nonce, the check).
